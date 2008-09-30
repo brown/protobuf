@@ -1,0 +1,10 @@
+
+Remove dependency in iterate.  It is only used in a couple of places.
+
+Port the tests to a unit test framework.
+
+Implement a protocol buffer compiler in Common Lisp or create a Lisp backend
+for Google's released compiler.
+
+Add more testing code to proto-lisp-test.lisp.
+

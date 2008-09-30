@@ -1,0 +1,47 @@
+
+A Common Lisp implementation of Google's protocol buffers.
+
+The code here is a preliminary release.  It contains low-level routines for
+encoding and decoding protocol buffer types, such as integers and strings,
+but the translator from protocol buffer descriptions to Lisp code is
+currently unimplemented.
+
+The distribution does include two files that show what translated protocol
+buffer code might look like:  testprotocol.lisp and proto-test.lisp.
+
+The release has been tested with clisp and sbcl.
+
+
+INSTALLATION
+============
+
+0. Download and install the packages that this code depends on:
+
+    asdf
+    iterate
+    trivial-utf-8       not needed for Allegro, CLisp, and SBCL
+
+Note that some Common Lisp implementations, such as SBCL, contain a copy of
+the asdf library.
+
+
+1. Make protobuf.asd available to asdf.  Either create a symbolic link to
+protobuf.asd in your asdf:*central-registry* directory or load the file into
+your running Lisp with (load "protobuf.asd").
+
+
+2. Load the protobuf code:
+
+    (asdf:operate 'asdf:load-op 'protobuf)
+
+
+3. Run the tests:
+
+    (varint::test)
+    (proto-lisp-test::test)
+
+
+BUGS
+====
+
+Please report bugs and send suggestions to:  robert.brown at host gmail.com
