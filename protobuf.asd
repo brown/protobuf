@@ -61,6 +61,7 @@
 
      #-(or abcl allegro cmu sbcl)
      (:module "sysdep"
+      :pathname ""              ; this module's files are not in a subdirectory
       :depends-on ("package")
       :components ((:cl-source-file "portable-float")))
 
@@ -70,7 +71,7 @@
      (:cl-source-file "varint-test" :depends-on ("varint"))
      (:cl-source-file "proto"
       :depends-on ("base" #-(or abcl allegro cmu sbcl) "sysdep"))
-     (:cl-source-file "protocol-buffer" :depends-on ("package"))
+     (:cl-source-file "protocol-buffer" :depends-on ("base"))
      (:cl-source-file "proto-lisp-test"
       :depends-on ("base" "proto-test" "testprotocol"))
 

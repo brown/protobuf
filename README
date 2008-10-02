@@ -9,7 +9,8 @@ currently unimplemented.
 The distribution does include two files that show what translated protocol
 buffer code might look like:  testprotocol.lisp and proto-test.lisp.
 
-The release has been tested with clisp and sbcl.
+The code has been tested with ABCL, CCL, CLISP, and SBCL.  In the past it
+has also worked with Allegro Common Lisp, but I have not tested it lately.
 
 
 INSTALLATION
@@ -26,11 +27,11 @@ the asdf library.
 
 
 1. Make protobuf.asd available to asdf.  Either create a symbolic link to
-protobuf.asd in your asdf:*central-registry* directory or load the file into
+protobuf.asd in your ASDF:*CENTRAL-REGISTRY* directory or load the file into
 your running Lisp with (load "protobuf.asd").
 
 
-2. Load the protobuf code:
+2. Compile and load the protobuf code:
 
     (asdf:operate 'asdf:load-op 'protobuf)
 

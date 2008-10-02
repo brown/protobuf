@@ -1,10 +1,23 @@
 
-Remove dependency in iterate.  It is only used in a couple of places.
+Remove the dependency on iterate.  It is only used in a couple of places.
 
 Port the tests to a unit test framework.
 
-Implement a protocol buffer compiler in Common Lisp or create a Lisp backend
-for Google's released compiler.
+Implement a protocol buffer compiler.  There are several possible.  Here are
+my favorites:
+
+  a. Implement a new backend for Google's protocol buffer compiler that
+  generates CLOS classes from protobuf descriptions.  It is unlikely that
+  Google will integrate this change into their code, and it requires Lisp
+  developers to use Google's protobuf syntax.
+
+  b. Implement a new backend for Google's protocol buffer compiler that
+  outputs protobuf descriptions in s-expression form.  Write a compiler in
+  Lisp that translates the s-expressions into CLOS classes.  Google may be
+  more receptive to integrating this change into their code, since it is
+  useful for any language in the Lisp family.  Also, the change is much
+  smaller, amounting to just a pretty printer.  Lisp developers can write
+  protobuf descriptions as s-expressions.  The disadvantage is that it's
+  more work.
 
 Add more testing code to proto-lisp-test.lisp.
-

@@ -341,15 +341,15 @@ LIMIT, then signal ENCODE-OVERFLOW."
     (let ((bits (portable-float:double-float-bits float)))
       (setf low (logand #xffffffff bits))
       (setf high (portable-float:mask-and-sign-extend (ash bits -32) 32)))
+    #+abcl
+    (progn (setf low (system:double-float-low-bits float))
+           (setf high (system:double-float-high-bits float)))
     #+allegro
     (multiple-value-bind (us3 us2 us1 us0)
         (excl:double-float-to-shorts float)
       (declare (type uint16 us3 us2 us1 us0))
       (setf low (logior (ash us1 16) us0))
       (setf high (logior (ash us3 16) us2)))
-    #+abcl
-    (progn (setf low (system:double-float-low-bits float))
-           (setf high (system:double-float-high-bits float)))
     #+cmu
     (progn (setf low (kernel:double-float-low-bits float))
            (setf high (kernel:double-float-high-bits float)))
