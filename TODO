@@ -1,10 +1,17 @@
 
+The code in portable-float.lisp was derived from public domain code in SBCL.
+See if there have been recent bug fixes applied to the SBCL version.
+
+Create a good web page.
+
+Upload the most recent code into github.com.
+
 Remove the dependency on iterate.  It is only used in a couple of places.
 
 Port the tests to a unit test framework.
 
-Implement a protocol buffer compiler.  There are several possible.  Here are
-my favorites:
+Implement a protocol buffer compiler.  There are several ways to do this.
+Here are my favorites:
 
   a. Implement a new backend for Google's protocol buffer compiler that
   generates CLOS classes from protobuf descriptions.  It is unlikely that
@@ -17,7 +24,24 @@ my favorites:
   more receptive to integrating this change into their code, since it is
   useful for any language in the Lisp family.  Also, the change is much
   smaller, amounting to just a pretty printer.  Lisp developers can write
-  protobuf descriptions as s-expressions.  The disadvantage is that it's
-  more work.
+  protobuf descriptions as s-expressions.  The disadvantage is that this
+  approach is a bit more work.
 
-Add more testing code to proto-lisp-test.lisp.
+  c. Implement a compiler via either of the methods above that converts
+  protobuf descriptions into run-time data structures.  The programmer
+  decides which protobufs are translated into code at compile time and which
+  are translated at run time.  In the second case, the CLOS generic
+  functions for a protobuf would just be small stubs.  When they are ever
+  called, they replace themselves with the right access code.
+
+Add more testing code to proto-lisp-test.lisp.  This can wait until we are
+generating CLOS classes from protobuf descriptions.
+
+Figure out a strategy for specifying optimization levels and apply it
+uniformally.  There's some support for this in optimize.lisp, and there are
+some #+opt conditionalizations sprinkled around the code.
+
+Currently, all classes that implement protocol buffers are placed in the
+Lisp package PROTOCOL-BUFFER.  Is this the right approach?
+
+Rename proto-lisp-test.lisp.

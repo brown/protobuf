@@ -58,15 +58,15 @@
 
 (cl:defgeneric octet-size (protocol-buffer)
   (:documentation "Return the number of octets required to represent
-PROTOCOL-BUFFER when it is encoded for transport over an RPC channel."))
+PROTOCOL-BUFFER when it is encoded."))
 (cl:declaim (cl:ftype (cl:function (protocol-buffer) cl:fixnum)
                       octet-size))
 
 (cl:defgeneric encode (protocol-buffer buffer index limit)
-  (:documentation "Encode PROTOCOL-BUFFER into BUFFER for transmission over
-an RPC channel.  Start encoding at position INDEX of BUFFER and do not write
-into position LIMIT or higher.  If serialization demands writing past LIMIT,
-then signal PROTOCOL-BUFFER-WRITE-ERROR."))
+  (:documentation "Encode PROTOCOL-BUFFER into BUFFER.  Start encoding at
+position INDEX of BUFFER and do not write into position LIMIT or higher.  If
+serialization demands writing past LIMIT, then signal
+PROTOCOL-BUFFER-WRITE-ERROR."))
 (cl:declaim (cl:ftype (cl:function (protocol-buffer
                                     base:octet-vector
                                     base:octet-vector-index
@@ -75,10 +75,10 @@ then signal PROTOCOL-BUFFER-WRITE-ERROR."))
                       encode))
 
 (cl:defgeneric merge (protocol-buffer buffer start limit)
-  (:documentation "Merge the contents of the encoded protocol buffer stored
-in BUFFER into PROTOCOL-BUFFER.  When reading from BUFFER, begin at position
-START and do not read at position LIMIT or higher.  If deserialization
-demands reading beyond LIMIT, then signal PROTOCOL-BUFFER-READ-ERROR."))
+  (:documentation "Merge the contents of the encoded protocol buffer stored in
+BUFFER into PROTOCOL-BUFFER.  When reading from BUFFER, begin at position
+START and do not read at position LIMIT or higher.  If deserialization demands
+reading beyond LIMIT, then signal PROTOCOL-BUFFER-READ-ERROR."))
 (cl:declaim (cl:ftype (cl:function (protocol-buffer
                                     base:octet-vector
                                     base:octet-vector-index
