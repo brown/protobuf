@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>protobuf</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+  </head>
+  <body>
+   <div class="header">
+     <h1>protobuf</h1>
+     <h2>A Common Lisp implementation of Google's protocol buffers</h2>
+   </div>
+
+   <h3>Introduction</h3>
+   <p>
+     <a href="http://code.google.com/apis/protocolbuffers/">Protocol
+     buffers</a> are Google's method of serializing structured data in a
+     language-neutral fashion.  For more information see
+     Google's
+     <a href="http://code.google.com/apis/protocolbuffers/docs/overview.html">protocol
+     buffer documentation</a>.
+   </p>
+   <p>
+     Protobuf is currently a preliminary release of protocol buffers
+     implemented in Common Lisp.  It contains low-level routines for encoding
+     and decoding protocol buffer types, such as integers and strings, but the
+     translator from protocol buffer descriptions to Lisp code is currently
+     unimplemented.  The distribution does include two files that show what
+     translated protocol buffer code might look like: testprotocol.lisp and
+     proto-test.lisp.
+   </p>
+   <p>
+     The code has been tested with ABCL, CCL, CLISP, and SBCL.  In the past it
+     has also worked with Allegro Common Lisp, but I have not tested it
+     lately.
+   </p>
+
+   <h3>Installation</h3>
+   <p>
+     0. Download and install the packages that protobuf depends on:
+   </p>
+   <ul>
+     <li>ASDF (some Lisp implementations, such as SBCL, already contain ASDF)</li>
+     <li>iterate</li>
+     <li>trivial-utf-8 (not needed for Allegro, CLisp, and SBCL)</li>
+   </ul>
+   <p>
+     1. Make protobuf.asd available to ASDF.  Either create a symbolic link to
+     protobuf.asd in your ASDF:*CENTRAL-REGISTRY* directory or load the file
+     into your running Lisp with:<br/><br/>
+     <code>(load "protobuf.asd")</code>
+   </p>
+   <p>
+     2. Compile and load the protobuf code:<br/><br/>
+     <code>(asdf:operate 'asdf:load-op 'protobuf)</code>
+   </p>
+   <p>
+     3. Run the tests:<br/><br/>
+     <code>
+       (varint::test)<br/>
+       (proto-lisp-test::test)
+     </code>
+   </p>
+
+   <h3>Bugs</h3>
+   <p>
+     Please report bugs and send suggestions to protobuf-devel@common-lisp.net or
+     contact me directly.  My email is robert.brown at the mail hosting site
+     gmail.com.
+   </p>
+
+   <h3>Mailing Lists</h3>
+   <ul>
+    <li>
+      <a href="http://www.common-lisp.net/mailman/listinfo/protobuf-devel">protobuf-devel</a>
+      for developers
+    </li>
+    <li>
+     <a href="http://www.common-lisp.net/mailman/listinfo/protobuf-announce">protobuf-announce</a>
+     for announcements.
+    </li>
+   </ul>
+
+   <h3>Source Code</h3>
+
+   <p>
+     You can <a href="http://github.com/brown/protobuf/tree/master">browse the protobuf
+       git repository</a> on Github or check out the current code with:<br/><br/>
+     <code>
+       git://github.com/brown/protobuf.git
+     </code>
+   </p>
+
+   <div class="check">
+     <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+   </div>
+  </body>
+</html>
