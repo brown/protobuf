@@ -2,8 +2,6 @@
 The code in portable-float.lisp was derived from public domain code in SBCL.
 See if there have been recent bug fixes applied to the SBCL version.
 
-Create a good web page.
-
 Upload the most recent code into github.com.
 
 Remove the dependency on iterate.  It is only used in a couple of places.
