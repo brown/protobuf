@@ -49,6 +49,7 @@
            #:int64
            #:uint32
            #:uint64
+           #:int32-to-uint32
            #:int32-to-uint64
            #:int64-to-uint64
            #:octet
@@ -63,8 +64,7 @@
 (defpackage #:varint
   (:documentation "Variable-size encoding and decoding of integers and floats")
   (:use #:common-lisp
-        #:base
-        #:iterate)
+        #:base)
   (:export ;; Constants
            #:+max-bytes-32+
            #:+max-bytes-64+
@@ -99,7 +99,12 @@
            #:parse32-backward
            #:parse64-backward
            #:length32
-           #:length64))
+           #:length64
+           #:zig-zag-encode32
+           #:zig-zag-decode32
+           #:zig-zag-encode64
+           #:zig-zag-decode64
+           ))
 
 (defpackage #:protocol
   (:documentation "Protocol buffer support functions")

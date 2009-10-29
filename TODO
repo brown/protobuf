@@ -4,8 +4,6 @@ See if there have been recent bug fixes applied to the SBCL version.
 
 Upload the most recent code into github.com.
 
-Remove the dependency on iterate.  It is only used in a couple of places.
-
 Port the tests to a unit test framework.
 
 Implement a protocol buffer compiler.  There are several ways to do this.

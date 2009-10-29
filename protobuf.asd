@@ -46,7 +46,7 @@
     :description "Protocol Buffer code"
     :long-description "A Common Lisp implementation of Google's protocol
  buffer compiler and support libraries."
-    :version "0.1"
+    :version "0.2"
     :author "Robert Brown"
     :licence "See file COPYING and the copyright messages on individual files."
 
@@ -54,7 +54,7 @@
                (pushnew :protobuf cl:*features*)
                (provide 'protobuf))
 
-    :depends-on (:iterate #-(or allegro clisp sbcl) :trivial-utf-8)
+    :depends-on (#-(or allegro clisp sbcl) :trivial-utf-8)
 
     :components
     ((:cl-source-file "package")

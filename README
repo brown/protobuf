@@ -19,7 +19,6 @@ INSTALLATION
 0. Download and install the packages that this code depends on:
 
     ASDF
-    iterate
     trivial-utf-8       not needed for Allegro, CLisp, and SBCL
 
 Note that some Common Lisp implementations, such as SBCL, contain a copy of
