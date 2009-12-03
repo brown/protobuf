@@ -1,3 +1,9 @@
 /Makefile
 /Makefile.in
+/protoc
+/unittest_proto_middleman
 /.deps
+/.libs
+/*.la
+/*.lo
+/*.o
