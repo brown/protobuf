@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2009 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,43 +28,39 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
+// Generates Common Lisp code for a given .proto file.
 
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/cpp/cpp_generator.h>
-#include <google/protobuf/compiler/python/python_generator.h>
-#include <google/protobuf/compiler/java/java_generator.h>
-#include <google/protobuf/compiler/lisp/lisp_generator.h>
-#include <google/protobuf/compiler/sexp/sexp_generator.h>
+#ifndef GOOGLE_PROTOBUF_COMPILER_LISP_GENERATOR_H__
+#define GOOGLE_PROTOBUF_COMPILER_LISP_GENERATOR_H__
 
-int main(int argc, char* argv[]) {
+#include <string>
+#include <google/protobuf/compiler/code_generator.h>
 
-  google::protobuf::compiler::CommandLineInterface cli;
+namespace google {
+namespace protobuf {
+namespace compiler {
+namespace lisp {
 
-  // Proto2 C++
-  google::protobuf::compiler::cpp::CppGenerator cpp_generator;
-  cli.RegisterGenerator("--cpp_out", &cpp_generator,
-                        "Generate C++ header and source.");
+// CodeGenerator implementation that generates a Common Lisp source file.
 
-  // Proto2 Java
-  google::protobuf::compiler::java::JavaGenerator java_generator;
-  cli.RegisterGenerator("--java_out", &java_generator,
-                        "Generate Java source file.");
+class LIBPROTOC_EXPORT LispGenerator : public CodeGenerator {
+ public:
+  LispGenerator();
+  ~LispGenerator();
 
-  // Proto2 Python
-  google::protobuf::compiler::python::Generator py_generator;
-  cli.RegisterGenerator("--python_out", &py_generator,
-                        "Generate Python source file.");
+  // implements CodeGenerator ----------------------------------------
+  bool Generate(const FileDescriptor* file,
+                const string& parameter,
+                OutputDirectory* output_directory,
+                string* error) const;
 
-  // Proto2 Common Lisp
-  google::protobuf::compiler::lisp::LispGenerator lisp_generator;
-  cli.RegisterGenerator("--lisp_out", &lisp_generator,
-                        "Generate Common Lisp source file.");
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LispGenerator);
+};
 
-  // Proto2 S-expression
-  google::protobuf::compiler::sexp::SexpGenerator sexp_generator;
-  cli.RegisterGenerator("--sexp_out", &sexp_generator,
-                        "Generate s-expression representation.");
+}  // namespace lisp
+}  // namespace compiler
+}  // namespace protobuf
+}  // namespace google
 
-  return cli.Run(argc, argv);
-}
+#endif  // GOOGLE_PROTOBUF_COMPILER_LISP_GENERATOR_H__

@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2009 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,43 +28,57 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
+#ifndef GOOGLE_PROTOBUF_COMPILER_LISP_FILE_H__
+#define GOOGLE_PROTOBUF_COMPILER_LISP_FILE_H__
 
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/cpp/cpp_generator.h>
-#include <google/protobuf/compiler/python/python_generator.h>
-#include <google/protobuf/compiler/java/java_generator.h>
-#include <google/protobuf/compiler/lisp/lisp_generator.h>
-#include <google/protobuf/compiler/sexp/sexp_generator.h>
+#include <string>
+#include <vector>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/compiler/lisp/lisp_field.h>
 
-int main(int argc, char* argv[]) {
+namespace google {
 
-  google::protobuf::compiler::CommandLineInterface cli;
-
-  // Proto2 C++
-  google::protobuf::compiler::cpp::CppGenerator cpp_generator;
-  cli.RegisterGenerator("--cpp_out", &cpp_generator,
-                        "Generate C++ header and source.");
-
-  // Proto2 Java
-  google::protobuf::compiler::java::JavaGenerator java_generator;
-  cli.RegisterGenerator("--java_out", &java_generator,
-                        "Generate Java source file.");
-
-  // Proto2 Python
-  google::protobuf::compiler::python::Generator py_generator;
-  cli.RegisterGenerator("--python_out", &py_generator,
-                        "Generate Python source file.");
-
-  // Proto2 Common Lisp
-  google::protobuf::compiler::lisp::LispGenerator lisp_generator;
-  cli.RegisterGenerator("--lisp_out", &lisp_generator,
-                        "Generate Common Lisp source file.");
-
-  // Proto2 S-expression
-  google::protobuf::compiler::sexp::SexpGenerator sexp_generator;
-  cli.RegisterGenerator("--sexp_out", &sexp_generator,
-                        "Generate s-expression representation.");
-
-  return cli.Run(argc, argv);
+namespace protobuf {
+  class FileDescriptor;        // descriptor.h
+  namespace io {
+    class Printer;             // printer.h
+  }
 }
+
+namespace protobuf {
+namespace compiler {
+namespace lisp {
+
+class EnumGenerator;           // enum.h
+class MessageGenerator;        // message.h
+class ServiceGenerator;        // service.h
+//class ExtensionGenerator;      // extension.h
+
+class FileGenerator {
+ public:
+  explicit FileGenerator(const FileDescriptor* file);
+  ~FileGenerator();
+
+  void GenerateSource(io::Printer* printer);
+
+ private:
+  const FileDescriptor* file_;
+
+  scoped_array<scoped_ptr<MessageGenerator> > message_generators_;
+  scoped_array<scoped_ptr<EnumGenerator> > enum_generators_;
+  scoped_array<scoped_ptr<ServiceGenerator> > service_generators_;
+//  scoped_array<scoped_ptr<ExtensionGenerator> > extension_generators_;
+
+  // E.g. if the package is foo.bar, package_parts_ is {"foo", "bar"}.
+  vector<string> package_parts_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
+};
+
+}  // namespace lisp
+}  // namespace compiler
+}  // namespace protobuf
+
+}  // namespace google
+
+#endif  // GOOGLE_PROTOBUF_COMPILER_LISP_FILE_H__

@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2009 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,43 +28,56 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
+// Generates an s-expression representation of a .proto file.
 
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/cpp/cpp_generator.h>
-#include <google/protobuf/compiler/python/python_generator.h>
-#include <google/protobuf/compiler/java/java_generator.h>
-#include <google/protobuf/compiler/lisp/lisp_generator.h>
-#include <google/protobuf/compiler/sexp/sexp_generator.h>
+#ifndef GOOGLE_PROTOBUF_COMPILER_SEXP_GENERATOR_H__
+#define GOOGLE_PROTOBUF_COMPILER_SEXP_GENERATOR_H__
 
-int main(int argc, char* argv[]) {
+#include <string>
+#include <google/protobuf/compiler/code_generator.h>
 
-  google::protobuf::compiler::CommandLineInterface cli;
+namespace google {
+namespace protobuf {
 
-  // Proto2 C++
-  google::protobuf::compiler::cpp::CppGenerator cpp_generator;
-  cli.RegisterGenerator("--cpp_out", &cpp_generator,
-                        "Generate C++ header and source.");
+class Descriptor;
+class EnumDescriptor;
+class EnumValueDescriptor;
+class FieldDescriptor;
+class ServiceDescriptor;
 
-  // Proto2 Java
-  google::protobuf::compiler::java::JavaGenerator java_generator;
-  cli.RegisterGenerator("--java_out", &java_generator,
-                        "Generate Java source file.");
+namespace io { class Printer; }
 
-  // Proto2 Python
-  google::protobuf::compiler::python::Generator py_generator;
-  cli.RegisterGenerator("--python_out", &py_generator,
-                        "Generate Python source file.");
+namespace compiler {
+namespace sexp {
 
-  // Proto2 Common Lisp
-  google::protobuf::compiler::lisp::LispGenerator lisp_generator;
-  cli.RegisterGenerator("--lisp_out", &lisp_generator,
-                        "Generate Common Lisp source file.");
+// CodeGenerator implementation that generates s-expressions.
 
-  // Proto2 S-expression
-  google::protobuf::compiler::sexp::SexpGenerator sexp_generator;
-  cli.RegisterGenerator("--sexp_out", &sexp_generator,
-                        "Generate s-expression representation.");
+class LIBPROTOC_EXPORT SexpGenerator : public CodeGenerator {
+ public:
+  SexpGenerator();
+  ~SexpGenerator();
 
-  return cli.Run(argc, argv);
-}
+  bool Generate(const FileDescriptor* file,
+                const string& parameter,
+                OutputDirectory* output_directory,
+                string* error) const;
+
+ private:
+  void PrintHeader(io::Printer* printer,
+                   const string& sexp_file_name,
+                   const FileDescriptor* file) const;
+  void PrintDescriptor(io::Printer* printer,
+                       const Descriptor& message_descriptor) const;
+  void PrintMessageDescriptors(io::Printer* printer,
+                               const FileDescriptor* file) const;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SexpGenerator);
+};
+
+}  // namespace sexp
+}  // namespace compiler
+}  // namespace protobuf
+
+}  // namespace google
+
+#endif  // GOOGLE_PROTOBUF_COMPILER_SEXP_GENERATOR_H__

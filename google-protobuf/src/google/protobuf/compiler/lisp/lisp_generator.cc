@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2009 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,43 +28,39 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
-
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/cpp/cpp_generator.h>
-#include <google/protobuf/compiler/python/python_generator.h>
-#include <google/protobuf/compiler/java/java_generator.h>
 #include <google/protobuf/compiler/lisp/lisp_generator.h>
-#include <google/protobuf/compiler/sexp/sexp_generator.h>
+#include <google/protobuf/compiler/lisp/lisp_file.h>
+#include <google/protobuf/compiler/lisp/lisp_helpers.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/stubs/strutil.h>
 
-int main(int argc, char* argv[]) {
+namespace google {
+namespace protobuf {
+namespace compiler {
+namespace lisp {
 
-  google::protobuf::compiler::CommandLineInterface cli;
+LispGenerator::LispGenerator() {}
+LispGenerator::~LispGenerator() {}
 
-  // Proto2 C++
-  google::protobuf::compiler::cpp::CppGenerator cpp_generator;
-  cli.RegisterGenerator("--cpp_out", &cpp_generator,
-                        "Generate C++ header and source.");
+bool LispGenerator::Generate(const FileDescriptor* file,
+                             const string& parameter,
+                             OutputDirectory* output_directory,
+                             string* error) const {
 
-  // Proto2 Java
-  google::protobuf::compiler::java::JavaGenerator java_generator;
-  cli.RegisterGenerator("--java_out", &java_generator,
-                        "Generate Java source file.");
+  string basename = StripProto(file->name());
+  scoped_ptr<io::ZeroCopyOutputStream> output(
+      output_directory->Open(basename + ".lisp"));
+  io::Printer printer(output.get(), '$');
 
-  // Proto2 Python
-  google::protobuf::compiler::python::Generator py_generator;
-  cli.RegisterGenerator("--python_out", &py_generator,
-                        "Generate Python source file.");
+  FileGenerator file_generator(file);
+  file_generator.GenerateSource(&printer);
 
-  // Proto2 Common Lisp
-  google::protobuf::compiler::lisp::LispGenerator lisp_generator;
-  cli.RegisterGenerator("--lisp_out", &lisp_generator,
-                        "Generate Common Lisp source file.");
-
-  // Proto2 S-expression
-  google::protobuf::compiler::sexp::SexpGenerator sexp_generator;
-  cli.RegisterGenerator("--sexp_out", &sexp_generator,
-                        "Generate s-expression representation.");
-
-  return cli.Run(argc, argv);
+  return true;
 }
+
+}  // namespace lisp
+}  // namespace compiler
+}  // namespace protobuf
+}  // namespace google
