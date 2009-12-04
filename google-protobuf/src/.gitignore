@@ -7,3 +7,10 @@
 /*.la
 /*.lo
 /*.o
+
+# Testing binaries.
+/protobuf-lazy-descriptor-test
+/protobuf-lite-test
+/protobuf-test
+/zcgunzip
+/zcgzip
