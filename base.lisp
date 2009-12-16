@@ -68,7 +68,7 @@ DOC-STRING is supplied, make it the constant's documentation."
 
 (defun int32-to-uint32 (value)
   "Convert the int32 VALUE into a uint32.  The conversion is identical to
-that done by the C++ expression static_cast<int32>(X)."
+that done by the C++ expression static_cast<uint32>(X)."
   (declare (type int32 value)
            (optimize (debug 0) (safety 0) (speed 3)))
   (if (minusp value)
@@ -80,7 +80,7 @@ that done by the C++ expression static_cast<int32>(X)."
 
 (defun int32-to-uint64 (value)
   "Convert the int32 VALUE into a uint64.  The conversion is identical to
-that done by the C++ expression static_cast<int64>(X)."
+that done by the C++ expression static_cast<uint64>(X)."
   (declare (type int32 value)
            (optimize (debug 0) (safety 0) (speed 3)))
   (if (minusp value)
@@ -92,7 +92,7 @@ that done by the C++ expression static_cast<int64>(X)."
 
 (defun int64-to-uint64 (value)
   "Convert the int64 value X into a uint64.  The conversion is identical to
-that done by the C++ expression static_cast<int64>(X)."
+that done by the C++ expression static_cast<uint64>(X)."
   (declare (type int64 value)
            (optimize (debug 0) (safety 0) (speed 3)
                      #+sbcl (sb-ext:inhibit-warnings 3)))
