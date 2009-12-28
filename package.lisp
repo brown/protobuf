@@ -125,8 +125,10 @@
            #:write-boolean-carefully
            #:read-boolean-carefully
            #:write-int32-carefully
+           #:write-uint32-carefully
            #:write-uint32
            #:write-int64-carefully
+           #:write-uint64-carefully
            #:read-int32-carefully
            #:read-uint32
            #:read-int64-carefully
@@ -160,8 +162,8 @@
            #:clear
            #:is-initialized
            #:octet-size
-           #:encode
-           #:merge))
+           #:merge
+           #:serialize))
 
 (defpackage #:portable-float
   (:documentation "Access the bits of IEEE floating point numbers")

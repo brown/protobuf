@@ -46,7 +46,7 @@
     :description "Protocol Buffer code"
     :long-description "A Common Lisp implementation of Google's protocol
  buffer compiler and support libraries."
-    :version "0.2"
+    :version "0.3"
     :author "Robert Brown"
     :licence "See file COPYING and the copyright messages on individual files."
 
@@ -73,13 +73,13 @@
       :depends-on ("base" #-(or abcl allegro cmu sbcl) "sysdep"))
      (:cl-source-file "protocol-buffer" :depends-on ("base"))
      (:cl-source-file "proto-lisp-test"
-      :depends-on ("base" "proto-test" "testprotocol"))
+      :depends-on ("base" "testproto1" "testproto2"))
 
      ;; Machine generated protocol buffer code.
 
-     (:cl-source-file "testprotocol"
+     (:cl-source-file "testproto1"
       :depends-on ("package" "base" "varint" "protocol-buffer"))
-     (:cl-source-file "proto-test"
+     (:cl-source-file "testproto2"
       :depends-on ("package" "base" "varint" "protocol-buffer"))
 
      (:static-file "COPYING")

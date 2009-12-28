@@ -49,39 +49,49 @@
 
 (cl:defgeneric clear (protocol-buffer)
   (:documentation "Set the slots of PROTOCOL-BUFFER to default values."))
-(cl:declaim (cl:ftype (cl:function (protocol-buffer) (cl:values)) clear))
+
 
 (cl:defgeneric is-initialized (protocol-buffer)
   (:documentation "Are all the slots of PROTOCOL-BUFFER initialized?"))
-(cl:declaim (cl:ftype (cl:function (protocol-buffer) cl:boolean)
-                      is-initialized))
 
 (cl:defgeneric octet-size (protocol-buffer)
   (:documentation "Return the number of octets required to represent
 PROTOCOL-BUFFER when it is encoded."))
-(cl:declaim (cl:ftype (cl:function (protocol-buffer) cl:fixnum)
-                      octet-size))
 
-(cl:defgeneric encode (protocol-buffer buffer index limit)
-  (:documentation "Encode PROTOCOL-BUFFER into BUFFER.  Start encoding at
+(cl:defgeneric serialize (protocol-buffer buffer index limit)
+  (:documentation "Serialize PROTOCOL-BUFFER into BUFFER.  Start encoding at
 position INDEX of BUFFER and do not write into position LIMIT or higher.  If
 serialization demands writing past LIMIT, then signal
-PROTOCOL-BUFFER-WRITE-ERROR."))
-(cl:declaim (cl:ftype (cl:function (protocol-buffer
-                                    base:octet-vector
-                                    base:octet-vector-index
-                                    base:octet-vector-index)
-                                   (cl:values))
-                      encode))
+PROTOCOL-BUFFER-WRITE-ERROR.  NOTE: OCTET-SIZE must be called immediately
+before SERIALIZE because the protocol buffer caches size information."))
 
 (cl:defgeneric merge (protocol-buffer buffer start limit)
   (:documentation "Merge the contents of the encoded protocol buffer stored in
 BUFFER into PROTOCOL-BUFFER.  When reading from BUFFER, begin at position
 START and do not read at position LIMIT or higher.  If deserialization demands
 reading beyond LIMIT, then signal PROTOCOL-BUFFER-READ-ERROR."))
+
+
+#|
+
+XXXXXXXXXXXXXXXXXXXX: Can anything be done with these declarations?
+XXXXXXXXXXXXXXXXXXXX: There may be no way to declare these function types.
+
+(cl:declaim (cl:ftype (cl:function (protocol-buffer) (cl:values)) clear))
+(cl:declaim (cl:ftype (cl:function (protocol-buffer) cl:boolean)
+                      is-initialized))
+(cl:declaim (cl:ftype (cl:function (protocol-buffer) cl:fixnum)
+                      octet-size))
+(cl:declaim (cl:ftype (cl:function (protocol-buffer
+                                    base:octet-vector
+                                    base:octet-vector-index
+                                    base:octet-vector-index)
+                                   (cl:values))
+                      serialize))
 (cl:declaim (cl:ftype (cl:function (protocol-buffer
                                     base:octet-vector
                                     base:octet-vector-index
                                     base:octet-vector-index)
                                    (cl:values))
                       merge))
+|#
