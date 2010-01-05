@@ -203,6 +203,38 @@
     (cl:setf index (varint:encode-uint64-carefully buffer index limit (base:int32-to-uint64 (cl:slot-value self 'v2)))))
   index)
 
+(cl:defmethod merge ((self timeprotocol-g) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        ;; required int32 V1 = 2;
+        ((16)
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int32-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'v1) value)
+            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; required int32 V2 = 3;
+        ((24)
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int32-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'v2) value)
+            (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
+
 
 
 (cl:defmethod cl:print-object ((self timeprotocol) stream)
@@ -269,6 +301,36 @@
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 34))
       (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:aref v i)))))
   index)
+
+(cl:defmethod merge ((self timeprotocol) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        ;; repeated group G = 1 {
+        ((11)
+          ;; XXXX probably wrong
+          (cl:let ((message (cl:make-instance 'timeprotocol-g)))
+            (cl:setf index (merge message buffer index limit))
+            (cl:vector-push-extend message (cl:slot-value self 'g))))
+        ;; repeated string Debug = 4;
+        ((34)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-octets-carefully buffer index limit)
+            (cl:vector-push-extend value (cl:slot-value self 'debug))
+            (cl:setf index new-index)))
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
 
 
 (cl:defclass testmessage (protocol-buffer)
@@ -375,6 +437,38 @@
     (cl:setf index (varint:encode-uint64-carefully buffer index limit (base:int32-to-uint64 (cl:slot-value self 'bar)))))
   index)
 
+(cl:defmethod merge ((self testmessage) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        ;; optional int32 foo = 1;
+        ((8)
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int32-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'foo) value)
+            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; optional int32 bar = 2;
+        ((16)
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int32-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'bar) value)
+            (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
+
 
 (cl:defclass testmessage3 (protocol-buffer)
   (
@@ -473,6 +567,31 @@
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 10))
     (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:slot-value self 'str))))
   index)
+
+(cl:defmethod merge ((self testmessage3) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        ;; optional string str = 1;
+        ((10)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-octets-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'str) value)
+            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
 
 
 (cl:defclass testmessage2 (protocol-buffer)
@@ -681,6 +800,59 @@
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 40000))
     (cl:setf index (varint:encode-uint64-carefully buffer index limit (base:int32-to-uint64 (cl:slot-value self 'big-tag)))))
   index)
+
+(cl:defmethod merge ((self testmessage2) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        ;; optional string s = 1;
+        ((10)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-octets-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 's) value)
+            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; optional bool b = 2;
+        ((16)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-boolean-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'b) value)
+            (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; optional .TestMessage3 foreign = 3;
+        ((26)
+          (cl:multiple-value-bind (length new-index)
+              (varint:parse-uint31-carefully buffer index limit)
+            (cl:when (cl:> (cl:+ new-index length) limit)
+              (cl:error "buffer overflow"))
+            (cl:let ((message (cl:slot-value self 'foreign)))
+              (cl:when (cl:null message)
+                (cl:setf message (cl:make-instance 'testmessage3))
+                (cl:setf (cl:slot-value self 'foreign) message)
+                (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1))
+              (cl:setf index (merge message buffer new-index (cl:+ new-index length)))
+              (cl:when (cl:not (cl:= index (cl:+ new-index length)))
+                (cl:error "buffer overflow")))))
+        ;; optional int32 big_tag = 5000;
+        ((40000)
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int32-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'big-tag) value)
+            (cl:setf (cl:ldb (cl:byte 1 3) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
 
 
 (cl:defclass testprotocol-four-seven-twelve (protocol-buffer)
@@ -1528,6 +1700,31 @@
     (cl:setf index (protocol:write-boolean-carefully buffer index limit (cl:slot-value self 'thirteen))))
   index)
 
+(cl:defmethod merge ((self testprotocol-four-seven-twelve) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        ;; optional bool Thirteen = 68;
+        ((544)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-boolean-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'thirteen) value)
+            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
+
 
 
 (cl:defmethod cl:print-object ((self testprotocol-four-seven) stream)
@@ -1575,6 +1772,35 @@
     (cl:setf index (serialize (cl:slot-value self 'twelve) buffer index limit))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 540)))
   index)
+
+(cl:defmethod merge ((self testprotocol-four-seven) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        ;; optional bool Four = 66 [default = false];
+        ((528)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-boolean-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'four) value)
+            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; optional group Twelve = 67 {
+        ((539)
+          ;; XXXX non-repeated group merge
+          (cl:error "non-repeated group merge"))
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
 
 
 
@@ -1660,6 +1886,58 @@
     (cl:setf index (serialize (cl:slot-value self 'tp) buffer index limit)))
   index)
 
+(cl:defmethod merge ((self testprotocol-four) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        ;; required int64 Five = 5;
+        ((40)
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int64-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'five) value)
+            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; required uint64 Six = 64;
+        ((512)
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-uint64-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'six) value)
+            (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; repeated group Seven = 65 {
+        ((523)
+          ;; XXXX probably wrong
+          (cl:let ((message (cl:make-instance 'testprotocol-four-seven)))
+            (cl:setf index (merge message buffer index limit))
+            (cl:vector-push-extend message (cl:slot-value self 'seven))))
+        ;; optional .TimeProtocol TP = 112;
+        ((898)
+          (cl:multiple-value-bind (length new-index)
+              (varint:parse-uint31-carefully buffer index limit)
+            (cl:when (cl:> (cl:+ new-index length) limit)
+              (cl:error "buffer overflow"))
+            (cl:let ((message (cl:slot-value self 'tp)))
+              (cl:when (cl:null message)
+                (cl:setf message (cl:make-instance 'timeprotocol))
+                (cl:setf (cl:slot-value self 'tp) message)
+                (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1))
+              (cl:setf index (merge message buffer new-index (cl:+ new-index length)))
+              (cl:when (cl:not (cl:= index (cl:+ new-index length)))
+                (cl:error "buffer overflow")))))
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
+
 
 
 (cl:defmethod cl:print-object ((self testprotocol-seven) stream)
@@ -1722,6 +2000,45 @@
     (cl:setf index (protocol:write-boolean-carefully buffer index limit (cl:slot-value self 'ten))))
   index)
 
+(cl:defmethod merge ((self testprotocol-seven) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        ;; required int64 Eight = 8;
+        ((64)
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int64-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'eight) value)
+            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; required bool Nine = 9;
+        ((72)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-boolean-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'nine) value)
+            (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; optional bool Ten = 10 [default = true];
+        ((80)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-boolean-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'ten) value)
+            (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
+
 
 
 (cl:defmethod cl:print-object ((self testprotocol-thirteen) stream)
@@ -1765,6 +2082,35 @@
       (base:int32-to-uint64 (cl:slot-value self 'fourteen)))))
   index)
 
+(cl:defmethod merge ((self testprotocol-thirteen) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        ;; required .TestProtocol.AnotherEnum Fourteen = 315;
+        ((2520)
+          ;; XXXX unimplemented merge enum
+          ;int value;
+          ;DO_(::google::protobuf::internal::WireFormatLite::ReadEnum(input, &value));
+          ;if (testprotocol-anotherenum_IsValid(value)) {
+          ;  set_fourteen(static_cast< testprotocol-anotherenum >(value));
+          ;} else {
+          ;  mutable_unknown_fields()->AddField(315)->add_varint(value);
+          ;}
+          )
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
+
 
 
 (cl:defmethod cl:print-object ((self testprotocol-test6) stream)
@@ -1789,6 +2135,24 @@
               (cl:type base:octet-vector-index index limit)
               (cl:ignorable buffer limit))
   index)
+
+(cl:defmethod merge ((self testprotocol-test6) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
 
 
 
@@ -2095,5 +2459,151 @@
     (cl:setf index (serialize (cl:slot-value self 'thirteen) buffer index limit))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 2516)))
   index)
+
+(cl:defmethod merge ((self testprotocol) buffer start limit)
+  (cl:declare (cl:type base:octet-vector buffer)
+              (cl:type base:octet-vector-index start limit))
+  (cl:do ((index start index))
+      ((cl:>= index limit) index)
+    (cl:declare (cl:type base:octet-vector-index index))
+    (cl:multiple-value-bind (tag new-index)
+        (varint:parse-uint32-carefully buffer index limit)
+      (cl:setf index new-index)
+      (cl:case tag
+        ;; required string One = 1;
+        ((10)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-octets-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'one) value)
+            (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; optional int64 Two = 2 [default = 19];
+        ((16)
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int64-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'two) value)
+            (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; repeated group Four = 4 {
+        ((35)
+          ;; XXXX probably wrong
+          (cl:let ((message (cl:make-instance 'testprotocol-four)))
+            (cl:setf index (merge message buffer index limit))
+            (cl:vector-push-extend message (cl:slot-value self 'four))))
+        ;; optional group Seven = 7 {
+        ((59)
+          ;; XXXX non-repeated group merge
+          (cl:error "non-repeated group merge"))
+        ;; required string Zero = 63;
+        ((506)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-octets-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'zero) value)
+            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; repeated .TimeProtocol TP2 = 113;
+        ((906)
+          (cl:multiple-value-bind (length new-index)
+              (varint:parse-uint31-carefully buffer index limit)
+            (cl:when (cl:> (cl:+ new-index length) limit)
+              (cl:error "buffer overflow"))
+            (cl:let ((message (cl:make-instance 'timeprotocol)))
+              (cl:setf index (merge message buffer new-index (cl:+ new-index length)))
+              (cl:when (cl:not (cl:= index (cl:+ new-index length)))
+                (cl:error "buffer overflow"))
+              (cl:vector-push-extend message (cl:slot-value self 'tp2)))))
+        ;; optional string OptString = 299 [default = "opt"];
+        ((2394)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-octets-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'optstring) value)
+            (cl:setf (cl:ldb (cl:byte 1 13) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; repeated int64 Test1 = 301;
+        ((2408)
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int64-carefully buffer index limit)
+            (cl:vector-push-extend value (cl:slot-value self 'test1))
+            (cl:setf index new-index)))
+        ;; repeated int32 Test2 = 302;
+        ((2416)
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int32-carefully buffer index limit)
+            (cl:vector-push-extend value (cl:slot-value self 'test2))
+            (cl:setf index new-index)))
+        ;; repeated float Test3 = 303;
+        ((2429)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-single-float-carefully buffer index limit)
+            (cl:vector-push-extend value (cl:slot-value self 'test3))
+            (cl:setf index new-index)))
+        ;; repeated double Test4 = 304;
+        ((2433)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-double-float-carefully buffer index limit)
+            (cl:vector-push-extend value (cl:slot-value self 'test4))
+            (cl:setf index new-index)))
+        ;; repeated string Test5 = 305;
+        ((2442)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-octets-carefully buffer index limit)
+            (cl:vector-push-extend value (cl:slot-value self 'test5))
+            (cl:setf index new-index)))
+        ;; repeated group Test6 = 306 {
+        ((2451)
+          ;; XXXX probably wrong
+          (cl:let ((message (cl:make-instance 'testprotocol-test6)))
+            (cl:setf index (merge message buffer index limit))
+            (cl:vector-push-extend message (cl:slot-value self 'test6))))
+        ;; required fixed64 FixedValue = 310;
+        ((2481)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-uint64-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'fixedvalue) value)
+            (cl:setf (cl:ldb (cl:byte 1 11) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; required fixed32 FixedValue2 = 311;
+        ((2493)
+          (cl:multiple-value-bind (value new-index)
+              (protocol:read-uint32-carefully buffer index limit)
+            (cl:setf (cl:slot-value self 'fixedvalue2) value)
+            (cl:setf (cl:ldb (cl:byte 1 12) (cl:slot-value self '%has-bits%)) 1)
+            (cl:setf index new-index)))
+        ;; optional .TestMessage Eleven = 312;
+        ((2498)
+          (cl:multiple-value-bind (length new-index)
+              (varint:parse-uint31-carefully buffer index limit)
+            (cl:when (cl:> (cl:+ new-index length) limit)
+              (cl:error "buffer overflow"))
+            (cl:let ((message (cl:slot-value self 'eleven)))
+              (cl:when (cl:null message)
+                (cl:setf message (cl:make-instance 'testmessage))
+                (cl:setf (cl:slot-value self 'eleven) message)
+                (cl:setf (cl:ldb (cl:byte 1 14) (cl:slot-value self '%has-bits%)) 1))
+              (cl:setf index (merge message buffer new-index (cl:+ new-index length)))
+              (cl:when (cl:not (cl:= index (cl:+ new-index length)))
+                (cl:error "buffer overflow")))))
+        ;; optional .TestProtocol.AnotherEnum Twelve = 313;
+        ((2504)
+          ;; XXXX unimplemented merge enum
+          ;int value;
+          ;DO_(::google::protobuf::internal::WireFormatLite::ReadEnum(input, &value));
+          ;if (testprotocol-anotherenum_IsValid(value)) {
+          ;  set_twelve(static_cast< testprotocol-anotherenum >(value));
+          ;} else {
+          ;  mutable_unknown_fields()->AddField(313)->add_varint(value);
+          ;}
+          )
+        ;; optional group Thirteen = 314 {
+        ((2515)
+          ;; XXXX non-repeated group merge
+          (cl:error "non-repeated group merge"))
+        (cl:t
+          (cl:when (cl:= (cl:logand tag 7) 4)
+            (cl:return-from merge index))
+          ;; Tag 0 is special.  It is used to indicate an error,
+          ;; so we return as error code when we see it.
+          (cl:when (cl:zerop tag)
+            (cl:error "zero tag")))))))
 
 

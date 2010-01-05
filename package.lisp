@@ -129,8 +129,10 @@
            #:write-uint32
            #:write-int64-carefully
            #:write-uint64-carefully
+           #:read-uint32-carefully
            #:read-int32-carefully
            #:read-uint32
+           #:read-uint64-carefully
            #:read-int64-carefully
            #:write-single-float-carefully
            #:write-double-float-carefully
