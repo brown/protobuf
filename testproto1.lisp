@@ -1399,23 +1399,23 @@
   ;; optional fixed32 u_fixed32 = 6;
   (cl:when (cl:logbitp 5 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 53))
-    (cl:setf index (protocol:write-uint32-carefully buffer index limit (cl:slot-value self 'u-fixed32))))
+    (cl:setf index (wire-format:write-uint32-carefully buffer index limit (cl:slot-value self 'u-fixed32))))
   ;; optional fixed64 u_fixed64 = 7;
   (cl:when (cl:logbitp 6 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 57))
-    (cl:setf index (protocol:write-uint64-carefully buffer index limit (cl:slot-value self 'u-fixed64))))
+    (cl:setf index (wire-format:write-uint64-carefully buffer index limit (cl:slot-value self 'u-fixed64))))
   ;; optional bool u_bool = 8;
   (cl:when (cl:logbitp 7 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 64))
-    (cl:setf index (protocol:write-boolean-carefully buffer index limit (cl:slot-value self 'u-bool))))
+    (cl:setf index (wire-format:write-boolean-carefully buffer index limit (cl:slot-value self 'u-bool))))
   ;; optional string u_string = 9;
   (cl:when (cl:logbitp 10 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 74))
-    (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:slot-value self 'u-string))))
+    (cl:setf index (wire-format:write-octets-carefully buffer index limit (cl:slot-value self 'u-string))))
   ;; optional string u_vardata = 10;
   (cl:when (cl:logbitp 11 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 82))
-    (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:slot-value self 'u-vardata))))
+    (cl:setf index (wire-format:write-octets-carefully buffer index limit (cl:slot-value self 'u-vardata))))
   ;; optional .Test1Msg u_msg = 11;
   (cl:when (cl:logbitp 12 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 90))
@@ -1444,31 +1444,31 @@
             (length (cl:length v)))
     (cl:loop for i from 0 below length do
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 125))
-      (cl:setf index (protocol:write-uint32-carefully buffer index limit (cl:aref v i)))))
+      (cl:setf index (wire-format:write-uint32-carefully buffer index limit (cl:aref v i)))))
   ;; repeated fixed64 r_fixed64 = 16;
   (cl:let* ((v (cl:slot-value self 'r-fixed64))
             (length (cl:length v)))
     (cl:loop for i from 0 below length do
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 129))
-      (cl:setf index (protocol:write-uint64-carefully buffer index limit (cl:aref v i)))))
+      (cl:setf index (wire-format:write-uint64-carefully buffer index limit (cl:aref v i)))))
   ;; repeated bool r_bool = 17;
   (cl:let* ((v (cl:slot-value self 'r-bool))
             (length (cl:length v)))
     (cl:loop for i from 0 below length do
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 136))
-      (cl:setf index (protocol:write-boolean-carefully buffer index limit (cl:aref v i)))))
+      (cl:setf index (wire-format:write-boolean-carefully buffer index limit (cl:aref v i)))))
   ;; repeated string r_string = 18;
   (cl:let* ((v (cl:slot-value self 'r-string))
             (length (cl:length v)))
     (cl:loop for i from 0 below length do
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 146))
-      (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:aref v i)))))
+      (cl:setf index (wire-format:write-octets-carefully buffer index limit (cl:aref v i)))))
   ;; repeated string r_vardata = 19;
   (cl:let* ((v (cl:slot-value self 'r-vardata))
             (length (cl:length v)))
     (cl:loop for i from 0 below length do
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 154))
-      (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:aref v i)))))
+      (cl:setf index (wire-format:write-octets-carefully buffer index limit (cl:aref v i)))))
   ;; repeated .Test1Msg r_msg = 20;
   (cl:let* ((v (cl:slot-value self 'r-msg))
             (length (cl:length v)))
@@ -1497,31 +1497,31 @@
   ;; optional string d_string = 26 [default = "foo"];
   (cl:when (cl:logbitp 27 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 210))
-    (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:slot-value self 'd-string))))
+    (cl:setf index (wire-format:write-octets-carefully buffer index limit (cl:slot-value self 'd-string))))
   ;; optional float u_float = 27;
   (cl:when (cl:logbitp 8 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 221))
-    (cl:setf index (protocol:write-single-float-carefully buffer index limit (cl:slot-value self 'u-float))))
+    (cl:setf index (wire-format:write-single-float-carefully buffer index limit (cl:slot-value self 'u-float))))
   ;; optional double u_double = 28;
   (cl:when (cl:logbitp 9 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 225))
-    (cl:setf index (protocol:write-double-float-carefully buffer index limit (cl:slot-value self 'u-double))))
+    (cl:setf index (wire-format:write-double-float-carefully buffer index limit (cl:slot-value self 'u-double))))
   ;; repeated float r_float = 29;
   (cl:let* ((v (cl:slot-value self 'r-float))
             (length (cl:length v)))
     (cl:loop for i from 0 below length do
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 237))
-      (cl:setf index (protocol:write-single-float-carefully buffer index limit (cl:aref v i)))))
+      (cl:setf index (wire-format:write-single-float-carefully buffer index limit (cl:aref v i)))))
   ;; repeated double r_double = 30;
   (cl:let* ((v (cl:slot-value self 'r-double))
             (length (cl:length v)))
     (cl:loop for i from 0 below length do
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 241))
-      (cl:setf index (protocol:write-double-float-carefully buffer index limit (cl:aref v i)))))
+      (cl:setf index (wire-format:write-double-float-carefully buffer index limit (cl:aref v i)))))
   ;; optional bool d_bool = 31 [default = true];
   (cl:when (cl:logbitp 28 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 248))
-    (cl:setf index (protocol:write-boolean-carefully buffer index limit (cl:slot-value self 'd-bool))))
+    (cl:setf index (wire-format:write-boolean-carefully buffer index limit (cl:slot-value self 'd-bool))))
   ;; optional int32 dd_int32 = 32 [default = 12];
   (cl:when (cl:logbitp 29 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 256))
@@ -1529,11 +1529,11 @@
   ;; optional string dd_string = 33 [default = " f oo "];
   (cl:when (cl:logbitp 30 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 266))
-    (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:slot-value self 'dd-string))))
+    (cl:setf index (wire-format:write-octets-carefully buffer index limit (cl:slot-value self 'dd-string))))
   ;; optional bool dd_bool = 34 [default = true];
   (cl:when (cl:logbitp 31 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 272))
-    (cl:setf index (protocol:write-boolean-carefully buffer index limit (cl:slot-value self 'dd-bool))))
+    (cl:setf index (wire-format:write-boolean-carefully buffer index limit (cl:slot-value self 'dd-bool))))
   index)
 
 (cl:defmethod merge ((self test1proto) buffer start limit)
@@ -1584,35 +1584,35 @@
         ;; optional fixed32 u_fixed32 = 6;
         ((53)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-uint32-carefully buffer index limit)
+              (wire-format:read-uint32-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'u-fixed32) value)
             (cl:setf (cl:ldb (cl:byte 1 5) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; optional fixed64 u_fixed64 = 7;
         ((57)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-uint64-carefully buffer index limit)
+              (wire-format:read-uint64-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'u-fixed64) value)
             (cl:setf (cl:ldb (cl:byte 1 6) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; optional bool u_bool = 8;
         ((64)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-boolean-carefully buffer index limit)
+              (wire-format:read-boolean-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'u-bool) value)
             (cl:setf (cl:ldb (cl:byte 1 7) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; optional string u_string = 9;
         ((74)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
+              (wire-format:read-octets-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'u-string) value)
             (cl:setf (cl:ldb (cl:byte 1 10) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; optional string u_vardata = 10;
         ((82)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
+              (wire-format:read-octets-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'u-vardata) value)
             (cl:setf (cl:ldb (cl:byte 1 11) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
@@ -1632,50 +1632,56 @@
                 (cl:error "buffer overflow")))))
         ;; repeated int32 r_int32 = 12;
         ((96)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (varint:parse-int32-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'r-int32))
-            (cl:setf index new-index)))
+              (cl:vector-push-extend value (cl:slot-value self 'r-int32))
+              (cl:setf index new-index)))
         ;; repeated int64 r_int64 = 13;
         ((104)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (varint:parse-int64-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'r-int64))
-            (cl:setf index new-index)))
+              (cl:vector-push-extend value (cl:slot-value self 'r-int64))
+              (cl:setf index new-index)))
         ;; repeated uint64 r_uint64 = 14;
         ((112)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (varint:parse-uint64-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'r-uint64))
-            (cl:setf index new-index)))
+              (cl:vector-push-extend value (cl:slot-value self 'r-uint64))
+              (cl:setf index new-index)))
         ;; repeated fixed32 r_fixed32 = 15;
         ((125)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-uint32-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'r-fixed32))
-            (cl:setf index new-index)))
+              (wire-format:read-uint32-carefully buffer index limit)
+              (cl:vector-push-extend value (cl:slot-value self 'r-fixed32))
+              (cl:setf index new-index)))
         ;; repeated fixed64 r_fixed64 = 16;
         ((129)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-uint64-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'r-fixed64))
-            (cl:setf index new-index)))
+              (wire-format:read-uint64-carefully buffer index limit)
+              (cl:vector-push-extend value (cl:slot-value self 'r-fixed64))
+              (cl:setf index new-index)))
         ;; repeated bool r_bool = 17;
         ((136)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-boolean-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'r-bool))
-            (cl:setf index new-index)))
+              (wire-format:read-boolean-carefully buffer index limit)
+              (cl:vector-push-extend value (cl:slot-value self 'r-bool))
+              (cl:setf index new-index)))
         ;; repeated string r_string = 18;
         ((146)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
+              (wire-format:read-octets-carefully buffer index limit)
             (cl:vector-push-extend value (cl:slot-value self 'r-string))
             (cl:setf index new-index)))
         ;; repeated string r_vardata = 19;
         ((154)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
+              (wire-format:read-octets-carefully buffer index limit)
             (cl:vector-push-extend value (cl:slot-value self 'r-vardata))
             (cl:setf index new-index)))
         ;; repeated .Test1Msg r_msg = 20;
@@ -1711,40 +1717,42 @@
         ;; optional string d_string = 26 [default = "foo"];
         ((210)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
+              (wire-format:read-octets-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'd-string) value)
             (cl:setf (cl:ldb (cl:byte 1 27) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; optional float u_float = 27;
         ((221)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-single-float-carefully buffer index limit)
+              (wire-format:read-single-float-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'u-float) value)
             (cl:setf (cl:ldb (cl:byte 1 8) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; optional double u_double = 28;
         ((225)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-double-float-carefully buffer index limit)
+              (wire-format:read-double-float-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'u-double) value)
             (cl:setf (cl:ldb (cl:byte 1 9) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; repeated float r_float = 29;
         ((237)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-single-float-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'r-float))
-            (cl:setf index new-index)))
+              (wire-format:read-single-float-carefully buffer index limit)
+              (cl:vector-push-extend value (cl:slot-value self 'r-float))
+              (cl:setf index new-index)))
         ;; repeated double r_double = 30;
         ((241)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-double-float-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'r-double))
-            (cl:setf index new-index)))
+              (wire-format:read-double-float-carefully buffer index limit)
+              (cl:vector-push-extend value (cl:slot-value self 'r-double))
+              (cl:setf index new-index)))
         ;; optional bool d_bool = 31 [default = true];
         ((248)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-boolean-carefully buffer index limit)
+              (wire-format:read-boolean-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'd-bool) value)
             (cl:setf (cl:ldb (cl:byte 1 28) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
@@ -1758,14 +1766,14 @@
         ;; optional string dd_string = 33 [default = " f oo "];
         ((266)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
+              (wire-format:read-octets-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'dd-string) value)
             (cl:setf (cl:ldb (cl:byte 1 30) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; optional bool dd_bool = 34 [default = true];
         ((272)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-boolean-carefully buffer index limit)
+              (wire-format:read-boolean-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'dd-bool) value)
             (cl:setf (cl:ldb (cl:byte 1 31) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))

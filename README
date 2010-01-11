@@ -1,44 +1,65 @@
 
-A Common Lisp implementation of Google's protocol buffers.
+Protobuf is a Common Lisp implementation of Google's protocol buffers.
 
-The code here is a preliminary release.  It contains low-level routines for
-encoding and decoding protocol buffer types, such as integers and strings,
-but the translator from protocol buffer descriptions to Lisp code is
-currently unimplemented.
-
-The distribution does include two files that show what translated protocol
-buffer code might look like:  testprotocol.lisp and proto-test.lisp.
+This directory contains a preliminary release of the support functions
+needed to serialize protocol buffers.  Not all features are currently
+implemented.  The code works well enough that simple serialization tests
+pass.
 
 The code has been tested with ABCL, CCL, CLISP, and SBCL.  In the past it
-has also worked with Allegro Common Lisp, but I have not tested it lately.
+has also worked with Allegro Common Lisp, but I have not tested it recently.
+
+This git repository requires another git repository called google-protobuf,
+which contains Google's protocol buffer compiler, modified to generate
+Common Lisp code.  The google-protobuf repository is pulled in using git's
+submodule feature.
 
 
 INSTALLATION
 ============
 
-0. Download and install the packages that this code depends on:
+1. Clone the protobuf git repository and google-protobuf git repository that
+it pulls in as a submodule dependency:
+
+    git clone git://github.com/brown/protobuf.git
+    cd protobuf
+    git submodule init
+    git submodule update
+
+
+2. Compile Google's C++ protocol buffer compiler, which can translate
+protocol buffer definition files into Common Lisp code:
+
+    cd google-protobuf
+    ./autogen.sh
+    ./configure
+    make
+
+
+3. Download and install the Common Lisp packages that protobuf depends on:
 
     ASDF
     trivial-utf-8       not needed for Allegro, CLisp, and SBCL
 
-Note that some Common Lisp implementations, such as SBCL, contain a copy of
-the ASDF library.
+Note that some Common Lisp implementations, such as SBCL, already contain a
+copy of the ASDF library.
 
 
-1. Make protobuf.asd available to ASDF.  Either create a symbolic link to
+4. Make protobuf.asd available to ASDF.  Either create a symbolic link to
 protobuf.asd in your ASDF:*CENTRAL-REGISTRY* directory or load the file into
 your running Lisp with (load "protobuf.asd").
 
 
-2. Compile and load the protobuf code:
+5. Compile and load the protobuf code:
 
     (asdf:operate 'asdf:load-op 'protobuf)
 
 
-3. Run the tests:
+6. Run the tests:
 
     (varint::test)
     (proto-lisp-test::test)
+    (wire-format-test::test)
 
 
 BUGS

@@ -1,9 +1,8 @@
 
-;;;;    proto.lisp
+;;;;    wire-format.lisp
 
 
-;; Copyright 2008, Google Inc.
-;; All rights reserved.
+;; Copyright 2010, Google Inc. All rights reserved.
 
 ;; Redistribution and use in source and binary forms, with or without
 ;; modification, are permitted provided that the following conditions are
@@ -32,7 +31,9 @@
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-(in-package #:protocol)
+(in-package #:wire-format)
+
+(declaim #.optimize:+default+)
 
 
 ;; Tags used to delimit values in protocol buffers.
@@ -581,3 +582,27 @@ PARSE-OVERFLOW."
       (when (> end-index limit)
         (error 'data-exhausted))
       (values (subseq buffer start-index end-index) end-index))))
+
+(declaim (ftype (function (int32) uint32) zig-zag-encode32)
+         (inline zig-zag-encode32))
+
+(defun zig-zag-encode32 (v)
+  (logxor (ash v 1) (ash v -31)))
+
+(declaim (ftype (function (uint32) int32) zig-zag-decode32)
+         (inline zig-zag-decode32))
+
+(defun zig-zag-decode32 (v)
+  (logxor (ash v -1) (- (logand v 1))))
+
+(declaim (ftype (function (int64) uint64) zig-zag-encode64)
+         (inline zig-zag-encode64))
+
+(defun zig-zag-encode64 (v)
+  (logxor (ash v 1) (ash v -63)))
+
+(declaim (ftype (function (uint64) int64) zig-zag-decode64)
+         (inline zig-zag-decode64))
+
+(defun zig-zag-decode64 (v)
+  (logxor (ash v -1) (- (logand v 1))))

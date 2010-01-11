@@ -754,27 +754,3 @@ encode V, then raise ENCODE-OVERFLOW."
   (setf v (ash v -7))
   (when (zerop v) (return-from length64 9))
   10)
-
-(declaim (ftype (function (int32) uint32) zig-zag-encode32)
-         #+opt (inline zig-zag-encode32))
-
-(defun zig-zag-encode32 (v)
-  (logxor (ash v 1) (ash v -31)))
-
-(declaim (ftype (function (uint32) int32) zig-zag-decode32)
-         #+opt (inline zig-zag-decode32))
-
-(defun zig-zag-decode32 (v)
-  (logxor (ash v -1) (- (logand v 1))))
-
-(declaim (ftype (function (int64) uint64) zig-zag-encode64)
-         #+opt (inline zig-zag-encode64))
-
-(defun zig-zag-encode64 (v)
-  (logxor (ash v 1) (ash v -63)))
-
-(declaim (ftype (function (uint64) int64) zig-zag-decode64)
-         #+opt (inline zig-zag-decode64))
-
-(defun zig-zag-decode64 (v)
-  (logxor (ash v -1) (- (logand v 1))))

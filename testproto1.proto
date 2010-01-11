@@ -1,0 +1,91 @@
+// Copyright 2010, Google Inc.
+// All rights reserved.
+
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// dummy message to include in other messages.
+message Test1Msg {
+  optional int32 foo = 1;
+}
+
+message Test1Proto {
+
+  // test enums
+  enum EnumCode {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+  }
+
+  // required vs. optional
+  required int64 o_a = 1;
+  optional int64 o_b = 2;
+
+  // all the types (non-repeated)
+  optional int32 u_int32 = 3;
+  optional int64 u_int64 = 4;
+  optional uint64 u_uint64 = 5;
+  optional fixed32 u_fixed32 = 6;
+  optional fixed64 u_fixed64 = 7;
+  optional bool u_bool = 8;
+  optional float u_float = 27;
+  optional double u_double = 28;
+  optional string u_string = 9;
+  optional string u_vardata = 10;
+  optional Test1Msg u_msg = 11;
+
+  // all the types (repeated)
+  repeated int32 r_int32 = 12;
+  repeated int64 r_int64 = 13;
+  repeated uint64 r_uint64 = 14;
+  repeated fixed32 r_fixed32 = 15;
+  repeated fixed64 r_fixed64 = 16;
+  repeated bool r_bool = 17;
+  repeated float r_float = 29;
+  repeated double r_double = 30;
+  repeated string r_string = 18;
+  repeated string r_vardata = 19;
+  repeated Test1Msg r_msg = 20;
+
+  // non-repeated group
+  repeated group TestGroup1 = 21 {
+    optional int32 a = 22;
+  };
+
+  // repeated group
+  repeated group TestGroup2 = 23 {
+    optional int32 b = 24;
+  };
+
+  // default settings
+  optional int32 d_int32 = 25 [default=12];
+  optional string d_string = 26 [default="foo"];
+  optional bool d_bool = 31 [default=true];
+  optional int32 dd_int32 = 32 [ default =  12 ];
+  optional string dd_string = 33 [ default =  " f oo " ];
+  optional bool dd_bool = 34 [ default = true ];
+}

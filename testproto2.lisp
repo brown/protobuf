@@ -299,7 +299,7 @@
             (length (cl:length v)))
     (cl:loop for i from 0 below length do
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 34))
-      (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:aref v i)))))
+      (cl:setf index (wire-format:write-octets-carefully buffer index limit (cl:aref v i)))))
   index)
 
 (cl:defmethod merge ((self timeprotocol) buffer start limit)
@@ -321,7 +321,7 @@
         ;; repeated string Debug = 4;
         ((34)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
+              (wire-format:read-octets-carefully buffer index limit)
             (cl:vector-push-extend value (cl:slot-value self 'debug))
             (cl:setf index new-index)))
         (cl:t
@@ -460,391 +460,6 @@
               (varint:parse-int32-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'bar) value)
             (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1)
-            (cl:setf index new-index)))
-        (cl:t
-          (cl:when (cl:= (cl:logand tag 7) 4)
-            (cl:return-from merge index))
-          ;; Tag 0 is special.  It is used to indicate an error,
-          ;; so we return as error code when we see it.
-          (cl:when (cl:zerop tag)
-            (cl:error "zero tag")))))))
-
-
-(cl:defclass testmessage3 (protocol-buffer)
-  (
-  (str
-   :initform (cl:make-array
-              0
-              :element-type '(cl:unsigned-byte 8)
-              :initial-contents '())
-   :type (cl:simple-array (cl:unsigned-byte 8) (cl:*)))
-  (%has-bits%
-   :accessor %has-bits%
-   :initform 0
-   :type (cl:unsigned-byte 1))
-  (%cached-size%
-   :accessor %cached-size%
-   :initform 0
-   :type (cl:integer 0 #.(cl:1- cl:array-dimension-limit)))
-  ))
-
-(cl:export 'testmessage3)
-
-(cl:export 'str)
-
-(cl:defgeneric str (proto))
-(cl:defmethod str ((self testmessage3))
-  (base:utf8-octets-to-string (cl:slot-value self 'str)))
-
-(cl:export 'str-octets)
-(cl:defgeneric str-octets (proto))
-(cl:defmethod str-octets ((self testmessage3))
-  (cl:slot-value self 'str))
-
-(cl:defgeneric (cl:setf str) (new-value proto))
-(cl:defmethod (cl:setf str) (new-value (self testmessage3))
-  (cl:etypecase new-value
-    ((cl:string)
-     (cl:setf (cl:slot-value self 'str)
-              (base:string-to-utf8-octets new-value)))
-    ((base:octet-vector)
-     (cl:setf (cl:slot-value self 'str) new-value)))
-  (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
-  new-value)
-
-(cl:defmethod (cl:setf str) :after (x (self testmessage3))
-  (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
-
-(cl:defgeneric has-str (proto))
-(cl:defmethod has-str ((self testmessage3))
-  (cl:logbitp 0 (cl:slot-value self '%has-bits%)))
-(cl:export 'has-str)
-
-(cl:defgeneric clear-str (proto))
-(cl:defmethod clear-str ((self testmessage3))
-  (cl:setf (cl:slot-value self 'str)
-           (cl:make-array 0 :element-type '(cl:unsigned-byte 8)
-            :initial-contents '()))
-  (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 0)
-  (cl:values))
-(cl:export 'clear-str)
-
-
-(cl:defmethod cl:print-object ((self testmessage3) stream)
-  (cl:print-unreadable-object (self stream :type cl:t :identity cl:t)
-    (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
-      (cl:format stream "str: ~s " (cl:slot-value self 'str)))
-    )
-  (cl:values))
-
-(cl:defmethod clear ((self testmessage3))
-  (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
-    (cl:setf (cl:slot-value self 'str)
-             (cl:make-array 0 :element-type '(cl:unsigned-byte 8)
-              :initial-contents '())))
-  (cl:setf (cl:slot-value self '%has-bits%) 0)
-  (cl:values))
-
-(cl:defmethod is-initialized ((self testmessage3))
-  cl:t)
-
-(cl:defmethod octet-size ((self testmessage3))
-  (cl:let ((size 0))
-    ;; optional string str = 1;
-    (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
-      (cl:incf size 1)
-      (cl:incf size (cl:let ((s (cl:length (cl:slot-value self 'str))))
-        (cl:+ s (varint:length32 s)))))
-    (cl:setf (cl:slot-value self '%cached-size%) size)
-    size))
-
-(cl:defmethod serialize ((self testmessage3) buffer index limit)
-  (cl:declare (cl:type base:octet-vector buffer)
-              (cl:type base:octet-vector-index index limit)
-              (cl:ignorable buffer limit))
-  ;; optional string str = 1;
-  (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
-    (cl:setf index (varint:encode-uint32-carefully buffer index limit 10))
-    (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:slot-value self 'str))))
-  index)
-
-(cl:defmethod merge ((self testmessage3) buffer start limit)
-  (cl:declare (cl:type base:octet-vector buffer)
-              (cl:type base:octet-vector-index start limit))
-  (cl:do ((index start index))
-      ((cl:>= index limit) index)
-    (cl:declare (cl:type base:octet-vector-index index))
-    (cl:multiple-value-bind (tag new-index)
-        (varint:parse-uint32-carefully buffer index limit)
-      (cl:setf index new-index)
-      (cl:case tag
-        ;; optional string str = 1;
-        ((10)
-          (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
-            (cl:setf (cl:slot-value self 'str) value)
-            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
-            (cl:setf index new-index)))
-        (cl:t
-          (cl:when (cl:= (cl:logand tag 7) 4)
-            (cl:return-from merge index))
-          ;; Tag 0 is special.  It is used to indicate an error,
-          ;; so we return as error code when we see it.
-          (cl:when (cl:zerop tag)
-            (cl:error "zero tag")))))))
-
-
-(cl:defclass testmessage2 (protocol-buffer)
-  (
-  (s
-   :initform (cl:make-array
-              0
-              :element-type '(cl:unsigned-byte 8)
-              :initial-contents '())
-   :type (cl:simple-array (cl:unsigned-byte 8) (cl:*)))
-  (b
-   :accessor b
-   :initform cl:nil
-   :type cl:boolean)
-  (foreign
-   :writer (cl:setf foreign)
-   :initform cl:nil
-   :type (cl:or cl:null testmessage3))
-  (big-tag
-   :accessor big-tag
-   :initform 0
-   :type (cl:signed-byte 32))
-  (%has-bits%
-   :accessor %has-bits%
-   :initform 0
-   :type (cl:unsigned-byte 4))
-  (%cached-size%
-   :accessor %cached-size%
-   :initform 0
-   :type (cl:integer 0 #.(cl:1- cl:array-dimension-limit)))
-  ))
-
-(cl:export 'testmessage2)
-
-(cl:export 's)
-
-(cl:defgeneric s (proto))
-(cl:defmethod s ((self testmessage2))
-  (base:utf8-octets-to-string (cl:slot-value self 's)))
-
-(cl:export 's-octets)
-(cl:defgeneric s-octets (proto))
-(cl:defmethod s-octets ((self testmessage2))
-  (cl:slot-value self 's))
-
-(cl:defgeneric (cl:setf s) (new-value proto))
-(cl:defmethod (cl:setf s) (new-value (self testmessage2))
-  (cl:etypecase new-value
-    ((cl:string)
-     (cl:setf (cl:slot-value self 's)
-              (base:string-to-utf8-octets new-value)))
-    ((base:octet-vector)
-     (cl:setf (cl:slot-value self 's) new-value)))
-  (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
-  new-value)
-
-(cl:defmethod (cl:setf s) :after (x (self testmessage2))
-  (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
-
-(cl:defgeneric has-s (proto))
-(cl:defmethod has-s ((self testmessage2))
-  (cl:logbitp 0 (cl:slot-value self '%has-bits%)))
-(cl:export 'has-s)
-
-(cl:defgeneric clear-s (proto))
-(cl:defmethod clear-s ((self testmessage2))
-  (cl:setf (cl:slot-value self 's)
-           (cl:make-array 0 :element-type '(cl:unsigned-byte 8)
-            :initial-contents '()))
-  (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 0)
-  (cl:values))
-(cl:export 'clear-s)
-
-(cl:export 'b)
-
-
-(cl:defmethod (cl:setf b) :after (x (self testmessage2))
-  (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1))
-
-(cl:defgeneric has-b (proto))
-(cl:defmethod has-b ((self testmessage2))
-  (cl:logbitp 1 (cl:slot-value self '%has-bits%)))
-(cl:export 'has-b)
-
-(cl:defgeneric clear-b (proto))
-(cl:defmethod clear-b ((self testmessage2))
-  (cl:setf (cl:slot-value self 'b) cl:nil)
-  (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 0)
-  (cl:values))
-(cl:export 'clear-b)
-
-(cl:export 'foreign)
-
-(cl:defgeneric foreign (proto))
-(cl:defmethod foreign ((self testmessage2))
-  (cl:let ((result (cl:slot-value self 'foreign)))
-    (cl:when (cl:null result)
-      (cl:setf result (cl:make-instance 'testmessage3))
-      (cl:setf (cl:slot-value self 'foreign) result))
-      (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1)
-    result))
-
-(cl:defmethod (cl:setf foreign) :after (x (self testmessage2))
-  (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1))
-
-(cl:defgeneric has-foreign (proto))
-(cl:defmethod has-foreign ((self testmessage2))
-  (cl:logbitp 2 (cl:slot-value self '%has-bits%)))
-(cl:export 'has-foreign)
-
-(cl:defgeneric clear-foreign (proto))
-(cl:defmethod clear-foreign ((self testmessage2))
-  (cl:setf (cl:slot-value self 'foreign) cl:nil)
-  (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 0)
-  (cl:values))
-(cl:export 'clear-foreign)
-
-(cl:export 'big-tag)
-
-
-(cl:defmethod (cl:setf big-tag) :after (x (self testmessage2))
-  (cl:setf (cl:ldb (cl:byte 1 3) (cl:slot-value self '%has-bits%)) 1))
-
-(cl:defgeneric has-big-tag (proto))
-(cl:defmethod has-big-tag ((self testmessage2))
-  (cl:logbitp 3 (cl:slot-value self '%has-bits%)))
-(cl:export 'has-big-tag)
-
-(cl:defgeneric clear-big-tag (proto))
-(cl:defmethod clear-big-tag ((self testmessage2))
-  (cl:setf (cl:slot-value self 'big-tag) 0)
-  (cl:setf (cl:ldb (cl:byte 1 3) (cl:slot-value self '%has-bits%)) 0)
-  (cl:values))
-(cl:export 'clear-big-tag)
-
-
-(cl:defmethod cl:print-object ((self testmessage2) stream)
-  (cl:print-unreadable-object (self stream :type cl:t :identity cl:t)
-    (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
-      (cl:format stream "s: ~s " (cl:slot-value self 's)))
-    (cl:when (cl:logbitp 1 (cl:slot-value self '%has-bits%))
-      (cl:format stream "b: ~s " (cl:slot-value self 'b)))
-    (cl:when (cl:logbitp 2 (cl:slot-value self '%has-bits%))
-      (cl:format stream "foreign: ~s " (cl:slot-value self 'foreign)))
-    (cl:when (cl:logbitp 3 (cl:slot-value self '%has-bits%))
-      (cl:format stream "big-tag: ~s " (cl:slot-value self 'big-tag)))
-    )
-  (cl:values))
-
-(cl:defmethod clear ((self testmessage2))
-  (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
-    (cl:setf (cl:slot-value self 's)
-             (cl:make-array 0 :element-type '(cl:unsigned-byte 8)
-              :initial-contents '())))
-  (cl:setf (cl:slot-value self 'b) cl:nil)
-  (cl:when (cl:logbitp 2 (cl:slot-value self '%has-bits%))
-    (cl:setf (cl:slot-value self 'foreign) cl:nil))
-  (cl:setf (cl:slot-value self 'big-tag) 0)
-  (cl:setf (cl:slot-value self '%has-bits%) 0)
-  (cl:values))
-
-(cl:defmethod is-initialized ((self testmessage2))
-  cl:t)
-
-(cl:defmethod octet-size ((self testmessage2))
-  (cl:let ((size 0))
-    ;; optional string s = 1;
-    (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
-      (cl:incf size 1)
-      (cl:incf size (cl:let ((s (cl:length (cl:slot-value self 's))))
-        (cl:+ s (varint:length32 s)))))
-    ;; optional bool b = 2;
-    (cl:when (cl:logbitp 1 (cl:slot-value self '%has-bits%))
-      (cl:incf size
-        (cl:+ 1 1)))
-    ;; optional .TestMessage3 foreign = 3;
-    (cl:when (cl:logbitp 2 (cl:slot-value self '%has-bits%))
-      (cl:let ((s (octet-size (cl:slot-value self 'foreign))))
-        (cl:incf size (cl:+ 1 s (varint:length32 s)))))
-    ;; optional int32 big_tag = 5000;
-    (cl:when (cl:logbitp 3 (cl:slot-value self '%has-bits%))
-      (cl:incf size
-        (cl:+ 3 (varint:length64 (base:int32-to-uint64 (cl:slot-value self 'big-tag))))))
-    (cl:setf (cl:slot-value self '%cached-size%) size)
-    size))
-
-(cl:defmethod serialize ((self testmessage2) buffer index limit)
-  (cl:declare (cl:type base:octet-vector buffer)
-              (cl:type base:octet-vector-index index limit)
-              (cl:ignorable buffer limit))
-  ;; optional string s = 1;
-  (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
-    (cl:setf index (varint:encode-uint32-carefully buffer index limit 10))
-    (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:slot-value self 's))))
-  ;; optional bool b = 2;
-  (cl:when (cl:logbitp 1 (cl:slot-value self '%has-bits%))
-    (cl:setf index (varint:encode-uint32-carefully buffer index limit 16))
-    (cl:setf index (protocol:write-boolean-carefully buffer index limit (cl:slot-value self 'b))))
-  ;; optional .TestMessage3 foreign = 3;
-  (cl:when (cl:logbitp 2 (cl:slot-value self '%has-bits%))
-    (cl:setf index (varint:encode-uint32-carefully buffer index limit 26))
-    (cl:setf index (varint:encode-uint32-carefully buffer index limit (cl:slot-value (cl:slot-value self 'foreign) '%cached-size%)))
-    (cl:setf index (serialize (cl:slot-value self 'foreign) buffer index limit)))
-  ;; optional int32 big_tag = 5000;
-  (cl:when (cl:logbitp 3 (cl:slot-value self '%has-bits%))
-    (cl:setf index (varint:encode-uint32-carefully buffer index limit 40000))
-    (cl:setf index (varint:encode-uint64-carefully buffer index limit (base:int32-to-uint64 (cl:slot-value self 'big-tag)))))
-  index)
-
-(cl:defmethod merge ((self testmessage2) buffer start limit)
-  (cl:declare (cl:type base:octet-vector buffer)
-              (cl:type base:octet-vector-index start limit))
-  (cl:do ((index start index))
-      ((cl:>= index limit) index)
-    (cl:declare (cl:type base:octet-vector-index index))
-    (cl:multiple-value-bind (tag new-index)
-        (varint:parse-uint32-carefully buffer index limit)
-      (cl:setf index new-index)
-      (cl:case tag
-        ;; optional string s = 1;
-        ((10)
-          (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
-            (cl:setf (cl:slot-value self 's) value)
-            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
-            (cl:setf index new-index)))
-        ;; optional bool b = 2;
-        ((16)
-          (cl:multiple-value-bind (value new-index)
-              (protocol:read-boolean-carefully buffer index limit)
-            (cl:setf (cl:slot-value self 'b) value)
-            (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1)
-            (cl:setf index new-index)))
-        ;; optional .TestMessage3 foreign = 3;
-        ((26)
-          (cl:multiple-value-bind (length new-index)
-              (varint:parse-uint31-carefully buffer index limit)
-            (cl:when (cl:> (cl:+ new-index length) limit)
-              (cl:error "buffer overflow"))
-            (cl:let ((message (cl:slot-value self 'foreign)))
-              (cl:when (cl:null message)
-                (cl:setf message (cl:make-instance 'testmessage3))
-                (cl:setf (cl:slot-value self 'foreign) message)
-                (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1))
-              (cl:setf index (merge message buffer new-index (cl:+ new-index length)))
-              (cl:when (cl:not (cl:= index (cl:+ new-index length)))
-                (cl:error "buffer overflow")))))
-        ;; optional int32 big_tag = 5000;
-        ((40000)
-          (cl:multiple-value-bind (value new-index)
-              (varint:parse-int32-carefully buffer index limit)
-            (cl:setf (cl:slot-value self 'big-tag) value)
-            (cl:setf (cl:ldb (cl:byte 1 3) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         (cl:t
           (cl:when (cl:= (cl:logand tag 7) 4)
@@ -1697,7 +1312,7 @@
   ;; optional bool Thirteen = 68;
   (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 544))
-    (cl:setf index (protocol:write-boolean-carefully buffer index limit (cl:slot-value self 'thirteen))))
+    (cl:setf index (wire-format:write-boolean-carefully buffer index limit (cl:slot-value self 'thirteen))))
   index)
 
 (cl:defmethod merge ((self testprotocol-four-seven-twelve) buffer start limit)
@@ -1713,7 +1328,7 @@
         ;; optional bool Thirteen = 68;
         ((544)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-boolean-carefully buffer index limit)
+              (wire-format:read-boolean-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'thirteen) value)
             (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
@@ -1765,7 +1380,7 @@
   ;; optional bool Four = 66 [default = false];
   (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 528))
-    (cl:setf index (protocol:write-boolean-carefully buffer index limit (cl:slot-value self 'four))))
+    (cl:setf index (wire-format:write-boolean-carefully buffer index limit (cl:slot-value self 'four))))
   ;; optional group Twelve = 67 {
   (cl:when (cl:logbitp 1 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 539))
@@ -1786,7 +1401,7 @@
         ;; optional bool Four = 66 [default = false];
         ((528)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-boolean-carefully buffer index limit)
+              (wire-format:read-boolean-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'four) value)
             (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
@@ -1993,11 +1608,11 @@
   ;; required bool Nine = 9;
   (cl:when (cl:logbitp 1 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 72))
-    (cl:setf index (protocol:write-boolean-carefully buffer index limit (cl:slot-value self 'nine))))
+    (cl:setf index (wire-format:write-boolean-carefully buffer index limit (cl:slot-value self 'nine))))
   ;; optional bool Ten = 10 [default = true];
   (cl:when (cl:logbitp 2 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 80))
-    (cl:setf index (protocol:write-boolean-carefully buffer index limit (cl:slot-value self 'ten))))
+    (cl:setf index (wire-format:write-boolean-carefully buffer index limit (cl:slot-value self 'ten))))
   index)
 
 (cl:defmethod merge ((self testprotocol-seven) buffer start limit)
@@ -2020,14 +1635,14 @@
         ;; required bool Nine = 9;
         ((72)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-boolean-carefully buffer index limit)
+              (wire-format:read-boolean-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'nine) value)
             (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; optional bool Ten = 10 [default = true];
         ((80)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-boolean-carefully buffer index limit)
+              (wire-format:read-boolean-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'ten) value)
             (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
@@ -2065,8 +1680,7 @@
     ;; required .TestProtocol.AnotherEnum Fourteen = 315;
     (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
       (cl:incf size 2)
-      (cl:incf size (varint:length64 (base:int32-to-uint64 (cl:slot-value self 'fourteen))))(cl:incf size (varint:length64 (cl:slot-value self 'fourteen)))
-      )
+      (cl:incf size (varint:length64 (base:int32-to-uint64 (cl:slot-value self 'fourteen)))))
     (cl:setf (cl:slot-value self '%cached-size%) size)
     size))
 
@@ -2094,15 +1708,11 @@
       (cl:case tag
         ;; required .TestProtocol.AnotherEnum Fourteen = 315;
         ((2520)
-          ;; XXXX unimplemented merge enum
-          ;int value;
-          ;DO_(::google::protobuf::internal::WireFormatLite::ReadEnum(input, &value));
-          ;if (testprotocol-anotherenum_IsValid(value)) {
-          ;  set_fourteen(static_cast< testprotocol-anotherenum >(value));
-          ;} else {
-          ;  mutable_unknown_fields()->AddField(315)->add_varint(value);
-          ;}
-          )
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int32-carefully buffer index limit)
+            ;; XXXXX: when valid, set field, else add to unknown fields
+            (cl:setf (cl:slot-value self 'fourteen) value)
+            (cl:setf index new-index)))
         (cl:t
           (cl:when (cl:= (cl:logand tag 7) 4)
             (cl:return-from merge index))
@@ -2303,8 +1913,7 @@
     ;; optional .TestProtocol.AnotherEnum Twelve = 313;
     (cl:when (cl:logbitp 15 (cl:slot-value self '%has-bits%))
       (cl:incf size 2)
-      (cl:incf size (varint:length64 (base:int32-to-uint64 (cl:slot-value self 'twelve))))(cl:incf size (varint:length64 (cl:slot-value self 'twelve)))
-      )
+      (cl:incf size (varint:length64 (base:int32-to-uint64 (cl:slot-value self 'twelve)))))
     ;; optional group Thirteen = 314 {
     (cl:when (cl:logbitp 16 (cl:slot-value self '%has-bits%))
       (cl:incf size (cl:+ 4 (octet-size (cl:slot-value self 'thirteen)))))
@@ -2365,7 +1974,7 @@
   ;; required string One = 1;
   (cl:when (cl:logbitp 1 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 10))
-    (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:slot-value self 'one))))
+    (cl:setf index (wire-format:write-octets-carefully buffer index limit (cl:slot-value self 'one))))
   ;; optional int64 Two = 2 [default = 19];
   (cl:when (cl:logbitp 2 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 16))
@@ -2385,7 +1994,7 @@
   ;; required string Zero = 63;
   (cl:when (cl:logbitp 0 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 506))
-    (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:slot-value self 'zero))))
+    (cl:setf index (wire-format:write-octets-carefully buffer index limit (cl:slot-value self 'zero))))
   ;; repeated .TimeProtocol TP2 = 113;
   (cl:let* ((v (cl:slot-value self 'tp2))
             (length (cl:length v)))
@@ -2396,7 +2005,7 @@
   ;; optional string OptString = 299 [default = "opt"];
   (cl:when (cl:logbitp 13 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 2394))
-    (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:slot-value self 'optstring))))
+    (cl:setf index (wire-format:write-octets-carefully buffer index limit (cl:slot-value self 'optstring))))
   ;; repeated int64 Test1 = 301;
   (cl:let* ((v (cl:slot-value self 'test1))
             (length (cl:length v)))
@@ -2414,19 +2023,19 @@
             (length (cl:length v)))
     (cl:loop for i from 0 below length do
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 2429))
-      (cl:setf index (protocol:write-single-float-carefully buffer index limit (cl:aref v i)))))
+      (cl:setf index (wire-format:write-single-float-carefully buffer index limit (cl:aref v i)))))
   ;; repeated double Test4 = 304;
   (cl:let* ((v (cl:slot-value self 'test4))
             (length (cl:length v)))
     (cl:loop for i from 0 below length do
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 2433))
-      (cl:setf index (protocol:write-double-float-carefully buffer index limit (cl:aref v i)))))
+      (cl:setf index (wire-format:write-double-float-carefully buffer index limit (cl:aref v i)))))
   ;; repeated string Test5 = 305;
   (cl:let* ((v (cl:slot-value self 'test5))
             (length (cl:length v)))
     (cl:loop for i from 0 below length do
       (cl:setf index (varint:encode-uint32-carefully buffer index limit 2442))
-      (cl:setf index (protocol:write-octets-carefully buffer index limit (cl:aref v i)))))
+      (cl:setf index (wire-format:write-octets-carefully buffer index limit (cl:aref v i)))))
   ;; repeated group Test6 = 306 {
   (cl:let* ((v (cl:slot-value self 'test6))
             (length (cl:length v)))
@@ -2437,11 +2046,11 @@
   ;; required fixed64 FixedValue = 310;
   (cl:when (cl:logbitp 11 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 2481))
-    (cl:setf index (protocol:write-uint64-carefully buffer index limit (cl:slot-value self 'fixedvalue))))
+    (cl:setf index (wire-format:write-uint64-carefully buffer index limit (cl:slot-value self 'fixedvalue))))
   ;; required fixed32 FixedValue2 = 311;
   (cl:when (cl:logbitp 12 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 2493))
-    (cl:setf index (protocol:write-uint32-carefully buffer index limit (cl:slot-value self 'fixedvalue2))))
+    (cl:setf index (wire-format:write-uint32-carefully buffer index limit (cl:slot-value self 'fixedvalue2))))
   ;; optional .TestMessage Eleven = 312;
   (cl:when (cl:logbitp 14 (cl:slot-value self '%has-bits%))
     (cl:setf index (varint:encode-uint32-carefully buffer index limit 2498))
@@ -2473,7 +2082,7 @@
         ;; required string One = 1;
         ((10)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
+              (wire-format:read-octets-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'one) value)
             (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
@@ -2497,7 +2106,7 @@
         ;; required string Zero = 63;
         ((506)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
+              (wire-format:read-octets-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'zero) value)
             (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
@@ -2515,38 +2124,42 @@
         ;; optional string OptString = 299 [default = "opt"];
         ((2394)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
+              (wire-format:read-octets-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'optstring) value)
             (cl:setf (cl:ldb (cl:byte 1 13) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; repeated int64 Test1 = 301;
         ((2408)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (varint:parse-int64-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'test1))
-            (cl:setf index new-index)))
+              (cl:vector-push-extend value (cl:slot-value self 'test1))
+              (cl:setf index new-index)))
         ;; repeated int32 Test2 = 302;
         ((2416)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (varint:parse-int32-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'test2))
-            (cl:setf index new-index)))
+              (cl:vector-push-extend value (cl:slot-value self 'test2))
+              (cl:setf index new-index)))
         ;; repeated float Test3 = 303;
         ((2429)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-single-float-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'test3))
-            (cl:setf index new-index)))
+              (wire-format:read-single-float-carefully buffer index limit)
+              (cl:vector-push-extend value (cl:slot-value self 'test3))
+              (cl:setf index new-index)))
         ;; repeated double Test4 = 304;
         ((2433)
+          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-double-float-carefully buffer index limit)
-            (cl:vector-push-extend value (cl:slot-value self 'test4))
-            (cl:setf index new-index)))
+              (wire-format:read-double-float-carefully buffer index limit)
+              (cl:vector-push-extend value (cl:slot-value self 'test4))
+              (cl:setf index new-index)))
         ;; repeated string Test5 = 305;
         ((2442)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-octets-carefully buffer index limit)
+              (wire-format:read-octets-carefully buffer index limit)
             (cl:vector-push-extend value (cl:slot-value self 'test5))
             (cl:setf index new-index)))
         ;; repeated group Test6 = 306 {
@@ -2558,14 +2171,14 @@
         ;; required fixed64 FixedValue = 310;
         ((2481)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-uint64-carefully buffer index limit)
+              (wire-format:read-uint64-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'fixedvalue) value)
             (cl:setf (cl:ldb (cl:byte 1 11) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; required fixed32 FixedValue2 = 311;
         ((2493)
           (cl:multiple-value-bind (value new-index)
-              (protocol:read-uint32-carefully buffer index limit)
+              (wire-format:read-uint32-carefully buffer index limit)
             (cl:setf (cl:slot-value self 'fixedvalue2) value)
             (cl:setf (cl:ldb (cl:byte 1 12) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
@@ -2585,15 +2198,11 @@
                 (cl:error "buffer overflow")))))
         ;; optional .TestProtocol.AnotherEnum Twelve = 313;
         ((2504)
-          ;; XXXX unimplemented merge enum
-          ;int value;
-          ;DO_(::google::protobuf::internal::WireFormatLite::ReadEnum(input, &value));
-          ;if (testprotocol-anotherenum_IsValid(value)) {
-          ;  set_twelve(static_cast< testprotocol-anotherenum >(value));
-          ;} else {
-          ;  mutable_unknown_fields()->AddField(313)->add_varint(value);
-          ;}
-          )
+          (cl:multiple-value-bind (value new-index)
+              (varint:parse-int32-carefully buffer index limit)
+            ;; XXXXX: when valid, set field, else add to unknown fields
+            (cl:setf (cl:slot-value self 'twelve) value)
+            (cl:setf index new-index)))
         ;; optional group Thirteen = 314 {
         ((2515)
           ;; XXXX non-repeated group merge

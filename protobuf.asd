@@ -2,7 +2,7 @@
 ;;;;    protobuf.asd
 
 
-;; Copyright 2008, Google Inc.
+;; Copyright 2010, Google Inc.
 ;; All rights reserved.
 
 ;; Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-(cl:in-package #:common-lisp)
+(cl:in-package #:common-lisp-user)
 
 (defpackage #:protobuf-system
   (:documentation "System definitions for protocol buffer code.")
@@ -41,49 +41,129 @@
 
 (in-package #:protobuf-system)
 
+
+;;; Teach ASDF how to convert protocol buffer definition files into Lisp.
+
+;;; We define two kinds of components, PROTO-FILE for files containing
+;;; protocol buffer definitions, and CL-PB-IMPL for the corresponding
+;;; machine-generated Lisp code.
+
+
+(defparameter *protoc* #p"google-protobuf/src/protoc")
+
+
+(defclass proto-file (source-file)
+  ()
+  (:documentation "Protocol buffer definition file"))
+
+(defmethod source-file-type ((component proto-file) (module module)) "proto")
+
+(defmethod input-files ((operation compile-op) (component proto-file))
+  (append (list *protoc*) (call-next-method)))
+
+(defmethod output-files ((operation compile-op) (component proto-file))
+  (list (merge-pathnames
+         (make-pathname :name (pathname-name (component-pathname component))
+                        :type "lisp")
+         (asdf::component-parent-pathname component))))
+
+(defmethod perform ((operation compile-op) (component proto-file))
+  (let* ((source-file (component-pathname component))
+         (output-file (first (output-files operation component)))
+         ;; XXXX
+         (compiler-source #p"google-protobuf/src/"))
+    (zerop (run-shell-command "~A --proto_path=~A:~A --lisp_out=~A ~A"
+                              (namestring *protoc*)
+                              (directory-namestring source-file)
+                              (directory-namestring compiler-source)
+                              (directory-namestring output-file)
+                              (namestring source-file)))))
+
+(defmethod perform ((operation load-op) (component proto-file))
+  nil)
+
+(defclass cl-pb-impl (cl-source-file)
+  ()
+  (:documentation "Machine-generated Common Lisp implementation of protocol
+buffer messages."))
+
+;; Machine-generated protocol buffer Lisp files cannot be compiled or loaded
+;; unless certain files have previously been loaded.  Some are required for
+;; package definitions, while others define in-line functions.
+
+(defmethod component-depends-on ((op compile-op) (component cl-pb-impl))
+  (append
+   '((load-op "package" "base" "protocol-buffer" "varint" "wire-format"))
+   (call-next-method)))
+
+(defmethod component-depends-on ((op load-op) (component cl-pb-impl))
+  (append
+   '((load-op "package" "base" "protocol-buffer" "varint" "wire-format"))
+   (call-next-method)))
+
+
+;;; A Common Lisp implementation of Google's protocol buffers
+
+
 (defsystem protobuf
-    :name "Protocol Buffer"
-    :description "Protocol Buffer code"
-    :long-description "A Common Lisp implementation of Google's protocol
- buffer compiler and support libraries."
-    :version "0.3"
-    :author "Robert Brown"
-    :licence "See file COPYING and the copyright messages on individual files."
+  :name "Protocol Buffer"
+  :description "Protocol buffer code"
+  :long-description "A Common Lisp implementation of Google's protocol
+buffer compiler and support libraries."
+  :version "0.3.1"
+  :author "Robert Brown"
+  :licence "See file COPYING and the copyright messages on individual files."
 
-    :perform (load-op :after (operation protobuf)
-               (pushnew :protobuf cl:*features*)
-               (provide 'protobuf))
+  ;; After loading the system, announce its availability.
+  :perform (load-op :after (operation component)
+             (pushnew :protobuf cl:*features*)
+             (provide 'protobuf))
 
-    :depends-on (#-(or allegro clisp sbcl) :trivial-utf-8)
+  :depends-on (#-(or allegro clisp sbcl) :trivial-utf-8)
 
-    :components
-    ((:cl-source-file "package")
+  :components
+  ((:static-file "COPYING")
+   (:static-file "README")
+   (:static-file "TODO")
+   (:static-file "golden")
 
-     #-(or abcl allegro cmu sbcl)
-     (:module "sysdep"
-      :pathname ""              ; this module's files are not in a subdirectory
-      :depends-on ("package")
-      :components ((:cl-source-file "portable-float")))
+   (:cl-source-file "package")
 
-     (:cl-source-file "optimize" :depends-on ("package"))
-     (:cl-source-file "base" :depends-on ("optimize"))
-     (:cl-source-file "varint"  :depends-on ("base"))
-     (:cl-source-file "varint-test" :depends-on ("varint"))
-     (:cl-source-file "proto"
-      :depends-on ("base" #-(or abcl allegro cmu sbcl) "sysdep"))
-     (:cl-source-file "protocol-buffer" :depends-on ("base"))
-     (:cl-source-file "proto-lisp-test"
-      :depends-on ("base" "testproto1" "testproto2"))
+;    :in-order-to ((compile-op (load-source-op "package"))))
 
-     ;; Machine generated protocol buffer code.
+   #-(or abcl allegro cmu sbcl)
+   (:module "sysdep"
+    :pathname ""           ; this module's files are not in a subdirectory
+    :depends-on ("package")
+    :components ((:cl-source-file "portable-float")))
 
-     (:cl-source-file "testproto1"
-      :depends-on ("package" "base" "varint" "protocol-buffer"))
-     (:cl-source-file "testproto2"
-      :depends-on ("package" "base" "varint" "protocol-buffer"))
+   (:cl-source-file "optimize" :depends-on ("package"))
+   (:cl-source-file "base" :depends-on ("optimize"))
+   (:cl-source-file "varint"  :depends-on ("base"))
+   (:cl-source-file "varint-test" :depends-on ("varint"))
+   (:cl-source-file "protocol-buffer" :depends-on ("base"))
+   (:cl-source-file "wire-format"
+    :depends-on ("base" #-(or abcl allegro cmu sbcl) "sysdep"))
+   (:cl-source-file "wire-format-test" :depends-on ("base"))
 
-     (:static-file "COPYING")
-     (:static-file "README")
-     (:static-file "TODO")
-     (:static-file "golden")
-     ))
+   ;; Old protocol buffer tests
+   (:cl-source-file "proto-lisp-test"
+    :depends-on ("base" "testproto1" "testproto2"))
+   ;; Two protocol buffers used by the old tests.
+   (:proto-file "testproto1-pb" :pathname "testproto1")
+   (:proto-file "testproto2-pb" :pathname "testproto2")
+   (:cl-pb-impl "testproto1" :depends-on ("testproto1-pb"))
+   (:cl-pb-impl "testproto2" :depends-on ("testproto2-pb"))
+
+   ;; Protobuf definitions in the compiler source directories.
+
+   (:proto-file "descriptor-pb"
+    :pathname "google-protobuf/src/google/protobuf/descriptor")
+   (:proto-file "unittest_import-pb"
+    :pathname "google-protobuf/src/google/protobuf/unittest_import")
+   (:proto-file "unittest-pb"
+    :pathname "google-protobuf/src/google/protobuf/unittest")
+   (:cl-pb-impl "descriptor" :depends-on ("descriptor-pb"))
+   (:cl-pb-impl "unittest_import" :depends-on ("unittest_import-pb"))
+   (:cl-pb-impl "unittest" :depends-on ("unittest-pb"))
+   ))

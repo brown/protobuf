@@ -1,0 +1,96 @@
+// Copyright 2010, Google Inc.
+// All rights reserved.
+
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+message TimeProtocol {
+  repeated group G = 1 {
+    required int32 V1 = 2;
+    required int32 V2 = 3;
+  };
+  repeated string Debug = 4;
+};
+
+message TestMessage {
+  optional int32 foo = 1;
+  optional int32 bar = 2;
+};
+
+message TestProtocol {
+  required string Zero  = 63;
+  required string One   = 1;
+  optional int64 Two = 2 [default=19];
+  repeated group Four   = 4 {
+    required int64 Five = 5;
+    required uint64 Six = 64;
+    optional TimeProtocol TP = 112;
+    repeated group Seven = 65 {
+      optional bool Four = 66  [default=false];
+      optional group Twelve = 67 {
+        optional bool Thirteen = 68;
+      }
+    }
+    enum NestedEnum {DELETE_ME_TO_CRASH_SWIG = 0;};
+  }
+  optional group Seven = 7 {
+    required int64 Eight = 8;
+    required bool Nine = 9;
+    optional bool Ten = 10  [default=true];
+  }
+  repeated TimeProtocol TP2 = 113;
+  repeated int64 Test1 = 301;
+  repeated int32 Test2 = 302;
+  repeated float Test3 = 303;
+  repeated double Test4 = 304;
+  repeated string Test5 = 305;
+
+  required fixed64 FixedValue = 310;
+  required fixed32 FixedValue2 = 311;
+  optional string OptString = 299  [default="opt"];
+
+   enum DocInfo {
+    ENUM_ZERO = 0;
+    ENUM_ONE = 1;
+    ENUM_TWO_REALLY_LONG_NAME = 2;
+  };
+
+  optional TestMessage Eleven = 312;
+
+  enum AnotherEnum {
+    ENUM_WHATEVER = 0;
+  };
+  optional AnotherEnum Twelve = 313;
+  optional group Thirteen = 314 {
+    required AnotherEnum Fourteen = 315;
+  };
+
+  // Please keep this empty group at the end.  I've caught quite a few
+  // bugs this way: empty group is a degenerate case, but empty group
+  // not followed by anything is even more so!
+  repeated group Test6 = 306 {
+  };
+};

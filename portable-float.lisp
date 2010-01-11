@@ -10,10 +10,8 @@
 
 (in-package #:portable-float)
 
-;; XXXXXXXXXXXXXXXXXXXX  diff this code against the SBCL version
+;; XXXX: add type declaration
 
-
-;; XXXX
 (defun mask-and-sign-extend (x n)
   "Return the low N bits of X as a signed N-bit value."
   (assert (plusp n))
