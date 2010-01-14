@@ -1632,42 +1632,36 @@
                 (cl:error "buffer overflow")))))
         ;; repeated int32 r_int32 = 12;
         ((96)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (varint:parse-int32-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'r-int32))
               (cl:setf index new-index)))
         ;; repeated int64 r_int64 = 13;
         ((104)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (varint:parse-int64-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'r-int64))
               (cl:setf index new-index)))
         ;; repeated uint64 r_uint64 = 14;
         ((112)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (varint:parse-uint64-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'r-uint64))
               (cl:setf index new-index)))
         ;; repeated fixed32 r_fixed32 = 15;
         ((125)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (wire-format:read-uint32-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'r-fixed32))
               (cl:setf index new-index)))
         ;; repeated fixed64 r_fixed64 = 16;
         ((129)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (wire-format:read-uint64-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'r-fixed64))
               (cl:setf index new-index)))
         ;; repeated bool r_bool = 17;
         ((136)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (wire-format:read-boolean-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'r-bool))
@@ -1697,16 +1691,22 @@
               (cl:vector-push-extend message (cl:slot-value self 'r-msg)))))
         ;; repeated group TestGroup1 = 21 {
         ((171)
-          ;; XXXX probably wrong
           (cl:let ((message (cl:make-instance 'test1proto-testgroup1)))
             (cl:setf index (merge message buffer index limit))
-            (cl:vector-push-extend message (cl:slot-value self 'testgroup1))))
+            (cl:vector-push-extend message (cl:slot-value self 'testgroup1)))
+          ;; XXXX: wrong: tag size could be more than one byte
+          ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) 172)
+          ;  (cl:error "bad group merge"))
+          )
         ;; repeated group TestGroup2 = 23 {
         ((187)
-          ;; XXXX probably wrong
           (cl:let ((message (cl:make-instance 'test1proto-testgroup2)))
             (cl:setf index (merge message buffer index limit))
-            (cl:vector-push-extend message (cl:slot-value self 'testgroup2))))
+            (cl:vector-push-extend message (cl:slot-value self 'testgroup2)))
+          ;; XXXX: wrong: tag size could be more than one byte
+          ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) 188)
+          ;  (cl:error "bad group merge"))
+          )
         ;; optional int32 d_int32 = 25 [default = 12];
         ((200)
           (cl:multiple-value-bind (value new-index)
@@ -1737,14 +1737,12 @@
             (cl:setf index new-index)))
         ;; repeated float r_float = 29;
         ((237)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (wire-format:read-single-float-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'r-float))
               (cl:setf index new-index)))
         ;; repeated double r_double = 30;
         ((241)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (wire-format:read-double-float-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'r-double))

@@ -314,10 +314,13 @@
       (cl:case tag
         ;; repeated group G = 1 {
         ((11)
-          ;; XXXX probably wrong
           (cl:let ((message (cl:make-instance 'timeprotocol-g)))
             (cl:setf index (merge message buffer index limit))
-            (cl:vector-push-extend message (cl:slot-value self 'g))))
+            (cl:vector-push-extend message (cl:slot-value self 'g)))
+          ;; XXXX: wrong: tag size could be more than one byte
+          ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) 12)
+          ;  (cl:error "bad group merge"))
+          )
         ;; repeated string Debug = 4;
         ((34)
           (cl:multiple-value-bind (value new-index)
@@ -1407,8 +1410,16 @@
             (cl:setf index new-index)))
         ;; optional group Twelve = 67 {
         ((539)
-          ;; XXXX non-repeated group merge
-          (cl:error "non-repeated group merge"))
+          (cl:let ((message (cl:slot-value self 'twelve)))
+            (cl:when (cl:null message)
+              (cl:setf message (cl:make-instance 'testprotocol-four-seven-twelve))
+              (cl:setf (cl:slot-value self 'twelve) message)
+              (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1))
+            (cl:setf index (merge message buffer index limit))
+            ;; XXXX: wrong: tag size could be more than one byte
+            ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) 540)
+            ;  (cl:error "bad group merge"))
+            ))
         (cl:t
           (cl:when (cl:= (cl:logand tag 7) 4)
             (cl:return-from merge index))
@@ -1527,10 +1538,13 @@
             (cl:setf index new-index)))
         ;; repeated group Seven = 65 {
         ((523)
-          ;; XXXX probably wrong
           (cl:let ((message (cl:make-instance 'testprotocol-four-seven)))
             (cl:setf index (merge message buffer index limit))
-            (cl:vector-push-extend message (cl:slot-value self 'seven))))
+            (cl:vector-push-extend message (cl:slot-value self 'seven)))
+          ;; XXXX: wrong: tag size could be more than one byte
+          ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) 524)
+          ;  (cl:error "bad group merge"))
+          )
         ;; optional .TimeProtocol TP = 112;
         ((898)
           (cl:multiple-value-bind (length new-index)
@@ -1712,6 +1726,7 @@
               (varint:parse-int32-carefully buffer index limit)
             ;; XXXXX: when valid, set field, else add to unknown fields
             (cl:setf (cl:slot-value self 'fourteen) value)
+            (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         (cl:t
           (cl:when (cl:= (cl:logand tag 7) 4)
@@ -2095,14 +2110,25 @@
             (cl:setf index new-index)))
         ;; repeated group Four = 4 {
         ((35)
-          ;; XXXX probably wrong
           (cl:let ((message (cl:make-instance 'testprotocol-four)))
             (cl:setf index (merge message buffer index limit))
-            (cl:vector-push-extend message (cl:slot-value self 'four))))
+            (cl:vector-push-extend message (cl:slot-value self 'four)))
+          ;; XXXX: wrong: tag size could be more than one byte
+          ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) 36)
+          ;  (cl:error "bad group merge"))
+          )
         ;; optional group Seven = 7 {
         ((59)
-          ;; XXXX non-repeated group merge
-          (cl:error "non-repeated group merge"))
+          (cl:let ((message (cl:slot-value self 'seven)))
+            (cl:when (cl:null message)
+              (cl:setf message (cl:make-instance 'testprotocol-seven))
+              (cl:setf (cl:slot-value self 'seven) message)
+              (cl:setf (cl:ldb (cl:byte 1 4) (cl:slot-value self '%has-bits%)) 1))
+            (cl:setf index (merge message buffer index limit))
+            ;; XXXX: wrong: tag size could be more than one byte
+            ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) 60)
+            ;  (cl:error "bad group merge"))
+            ))
         ;; required string Zero = 63;
         ((506)
           (cl:multiple-value-bind (value new-index)
@@ -2130,28 +2156,24 @@
             (cl:setf index new-index)))
         ;; repeated int64 Test1 = 301;
         ((2408)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (varint:parse-int64-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'test1))
               (cl:setf index new-index)))
         ;; repeated int32 Test2 = 302;
         ((2416)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (varint:parse-int32-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'test2))
               (cl:setf index new-index)))
         ;; repeated float Test3 = 303;
         ((2429)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (wire-format:read-single-float-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'test3))
               (cl:setf index new-index)))
         ;; repeated double Test4 = 304;
         ((2433)
-          ;; XXXXX missing loop
           (cl:multiple-value-bind (value new-index)
               (wire-format:read-double-float-carefully buffer index limit)
               (cl:vector-push-extend value (cl:slot-value self 'test4))
@@ -2164,10 +2186,13 @@
             (cl:setf index new-index)))
         ;; repeated group Test6 = 306 {
         ((2451)
-          ;; XXXX probably wrong
           (cl:let ((message (cl:make-instance 'testprotocol-test6)))
             (cl:setf index (merge message buffer index limit))
-            (cl:vector-push-extend message (cl:slot-value self 'test6))))
+            (cl:vector-push-extend message (cl:slot-value self 'test6)))
+          ;; XXXX: wrong: tag size could be more than one byte
+          ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) 2452)
+          ;  (cl:error "bad group merge"))
+          )
         ;; required fixed64 FixedValue = 310;
         ((2481)
           (cl:multiple-value-bind (value new-index)
@@ -2202,11 +2227,20 @@
               (varint:parse-int32-carefully buffer index limit)
             ;; XXXXX: when valid, set field, else add to unknown fields
             (cl:setf (cl:slot-value self 'twelve) value)
+            (cl:setf (cl:ldb (cl:byte 1 15) (cl:slot-value self '%has-bits%)) 1)
             (cl:setf index new-index)))
         ;; optional group Thirteen = 314 {
         ((2515)
-          ;; XXXX non-repeated group merge
-          (cl:error "non-repeated group merge"))
+          (cl:let ((message (cl:slot-value self 'thirteen)))
+            (cl:when (cl:null message)
+              (cl:setf message (cl:make-instance 'testprotocol-thirteen))
+              (cl:setf (cl:slot-value self 'thirteen) message)
+              (cl:setf (cl:ldb (cl:byte 1 16) (cl:slot-value self '%has-bits%)) 1))
+            (cl:setf index (merge message buffer index limit))
+            ;; XXXX: wrong: tag size could be more than one byte
+            ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) 2516)
+            ;  (cl:error "bad group merge"))
+            ))
         (cl:t
           (cl:when (cl:= (cl:logand tag 7) 4)
             (cl:return-from merge index))

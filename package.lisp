@@ -176,3 +176,9 @@
   (:documentation "Tests for protocol buffer wire format functions.")
   (:use #:common-lisp #:wire-format)
   (:export #:test))
+
+(defpackage #:message-test
+  (:documentation "Tests for protocol buffer messages.")
+  (:use #:common-lisp)
+  (:import-from #:base #:defconst)
+  (:export #:test))

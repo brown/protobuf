@@ -60,6 +60,7 @@ your running Lisp with (load "protobuf.asd").
     (varint::test)
     (proto-lisp-test::test)
     (wire-format-test::test)
+    (message-test::test)
 
 
 BUGS

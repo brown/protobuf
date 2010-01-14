@@ -169,22 +169,24 @@
              (end (pb:serialize p output-buffer 0 size)))
         (assert (= end size))
         (with-open-file (output-stream +test-file-name+ :direction :output
-                                       :if-exists :supersede
-                                       :element-type 'unsigned-byte)
+                         :if-exists :supersede :element-type 'unsigned-byte)
           (write-sequence output-buffer output-stream)))
 
       ;; check against the golden data
       (with-open-file (golden-input +golden-file-name+ :direction :input
-                                     :element-type 'unsigned-byte)
+                       :element-type 'unsigned-byte)
         (assert (= (file-length golden-input) size))
         (with-open-file (test-input +test-file-name+ :direction :input
-                                     :element-type 'unsigned-byte)
+                         :element-type 'unsigned-byte)
           (assert (= (file-length test-input) size))
           (let ((golden-buffer (base:make-octet-vector size))
                 (test-buffer (base:make-octet-vector size)))
             (read-sequence golden-buffer golden-input)
             (read-sequence test-buffer test-input)
-            (assert (equalp golden-buffer test-buffer))))))))
+            (assert (equalp golden-buffer test-buffer))))))
+
+    ;; clean up
+    (delete-file +test-file-name+)))
 
 (defun test-repeated (value golden)
   (let ((golden-size (length golden)))
@@ -202,7 +204,7 @@
 (defun test-pb-read ()
   (let ((p (make-instance 'pb:Test1Proto)))
     (with-open-file (golden-input +golden-file-name+ :direction :input
-                                  :element-type 'unsigned-byte)
+                     :element-type 'unsigned-byte)
       (let* ((size (file-length golden-input))
              (buffer (base:make-octet-vector size)))
         (read-sequence buffer golden-input)

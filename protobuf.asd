@@ -142,6 +142,8 @@ buffer compiler and support libraries."
    (:cl-source-file "varint"  :depends-on ("base"))
    (:cl-source-file "varint-test" :depends-on ("varint"))
    (:cl-source-file "protocol-buffer" :depends-on ("base"))
+   (:cl-source-file "message-test"
+    :depends-on ("optimize" "base" "protocol-buffer"))
    (:cl-source-file "wire-format"
     :depends-on ("base" #-(or abcl allegro cmu sbcl) "sysdep"))
    (:cl-source-file "wire-format-test" :depends-on ("base"))
@@ -165,5 +167,5 @@ buffer compiler and support libraries."
     :pathname "google-protobuf/src/google/protobuf/unittest")
    (:cl-pb-impl "descriptor" :depends-on ("descriptor-pb"))
    (:cl-pb-impl "unittest_import" :depends-on ("unittest_import-pb"))
-   (:cl-pb-impl "unittest" :depends-on ("unittest-pb"))
+   (:cl-pb-impl "unittest" :depends-on ("unittest-pb" "unittest_import"))
    ))
