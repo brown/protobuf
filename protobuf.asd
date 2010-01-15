@@ -143,7 +143,7 @@ buffer compiler and support libraries."
    (:cl-source-file "varint-test" :depends-on ("varint"))
    (:cl-source-file "protocol-buffer" :depends-on ("base"))
    (:cl-source-file "message-test"
-    :depends-on ("optimize" "base" "protocol-buffer"))
+    :depends-on ("optimize" "base" "protocol-buffer" "unittest"))
    (:cl-source-file "wire-format"
     :depends-on ("base" #-(or abcl allegro cmu sbcl) "sysdep"))
    (:cl-source-file "wire-format-test" :depends-on ("base"))
