@@ -41,7 +41,7 @@
 (defconst +golden-packed-file-name+
   "google-protobuf/src/google/protobuf/testdata/golden_packed_fields_message")
 
-(defparameter *optional-field-info*
+(defconst +optional-field-info+
   '((optional-int32 . 101) (optional-int64 . 102)
     (optional-uint32 . 103) (optional-uint64 . 104)
     (optional-sint32 . 105) (optional-sint64 . 106)
@@ -54,9 +54,10 @@
     (optional-foreign-enum . #.pb:+foreignenum-foreign-baz+)
     (optional-import-enum . #.pb:+importenum-import-baz+)
     ;; XXXX: C++ test does not verify these fields.
-    (optional-string-piece . "124") (optional-cord . "125")))
+    (optional-string-piece . "124") (optional-cord . "125")
+    ))
 
-(defparameter *default-field-info*
+(defconst +default-field-info+
   '((default-int32 . 401) (default-int64 . 402)
     (default-uint32 . 403) (default-uint64 . 404)
     (default-sint32 . 405) (default-sint64 . 406)
@@ -69,9 +70,10 @@
     (default-foreign-enum . #.pb:+foreignenum-foreign-foo+)
     (default-import-enum . #.pb:+importenum-import-foo+)
     ;; XXXX: C++ test does not verify these fields.
-    (default-string-piece . "424") (default-cord . "425")))
+    (default-string-piece . "424") (default-cord . "425")
+    ))
 
-(defparameter *repeated-field-info*
+(defconst +repeated-field-info+
   '((repeated-int32 201 301) (repeated-int64 202 302)
     (repeated-uint32 203 303) (repeated-uint64 204 304)
     (repeated-sint32 205 305) (repeated-sint64 206 306)
@@ -97,7 +99,8 @@
      #.(base:string-to-utf8-octets "324"))
     (repeated-cord
      #.(base:string-to-utf8-octets "225")
-     #.(base:string-to-utf8-octets "325"))))
+     #.(base:string-to-utf8-octets "325"))
+    ))
 
 (defun field-equal (x y)
   (cond ((stringp x) (and (stringp y) (string= x y)))
@@ -115,7 +118,7 @@
 
 (defun expect-all-fields-set (m)
   ;; optional and default fields
-  (let ((field-info (append *optional-field-info* *default-field-info*)))
+  (let ((field-info (append +optional-field-info+ +default-field-info+)))
     (loop for (field . value) in field-info do
           (let ((has (field-function "HAS-" field))
                 (accessor (field-function "" field)))
@@ -140,7 +143,7 @@
   (assert (= (pb:d (pb:optional-import-message m)) 120))
 
   ;; repeated fields
-  (let ((field-info *repeated-field-info*))
+  (let ((field-info +repeated-field-info+))
     (loop for (field . values) in field-info do
           (let ((accessor (field-function "" field))
                 (v0 (first values))
@@ -165,7 +168,7 @@
     (assert (= (pb:d (aref v 0)) 220))
     (assert (= (pb:d (aref v 1)) 320))))
 
-(defparameter *packed-field-info*
+(defconst +packed-field-info+
   '((packed-int32 601 701) (packed-int64 602 702)
     (packed-uint32 603 703) (packed-uint64 604 704)
     (packed-sint32 605 705) (packed-sint64 606 706)
@@ -177,7 +180,7 @@
      #.pb:+foreignenum-foreign-bar+ #.pb:+foreignenum-foreign-baz+)))
 
 (defun expect-packed-fields-set (m)
-  (loop for (field . values) in *packed-field-info* do
+  (loop for (field . values) in +packed-field-info+ do
         (let ((accessor (field-function "" field))
               (v0 (first values))
               (v1 (second values)))
@@ -205,7 +208,7 @@
 
 (defun set-all-fields (m)
   ;; optional and default fields
-  (let ((field-info (append *optional-field-info* *default-field-info*)))
+  (let ((field-info (append +optional-field-info+ +default-field-info+)))
     (loop for (field . value) in field-info do
           (let ((setter (field-setter field)))
             (funcall setter value m))))
@@ -215,7 +218,7 @@
   (setf (pb:d (pb:optional-import-message m)) 120)
 
   ;; repeated fields
-  (let ((field-info *repeated-field-info*))
+  (let ((field-info +repeated-field-info+))
     (loop for (field . values) in field-info do
           (let ((accessor (field-function "" field))
                 (v0 (first values))
@@ -247,31 +250,20 @@
     (vector-push-extend v0 (pb:repeated-import-message m))
     (vector-push-extend v1 (pb:repeated-import-message m))))
 
-(defvar *buf* nil)                      ; XXXXXXXXXX
-
 (defun test-parse-helpers ()
   (let ((m1 (make-instance 'pb:testalltypes))
         (m2 (make-instance 'pb:testalltypes)))
     (set-all-fields m1)
     (expect-all-fields-set m1)
     (let* ((size (pb:octet-size m1))
-           ;; XXXXXXXXXXXXXXXXXXXX serialization fails ... buffer overflow
-           ;; so increase the buffer by 100
-           (buffer (make-array (+ size 100) :element-type '(unsigned-byte 8))))
-
-      ;; XXXX: save buffer
-      (setf *buf* buffer)
-      ;; XXXXXXXXXXXXXXXXXXXX serialization fails ... buffer overflow
-      ;; so increase the buffer by 100
-      (pb:serialize m1 buffer 0 (+ size 100))
-
+           (buffer (make-array size :element-type '(unsigned-byte 8))))
+      (pb:serialize m1 buffer 0 size)
       (pb:merge m2 buffer 0 size)
-      (assert (pb:has-default-cord m2))
       (expect-all-fields-set m2))))
 
 (defun test ()
   (test-parse-from-file)
   (test-parse-packed-from-file)
-;  (test-parse-helpers)
+  (test-parse-helpers)
   (print "PASS")
   (values))
