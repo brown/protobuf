@@ -2,8 +2,7 @@
 ;;;;    protobuf.asd
 
 
-;; Copyright 2010, Google Inc.
-;; All rights reserved.
+;; Copyright 2010, Google Inc. All rights reserved.
 
 ;; Redistribution and use in source and binary forms, with or without
 ;; modification, are permitted provided that the following conditions are
@@ -36,8 +35,7 @@
 
 (defpackage #:protobuf-system
   (:documentation "System definitions for protocol buffer code.")
-  (:use #:common-lisp
-        #:asdf))
+  (:use #:common-lisp #:asdf))
 
 (in-package #:protobuf-system)
 
@@ -88,12 +86,13 @@
 buffer messages."))
 
 ;; Machine-generated protocol buffer Lisp files cannot be compiled or loaded
-;; unless certain files have previously been loaded.  Some are required for
-;; package definitions, while others define in-line functions.
+;; unless various dependencies are already loaded.  The package.lisp file
+;; defines the package containing protobuf code.  The other Lisp files
+;; define classes or in-line functions referenced by the protobuf code.
 
 (defmethod component-depends-on ((op compile-op) (component cl-pb-impl))
   (append
-   '((load-op "package" "base" "protocol-buffer" "varint" "wire-format"))
+   '((compile-op "package" "base" "protocol-buffer" "varint" "wire-format"))
    (call-next-method)))
 
 (defmethod component-depends-on ((op load-op) (component cl-pb-impl))
@@ -110,9 +109,9 @@ buffer messages."))
   :description "Protocol buffer code"
   :long-description "A Common Lisp implementation of Google's protocol
 buffer compiler and support libraries."
-  :version "0.3.1"
+  :version "0.3.2"
   :author "Robert Brown"
-  :licence "See file COPYING and the copyright messages on individual files."
+  :licence "See file COPYING and the copyright messages in individual files."
 
   ;; After loading the system, announce its availability.
   :perform (load-op :after (operation component)
@@ -129,8 +128,6 @@ buffer compiler and support libraries."
 
    (:cl-source-file "package")
 
-;    :in-order-to ((compile-op (load-source-op "package"))))
-
    #-(or abcl allegro cmu sbcl)
    (:module "sysdep"
     :pathname ""           ; this module's files are not in a subdirectory
@@ -138,17 +135,22 @@ buffer compiler and support libraries."
     :components ((:cl-source-file "portable-float")))
 
    (:cl-source-file "optimize" :depends-on ("package"))
-   (:cl-source-file "base" :depends-on ("optimize"))
-   (:cl-source-file "varint"  :depends-on ("base"))
-   (:cl-source-file "varint-test" :depends-on ("varint"))
-   (:cl-source-file "protocol-buffer" :depends-on ("base"))
+   (:cl-source-file "base" :depends-on ("package" "optimize"))
+   (:cl-source-file "varint"  :depends-on ("package" "optimize" "base"))
+   (:cl-source-file "varint-test" :depends-on ("package"))
+   (:cl-source-file "protocol-buffer" :depends-on ("package"))
    (:cl-source-file "message-test"
     :depends-on ("optimize" "base" "protocol-buffer" "unittest"))
+   ;; The varint dependency is needed because some varint functions are
+   ;; declared in line and so must be loaded before wire-format is compiled.
    (:cl-source-file "wire-format"
-    :depends-on ("base" #-(or abcl allegro cmu sbcl) "sysdep"))
-   (:cl-source-file "wire-format-test" :depends-on ("base"))
+    :depends-on ("package" "base" "optimize" "varint"
+                 #-(or abcl allegro cmu sbcl) "sysdep"))
+   (:cl-source-file "wire-format-test" :depends-on ("package" "optimize"))
 
    ;; Old protocol buffer tests
+   ;; XXXX: Delete these when the new proto2 tests cover all the functionality.
+
    (:cl-source-file "proto-lisp-test"
     :depends-on ("base" "testproto1" "testproto2"))
    ;; Two protocol buffers used by the old tests.
@@ -157,7 +159,8 @@ buffer compiler and support libraries."
    (:cl-pb-impl "testproto1" :depends-on ("testproto1-pb"))
    (:cl-pb-impl "testproto2" :depends-on ("testproto2-pb"))
 
-   ;; Protobuf definitions in the compiler source directories.
+   ;; Test protocol buffers and protobuf definitions used by the proto2
+   ;; compiler.
 
    (:proto-file "descriptor-pb"
     :pathname "google-protobuf/src/google/protobuf/descriptor")
