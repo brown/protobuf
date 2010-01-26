@@ -208,7 +208,7 @@
       (let* ((size (file-length golden-input))
              (buffer (base:make-octet-vector size)))
         (read-sequence buffer golden-input)
-        (assert (= (pb:merge p buffer 0 size) size))))
+        (assert (= (pb:merge-from-array p buffer 0 size) size))))
 
     ;; unrepeated things
     (assert (pb:has-o-a p))
@@ -281,7 +281,7 @@
            (size (pb:serialize src buffer 0 10000)))
       (time (dotimes (i iterations)
               (let ((msg (make-instance 'pb:TimeProtocol)))
-                (pb:merge msg buffer 0 size)))))))
+                (pb:merge-from-array msg buffer 0 size)))))))
 
 ;; XXXXXXXXXXXXXXXXXXXX use parser-timing here
 

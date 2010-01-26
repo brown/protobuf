@@ -92,7 +92,7 @@
     (cl:setf index (varint:encode-uint64-carefully buffer index limit (base:int32-to-uint64 (cl:slot-value self 'foo)))))
   index)
 
-(cl:defmethod merge ((self test1msg) buffer start limit)
+(cl:defmethod merge-from-array ((self test1msg) buffer start limit)
   (cl:declare (cl:type base:octet-vector buffer)
               (cl:type base:octet-vector-index start limit))
   (cl:do ((index start index))
@@ -111,11 +111,17 @@
             (cl:setf index new-index)))
         (cl:t
           (cl:when (cl:= (cl:logand tag 7) 4)
-            (cl:return-from merge index))
+            (cl:return-from merge-from-array index))
           ;; Tag 0 is special.  It is used to indicate an error,
           ;; so we return as error code when we see it.
           (cl:when (cl:zerop tag)
             (cl:error "zero tag")))))))
+
+(cl:defmethod merge-from-message ((self test1msg) (from test1msg))
+  (cl:when (cl:logbitp 0 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'foo) (cl:slot-value from 'foo))
+    (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
+)
 
 
 (cl:defclass test1proto-testgroup1 (protocol-buffer)
@@ -986,7 +992,7 @@
     (cl:setf index (varint:encode-uint64-carefully buffer index limit (base:int32-to-uint64 (cl:slot-value self 'a)))))
   index)
 
-(cl:defmethod merge ((self test1proto-testgroup1) buffer start limit)
+(cl:defmethod merge-from-array ((self test1proto-testgroup1) buffer start limit)
   (cl:declare (cl:type base:octet-vector buffer)
               (cl:type base:octet-vector-index start limit))
   (cl:do ((index start index))
@@ -1005,11 +1011,17 @@
             (cl:setf index new-index)))
         (cl:t
           (cl:when (cl:= (cl:logand tag 7) 4)
-            (cl:return-from merge index))
+            (cl:return-from merge-from-array index))
           ;; Tag 0 is special.  It is used to indicate an error,
           ;; so we return as error code when we see it.
           (cl:when (cl:zerop tag)
             (cl:error "zero tag")))))))
+
+(cl:defmethod merge-from-message ((self test1proto-testgroup1) (from test1proto-testgroup1))
+  (cl:when (cl:logbitp 0 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'a) (cl:slot-value from 'a))
+    (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
+)
 
 
 
@@ -1047,7 +1059,7 @@
     (cl:setf index (varint:encode-uint64-carefully buffer index limit (base:int32-to-uint64 (cl:slot-value self 'b)))))
   index)
 
-(cl:defmethod merge ((self test1proto-testgroup2) buffer start limit)
+(cl:defmethod merge-from-array ((self test1proto-testgroup2) buffer start limit)
   (cl:declare (cl:type base:octet-vector buffer)
               (cl:type base:octet-vector-index start limit))
   (cl:do ((index start index))
@@ -1066,11 +1078,17 @@
             (cl:setf index new-index)))
         (cl:t
           (cl:when (cl:= (cl:logand tag 7) 4)
-            (cl:return-from merge index))
+            (cl:return-from merge-from-array index))
           ;; Tag 0 is special.  It is used to indicate an error,
           ;; so we return as error code when we see it.
           (cl:when (cl:zerop tag)
             (cl:error "zero tag")))))))
+
+(cl:defmethod merge-from-message ((self test1proto-testgroup2) (from test1proto-testgroup2))
+  (cl:when (cl:logbitp 0 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'b) (cl:slot-value from 'b))
+    (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
+)
 
 
 
@@ -1536,7 +1554,7 @@
     (cl:setf index (wire-format:write-boolean-carefully buffer index limit (cl:slot-value self 'dd-bool))))
   index)
 
-(cl:defmethod merge ((self test1proto) buffer start limit)
+(cl:defmethod merge-from-array ((self test1proto) buffer start limit)
   (cl:declare (cl:type base:octet-vector buffer)
               (cl:type base:octet-vector-index start limit))
   (cl:do ((index start index))
@@ -1627,7 +1645,7 @@
                 (cl:setf message (cl:make-instance 'test1msg))
                 (cl:setf (cl:slot-value self 'u-msg) message)
                 (cl:setf (cl:ldb (cl:byte 1 12) (cl:slot-value self '%has-bits%)) 1))
-              (cl:setf index (merge message buffer new-index (cl:+ new-index length)))
+              (cl:setf index (merge-from-array message buffer new-index (cl:+ new-index length)))
               (cl:when (cl:not (cl:= index (cl:+ new-index length)))
                 (cl:error "buffer overflow")))))
         ;; repeated int32 r_int32 = 12;
@@ -1685,14 +1703,14 @@
             (cl:when (cl:> (cl:+ new-index length) limit)
               (cl:error "buffer overflow"))
             (cl:let ((message (cl:make-instance 'test1msg)))
-              (cl:setf index (merge message buffer new-index (cl:+ new-index length)))
+              (cl:setf index (merge-from-array message buffer new-index (cl:+ new-index length)))
               (cl:when (cl:not (cl:= index (cl:+ new-index length)))
                 (cl:error "buffer overflow"))
               (cl:vector-push-extend message (cl:slot-value self 'r-msg)))))
         ;; repeated group TestGroup1 = 21 {
         ((171)
           (cl:let ((message (cl:make-instance 'test1proto-testgroup1)))
-            (cl:setf index (merge message buffer index limit))
+            (cl:setf index (merge-from-array message buffer index limit))
             (cl:vector-push-extend message (cl:slot-value self 'testgroup1)))
           ;; XXXX: wrong: tag size could be more than one byte
           ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) 172)
@@ -1701,7 +1719,7 @@
         ;; repeated group TestGroup2 = 23 {
         ((187)
           (cl:let ((message (cl:make-instance 'test1proto-testgroup2)))
-            (cl:setf index (merge message buffer index limit))
+            (cl:setf index (merge-from-array message buffer index limit))
             (cl:vector-push-extend message (cl:slot-value self 'testgroup2)))
           ;; XXXX: wrong: tag size could be more than one byte
           ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) 188)
@@ -1777,10 +1795,139 @@
             (cl:setf index new-index)))
         (cl:t
           (cl:when (cl:= (cl:logand tag 7) 4)
-            (cl:return-from merge index))
+            (cl:return-from merge-from-array index))
           ;; Tag 0 is special.  It is used to indicate an error,
           ;; so we return as error code when we see it.
           (cl:when (cl:zerop tag)
             (cl:error "zero tag")))))))
+
+(cl:defmethod merge-from-message ((self test1proto) (from test1proto))
+  (cl:let* ((v (cl:slot-value self 'r-int32))
+            (vf (cl:slot-value from 'r-int32))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'r-int64))
+            (vf (cl:slot-value from 'r-int64))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'r-uint64))
+            (vf (cl:slot-value from 'r-uint64))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'r-fixed32))
+            (vf (cl:slot-value from 'r-fixed32))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'r-fixed64))
+            (vf (cl:slot-value from 'r-fixed64))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'r-bool))
+            (vf (cl:slot-value from 'r-bool))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'r-float))
+            (vf (cl:slot-value from 'r-float))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'r-double))
+            (vf (cl:slot-value from 'r-double))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'r-string))
+            (vf (cl:slot-value from 'r-string))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'r-vardata))
+            (vf (cl:slot-value from 'r-vardata))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'r-msg))
+            (vf (cl:slot-value from 'r-msg))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'testgroup1))
+            (vf (cl:slot-value from 'testgroup1))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:let* ((v (cl:slot-value self 'testgroup2))
+            (vf (cl:slot-value from 'testgroup2))
+            (length (cl:length vf)))
+    (cl:loop for i from 0 below length do
+      (cl:vector-push-extend (cl:aref vf i) v)))
+  (cl:when (cl:logbitp 0 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'o-a) (cl:slot-value from 'o-a))
+    (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 1 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'o-b) (cl:slot-value from 'o-b))
+    (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 2 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'u-int32) (cl:slot-value from 'u-int32))
+    (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 3 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'u-int64) (cl:slot-value from 'u-int64))
+    (cl:setf (cl:ldb (cl:byte 1 3) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 4 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'u-uint64) (cl:slot-value from 'u-uint64))
+    (cl:setf (cl:ldb (cl:byte 1 4) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 5 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'u-fixed32) (cl:slot-value from 'u-fixed32))
+    (cl:setf (cl:ldb (cl:byte 1 5) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 6 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'u-fixed64) (cl:slot-value from 'u-fixed64))
+    (cl:setf (cl:ldb (cl:byte 1 6) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 7 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'u-bool) (cl:slot-value from 'u-bool))
+    (cl:setf (cl:ldb (cl:byte 1 7) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 8 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'u-float) (cl:slot-value from 'u-float))
+    (cl:setf (cl:ldb (cl:byte 1 8) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 9 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'u-double) (cl:slot-value from 'u-double))
+    (cl:setf (cl:ldb (cl:byte 1 9) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 10 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'u-string) (cl:slot-value from 'u-string))
+    (cl:setf (cl:ldb (cl:byte 1 10) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 11 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'u-vardata) (cl:slot-value from 'u-vardata))
+    (cl:setf (cl:ldb (cl:byte 1 11) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 12 (cl:slot-value from '%has-bits%))
+    (cl:let ((message (cl:slot-value self 'u-msg)))
+      (cl:when (cl:null message)
+        (cl:setf message (cl:make-instance 'test1msg))
+        (cl:setf (cl:slot-value self 'u-msg) message)
+        (cl:setf (cl:ldb (cl:byte 1 12) (cl:slot-value self '%has-bits%)) 1))
+     (merge-from-message message (cl:slot-value from 'u-msg))))
+  (cl:when (cl:logbitp 26 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'd-int32) (cl:slot-value from 'd-int32))
+    (cl:setf (cl:ldb (cl:byte 1 26) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 27 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'd-string) (cl:slot-value from 'd-string))
+    (cl:setf (cl:ldb (cl:byte 1 27) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 28 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'd-bool) (cl:slot-value from 'd-bool))
+    (cl:setf (cl:ldb (cl:byte 1 28) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 29 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'dd-int32) (cl:slot-value from 'dd-int32))
+    (cl:setf (cl:ldb (cl:byte 1 29) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 30 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'dd-string) (cl:slot-value from 'dd-string))
+    (cl:setf (cl:ldb (cl:byte 1 30) (cl:slot-value self '%has-bits%)) 1))
+  (cl:when (cl:logbitp 31 (cl:slot-value from '%has-bits%))
+    (cl:setf (cl:slot-value self 'dd-bool) (cl:slot-value from 'dd-bool))
+    (cl:setf (cl:ldb (cl:byte 1 31) (cl:slot-value self '%has-bits%)) 1))
+)
 
 

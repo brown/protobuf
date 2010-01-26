@@ -65,11 +65,15 @@ serialization demands writing past LIMIT, then signal
 PROTOCOL-BUFFER-WRITE-ERROR.  NOTE: OCTET-SIZE must be called immediately
 before SERIALIZE because the protocol buffer caches size information."))
 
-(cl:defgeneric merge (protocol-buffer buffer start limit)
+(cl:defgeneric merge-from-array (protocol-buffer buffer start limit)
   (:documentation "Merge the contents of the encoded protocol buffer stored in
 BUFFER into PROTOCOL-BUFFER.  When reading from BUFFER, begin at position
 START and do not read at position LIMIT or higher.  If deserialization demands
 reading beyond LIMIT, then signal PROTOCOL-BUFFER-READ-ERROR."))
+
+(cl:defgeneric merge-from-message (protocol-buffer source-protocol-buffer)
+  (:documentation "Merge the contents SOURCE-PROTOCOL-BUFFER into
+PROTOCOL-BUFFER."))
 
 
 #|

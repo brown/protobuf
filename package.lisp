@@ -115,7 +115,8 @@
            #:clear
            #:is-initialized
            #:octet-size
-           #:merge
+           #:merge-from-array
+           #:merge-from-message
            #:serialize))
 
 (defpackage #:portable-float
