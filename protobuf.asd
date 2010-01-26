@@ -42,63 +42,86 @@
 
 ;;; Teach ASDF how to convert protocol buffer definition files into Lisp.
 
-;;; We define two kinds of components, PROTO-FILE for files containing
-;;; protocol buffer definitions, and CL-PB-IMPL for the corresponding
-;;; machine-generated Lisp code.
 
+(defparameter *protoc* #p"google-protobuf/src/protoc"
+   "Pathname of the protocol buffer compiler.")
 
-(defparameter *protoc* #p"google-protobuf/src/protoc")
+(defclass proto-file (cl-source-file)
+  ((relative-proto-pathname
+    :initarg :proto-pathname
+    :initform nil
+    :reader proto-pathname
+   :documentation "Relative pathname that specifies a protobuf .proto file")
+   (search-path
+    :initform ()
+    :initarg :proto-search-path
+    :reader search-path
+    :documentation "List containing directories in which the protocol buffer
+compiler should search for imported protobuf files."))
+  (:documentation "A protocol buffer definition file."))
 
-
-(defclass proto-file (source-file)
+(defclass proto-to-lisp (operation)
   ()
-  (:documentation "Protocol buffer definition file"))
+  (:documentation "An ASDF operation that compiles a file containing protocol
+buffer definitions into a Lisp source code."))
 
-(defmethod source-file-type ((component proto-file) (module module)) "proto")
-
-(defmethod input-files ((operation compile-op) (component proto-file))
-  (append (list *protoc*) (call-next-method)))
-
-(defmethod output-files ((operation compile-op) (component proto-file))
-  (list (merge-pathnames
-         (make-pathname :name (pathname-name (component-pathname component))
-                        :type "lisp")
-         (asdf::component-parent-pathname component))))
-
-(defmethod perform ((operation compile-op) (component proto-file))
-  (let* ((source-file (component-pathname component))
-         (output-file (first (output-files operation component)))
-         ;; XXXX
-         (compiler-source #p"google-protobuf/src/"))
-    (zerop (run-shell-command "~A --proto_path=~A:~A --lisp_out=~A ~A"
-                              (namestring *protoc*)
-                              (directory-namestring source-file)
-                              (directory-namestring compiler-source)
-                              (directory-namestring output-file)
-                              (namestring source-file)))))
-
-(defmethod perform ((operation load-op) (component proto-file))
-  nil)
-
-(defclass cl-pb-impl (cl-source-file)
-  ()
-  (:documentation "Machine-generated Common Lisp implementation of protocol
-buffer messages."))
-
-;; Machine-generated protocol buffer Lisp files cannot be compiled or loaded
-;; unless various dependencies are already loaded.  The package.lisp file
-;; defines the package containing protobuf code.  The other Lisp files
-;; define classes or in-line functions referenced by the protobuf code.
-
-(defmethod component-depends-on ((op compile-op) (component cl-pb-impl))
+(defmethod component-depends-on ((operation compile-op) (component proto-file))
+  "Compiling a protocol buffer file depends on compiling dependencies and
+converting the protobuf file into Lisp source code."
   (append
-   '((compile-op "package" "base" "protocol-buffer" "varint" "wire-format"))
+   `((compile-op "package" "base" "protocol-buffer" "varint" "wire-format")
+     (proto-to-lisp ,(component-name component)))
    (call-next-method)))
 
-(defmethod component-depends-on ((op load-op) (component cl-pb-impl))
+(defmethod component-depends-on ((operation load-op) (component proto-file))
+  "Loading a protocol buffer file depends on loading dependencies and
+converting the protobuf file into Lisp source code."
   (append
-   '((load-op "package" "base" "protocol-buffer" "varint" "wire-format"))
+   `((load-op "package" "base" "protocol-buffer" "varint" "wire-format")
+     (proto-to-lisp ,(component-name component)))
    (call-next-method)))
+
+(defun proto-input (proto-file)
+  "Return the pathname of the protocol buffer definition file that must be
+translated into Lisp source code for this PROTO-FILE component."
+  (if (proto-pathname proto-file)
+      ;; Path of the protobuf file was specified with :PROTO-PATHNAME.
+      (merge-pathnames
+       (make-pathname :type "proto")
+       (merge-pathnames (pathname (proto-pathname proto-file))
+                        (asdf::component-parent-pathname proto-file)))
+      ;; No :PROTO-PATHNAME was specified, to the path of the protobuf
+      ;; defaults to that of the Lisp file, but with a ".proto" suffix.
+      (let ((lisp-pathname (component-pathname proto-file)))
+        (merge-pathnames (make-pathname :type "proto") lisp-pathname))))
+
+(defmethod input-files ((operation proto-to-lisp) (component proto-file))
+  (list *protoc* (proto-input component)))
+
+(defmethod output-files ((operation proto-to-lisp) (component proto-file))
+  (list (component-pathname component)))
+
+(defmethod perform ((operation proto-to-lisp) (component proto-file))
+  (let* ((source-file (proto-input component))
+         (output-file (component-pathname component))
+         (search-path (cons (directory-namestring source-file)
+                            (search-path component)))
+         (status
+          (run-shell-command "~A --proto_path=~{~A~^:~} --lisp_out=~A ~A"
+                             (namestring *protoc*)
+                             search-path
+                             (directory-namestring output-file)
+                             (namestring source-file))))
+    (unless (zerop status)
+      (error 'compile-failed :component component :operation operation))))
+
+(defmethod asdf::component-self-dependencies ((op load-op) (c proto-file))
+  "Remove PROTO-TO-LISP operations from self dependencies.  Otherwise, the
+.lisp output files of PROTO-TO-LISP are considered to be input files for
+LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
+  (remove-if (lambda (x)
+               (eq (car x) 'proto-to-lisp))
+             (call-next-method)))
 
 
 ;;; A Common Lisp implementation of Google's protocol buffers
@@ -109,7 +132,7 @@ buffer messages."))
   :description "Protocol buffer code"
   :long-description "A Common Lisp implementation of Google's protocol
 buffer compiler and support libraries."
-  :version "0.3.2"
+  :version "0.3.3"
   :author "Robert Brown"
   :licence "See file COPYING and the copyright messages in individual files."
 
@@ -154,21 +177,18 @@ buffer compiler and support libraries."
    (:cl-source-file "proto-lisp-test"
     :depends-on ("base" "testproto1" "testproto2"))
    ;; Two protocol buffers used by the old tests.
-   (:proto-file "testproto1-pb" :pathname "testproto1")
-   (:proto-file "testproto2-pb" :pathname "testproto2")
-   (:cl-pb-impl "testproto1" :depends-on ("testproto1-pb"))
-   (:cl-pb-impl "testproto2" :depends-on ("testproto2-pb"))
+   (:proto-file "testproto1")
+   (:proto-file "testproto2")
 
    ;; Test protocol buffers and protobuf definitions used by the proto2
    ;; compiler.
 
-   (:proto-file "descriptor-pb"
-    :pathname "google-protobuf/src/google/protobuf/descriptor")
-   (:proto-file "unittest_import-pb"
-    :pathname "google-protobuf/src/google/protobuf/unittest_import")
-   (:proto-file "unittest-pb"
-    :pathname "google-protobuf/src/google/protobuf/unittest")
-   (:cl-pb-impl "descriptor" :depends-on ("descriptor-pb"))
-   (:cl-pb-impl "unittest_import" :depends-on ("unittest_import-pb"))
-   (:cl-pb-impl "unittest" :depends-on ("unittest-pb" "unittest_import"))
+   (:proto-file "descriptor"
+    :proto-pathname "google-protobuf/src/google/protobuf/descriptor")
+   (:proto-file "unittest_import"
+    :proto-pathname "google-protobuf/src/google/protobuf/unittest_import")
+   (:proto-file "unittest"
+    :proto-pathname "google-protobuf/src/google/protobuf/unittest"
+    :depends-on ("unittest_import")
+    :proto-search-path ("google-protobuf/src/"))
    ))
