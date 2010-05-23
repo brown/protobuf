@@ -69,6 +69,7 @@
 
 
 (cl:defmethod (cl:setf v1) :after (x (self timeprotocol-g))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-v1 (proto))
@@ -87,6 +88,7 @@
 
 
 (cl:defmethod (cl:setf v2) :after (x (self timeprotocol-g))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-v2 (proto))
@@ -384,6 +386,7 @@
 
 
 (cl:defmethod (cl:setf foo) :after (x (self testmessage))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-foo (proto))
@@ -402,6 +405,7 @@
 
 
 (cl:defmethod (cl:setf bar) :after (x (self testmessage))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-bar (proto))
@@ -526,6 +530,7 @@
 
 
 (cl:defmethod (cl:setf thirteen) :after (x (self testprotocol-four-seven-twelve))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-thirteen (proto))
@@ -568,6 +573,7 @@
 
 
 (cl:defmethod (cl:setf four) :after (x (self testprotocol-four-seven))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-four (proto))
@@ -594,6 +600,7 @@
     result))
 
 (cl:defmethod (cl:setf twelve) :after (x (self testprotocol-four-seven))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-twelve (proto))
@@ -647,6 +654,7 @@
 
 
 (cl:defmethod (cl:setf five) :after (x (self testprotocol-four))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-five (proto))
@@ -665,6 +673,7 @@
 
 
 (cl:defmethod (cl:setf six) :after (x (self testprotocol-four))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-six (proto))
@@ -691,6 +700,7 @@
     result))
 
 (cl:defmethod (cl:setf tp) :after (x (self testprotocol-four))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-tp (proto))
@@ -747,6 +757,7 @@
 
 
 (cl:defmethod (cl:setf eight) :after (x (self testprotocol-seven))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-eight (proto))
@@ -765,6 +776,7 @@
 
 
 (cl:defmethod (cl:setf nine) :after (x (self testprotocol-seven))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-nine (proto))
@@ -783,6 +795,7 @@
 
 
 (cl:defmethod (cl:setf ten) :after (x (self testprotocol-seven))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-ten (proto))
@@ -821,6 +834,7 @@
 
 
 (cl:defmethod (cl:setf fourteen) :after (x (self testprotocol-thirteen))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-fourteen (proto))
@@ -988,6 +1002,7 @@
   new-value)
 
 (cl:defmethod (cl:setf zero) :after (x (self testprotocol))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-zero (proto))
@@ -1027,6 +1042,7 @@
   new-value)
 
 (cl:defmethod (cl:setf one) :after (x (self testprotocol))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-one (proto))
@@ -1047,6 +1063,7 @@
 
 
 (cl:defmethod (cl:setf two) :after (x (self testprotocol))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-two (proto))
@@ -1083,6 +1100,7 @@
     result))
 
 (cl:defmethod (cl:setf seven) :after (x (self testprotocol))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 4) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-seven (proto))
@@ -1163,6 +1181,7 @@
 
 
 (cl:defmethod (cl:setf fixedvalue) :after (x (self testprotocol))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 11) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-fixedvalue (proto))
@@ -1181,6 +1200,7 @@
 
 
 (cl:defmethod (cl:setf fixedvalue2) :after (x (self testprotocol))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 12) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-fixedvalue2 (proto))
@@ -1218,6 +1238,7 @@
   new-value)
 
 (cl:defmethod (cl:setf optstring) :after (x (self testprotocol))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 13) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-optstring (proto))
@@ -1246,6 +1267,7 @@
     result))
 
 (cl:defmethod (cl:setf eleven) :after (x (self testprotocol))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 14) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-eleven (proto))
@@ -1264,6 +1286,7 @@
 
 
 (cl:defmethod (cl:setf twelve) :after (x (self testprotocol))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 15) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-twelve (proto))
@@ -1290,6 +1313,7 @@
     result))
 
 (cl:defmethod (cl:setf thirteen) :after (x (self testprotocol))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 16) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-thirteen (proto))

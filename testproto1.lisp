@@ -43,6 +43,7 @@
 
 
 (cl:defmethod (cl:setf foo) :after (x (self test1msg))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-foo (proto))
@@ -146,6 +147,7 @@
 
 
 (cl:defmethod (cl:setf a) :after (x (self test1proto-testgroup1))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-a (proto))
@@ -184,6 +186,7 @@
 
 
 (cl:defmethod (cl:setf b) :after (x (self test1proto-testgroup2))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-b (proto))
@@ -393,6 +396,7 @@
 
 
 (cl:defmethod (cl:setf o-a) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-o-a (proto))
@@ -411,6 +415,7 @@
 
 
 (cl:defmethod (cl:setf o-b) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-o-b (proto))
@@ -429,6 +434,7 @@
 
 
 (cl:defmethod (cl:setf u-int32) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-u-int32 (proto))
@@ -447,6 +453,7 @@
 
 
 (cl:defmethod (cl:setf u-int64) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 3) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-u-int64 (proto))
@@ -465,6 +472,7 @@
 
 
 (cl:defmethod (cl:setf u-uint64) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 4) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-u-uint64 (proto))
@@ -483,6 +491,7 @@
 
 
 (cl:defmethod (cl:setf u-fixed32) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 5) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-u-fixed32 (proto))
@@ -501,6 +510,7 @@
 
 
 (cl:defmethod (cl:setf u-fixed64) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 6) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-u-fixed64 (proto))
@@ -519,6 +529,7 @@
 
 
 (cl:defmethod (cl:setf u-bool) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 7) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-u-bool (proto))
@@ -537,6 +548,7 @@
 
 
 (cl:defmethod (cl:setf u-float) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 8) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-u-float (proto))
@@ -555,6 +567,7 @@
 
 
 (cl:defmethod (cl:setf u-double) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 9) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-u-double (proto))
@@ -592,6 +605,7 @@
   new-value)
 
 (cl:defmethod (cl:setf u-string) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 10) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-u-string (proto))
@@ -631,6 +645,7 @@
   new-value)
 
 (cl:defmethod (cl:setf u-vardata) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 11) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-u-vardata (proto))
@@ -659,6 +674,7 @@
     result))
 
 (cl:defmethod (cl:setf u-msg) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 12) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-u-msg (proto))
@@ -811,6 +827,7 @@
 
 
 (cl:defmethod (cl:setf d-int32) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 26) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-d-int32 (proto))
@@ -848,6 +865,7 @@
   new-value)
 
 (cl:defmethod (cl:setf d-string) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 27) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-d-string (proto))
@@ -868,6 +886,7 @@
 
 
 (cl:defmethod (cl:setf d-bool) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 28) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-d-bool (proto))
@@ -886,6 +905,7 @@
 
 
 (cl:defmethod (cl:setf dd-int32) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 29) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-dd-int32 (proto))
@@ -923,6 +943,7 @@
   new-value)
 
 (cl:defmethod (cl:setf dd-string) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 30) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-dd-string (proto))
@@ -943,6 +964,7 @@
 
 
 (cl:defmethod (cl:setf dd-bool) :after (x (self test1proto))
+  (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 31) (cl:slot-value self '%has-bits%)) 1))
 
 (cl:defgeneric has-dd-bool (proto))

@@ -380,7 +380,7 @@ LIMIT, then signal ENCODE-OVERFLOW."
               #+allegro
               (multiple-value-bind (high low)
                   (excl:single-float-to-shorts float)
-                (declare (type uint16 high low))
+                (declare (type (unsigned-byte 16) high low))
                 (logior (ash high 16) low))
               #+cmu (kernel:single-float-bits float)
               #+sbcl (sb-kernel:single-float-bits float)))
@@ -427,7 +427,7 @@ LIMIT, then signal ENCODE-OVERFLOW."
     #+allegro
     (multiple-value-bind (us3 us2 us1 us0)
         (excl:double-float-to-shorts float)
-      (declare (type uint16 us3 us2 us1 us0))
+      (declare (type (unsigned-byte 16) us3 us2 us1 us0))
       (setf low (logior (ash us1 16) us0))
       (setf high (logior (ash us3 16) us2)))
     #+cmu
