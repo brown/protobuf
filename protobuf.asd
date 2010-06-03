@@ -39,12 +39,25 @@
 
 (in-package #:protobuf-system)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defparameter *protobuf-directory*
+    "Directory containing the protobuf source code."
+    (make-pathname :directory (pathname-directory *load-truename*))))
+
+(defun resolve-relative-pathname (pathname)
+  "When PATHNAME doesn't have an absolute directory component, treat it as
+relative to the protobuf source directory."
+  (let ((directory (pathname-directory pathname)))
+    (if (and (list directory) (eq (car directory) :absolute))
+        pathname
+        (merge-pathnames pathname *protobuf-directory*))))
+
 
 ;;; Teach ASDF how to convert protocol buffer definition files into Lisp.
 
 
-(defparameter *protoc* #p"google-protobuf/src/protoc"
-   "Pathname of the protocol buffer compiler.")
+(defparameter *protoc* (resolve-relative-pathname #p"google-protobuf/src/protoc")
+  "Pathname of the protocol buffer compiler.")
 
 (defclass proto-file (cl-source-file)
   ((relative-proto-pathname
@@ -57,8 +70,14 @@
     :initarg :proto-search-path
     :reader search-path
     :documentation "List containing directories in which the protocol buffer
-compiler should search for imported protobuf files."))
+compiler should search for imported protobuf files.  Non-absolute pathnames
+are treated as relative to the protobuf source directory."))
   (:documentation "A protocol buffer definition file."))
+
+(defmethod shared-initialize :after ((component proto-file) slot-names &rest init-args)
+  (declare (ignore slot-names init-args))
+  (with-slots (search-path) component
+    (setf search-path (mapcar #'resolve-relative-pathname search-path))))
 
 (defclass proto-to-lisp (operation)
   ()
@@ -190,5 +209,5 @@ buffer compiler and support libraries."
    (:proto-file "unittest"
     :proto-pathname "google-protobuf/src/google/protobuf/unittest"
     :depends-on ("unittest_import")
-    :proto-search-path ("google-protobuf/src/"))
+    :proto-search-path (#p"google-protobuf/src/"))
    ))
