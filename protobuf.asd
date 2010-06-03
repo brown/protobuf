@@ -66,20 +66,20 @@ compiler should search for imported protobuf files."))
 buffer definitions into a Lisp source code."))
 
 (defmethod component-depends-on ((operation compile-op) (component proto-file))
-  "Compiling a protocol buffer file depends on compiling dependencies and
-converting the protobuf file into Lisp source code."
-  (append
-   `((compile-op "package" "base" "protocol-buffer" "varint" "wire-format")
-     (proto-to-lisp ,(component-name component)))
-   (call-next-method)))
+  "Compiling a protocol buffer file depends on generating Lisp source code
+for the protobuf, but also on loading package definitions and in-line
+function definitions that the machine-generated protobuf Lisp code uses."
+  `((load-op "package" "base" "protocol-buffer" "varint" "wire-format")
+    (proto-to-lisp ,(component-name component))
+    ,@(call-next-method)))
 
 (defmethod component-depends-on ((operation load-op) (component proto-file))
-  "Loading a protocol buffer file depends on loading dependencies and
-converting the protobuf file into Lisp source code."
-  (append
-   `((load-op "package" "base" "protocol-buffer" "varint" "wire-format")
-     (proto-to-lisp ,(component-name component)))
-   (call-next-method)))
+  "Loading a protocol buffer file depends on generating Lisp source code
+for the protobuf, but also on loading package definitions and in-line
+function definitions that the machine-generated protobuf Lisp code uses."
+  `((load-op "package" "base" "protocol-buffer" "varint" "wire-format")
+    (proto-to-lisp ,(component-name component))
+    ,@(call-next-method)))
 
 (defun proto-input (proto-file)
   "Return the pathname of the protocol buffer definition file that must be
@@ -90,7 +90,7 @@ translated into Lisp source code for this PROTO-FILE component."
        (make-pathname :type "proto")
        (merge-pathnames (pathname (proto-pathname proto-file))
                         (asdf::component-parent-pathname proto-file)))
-      ;; No :PROTO-PATHNAME was specified, to the path of the protobuf
+      ;; No :PROTO-PATHNAME was specified, so the path of the protobuf
       ;; defaults to that of the Lisp file, but with a ".proto" suffix.
       (let ((lisp-pathname (component-pathname proto-file)))
         (merge-pathnames (make-pathname :type "proto") lisp-pathname))))
