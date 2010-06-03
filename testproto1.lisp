@@ -46,12 +46,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-foo (proto))
+(cl:unless (cl:fboundp 'has-foo)
+  (cl:defgeneric has-foo (proto)))
 (cl:defmethod has-foo ((self test1msg))
   (cl:logbitp 0 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-foo)
 
-(cl:defgeneric clear-foo (proto))
+(cl:unless (cl:fboundp 'clear-foo)
+  (cl:defgeneric clear-foo (proto)))
 (cl:defmethod clear-foo ((self test1msg))
   (cl:setf (cl:slot-value self 'foo) 0)
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 0)
@@ -150,12 +152,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-a (proto))
+(cl:unless (cl:fboundp 'has-a)
+  (cl:defgeneric has-a (proto)))
 (cl:defmethod has-a ((self test1proto-testgroup1))
   (cl:logbitp 0 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-a)
 
-(cl:defgeneric clear-a (proto))
+(cl:unless (cl:fboundp 'clear-a)
+  (cl:defgeneric clear-a (proto)))
 (cl:defmethod clear-a ((self test1proto-testgroup1))
   (cl:setf (cl:slot-value self 'a) 0)
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 0)
@@ -189,12 +193,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-b (proto))
+(cl:unless (cl:fboundp 'has-b)
+  (cl:defgeneric has-b (proto)))
 (cl:defmethod has-b ((self test1proto-testgroup2))
   (cl:logbitp 0 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-b)
 
-(cl:defgeneric clear-b (proto))
+(cl:unless (cl:fboundp 'clear-b)
+  (cl:defgeneric clear-b (proto)))
 (cl:defmethod clear-b ((self test1proto-testgroup2))
   (cl:setf (cl:slot-value self 'b) 0)
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 0)
@@ -399,12 +405,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-o-a (proto))
+(cl:unless (cl:fboundp 'has-o-a)
+  (cl:defgeneric has-o-a (proto)))
 (cl:defmethod has-o-a ((self test1proto))
   (cl:logbitp 0 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-o-a)
 
-(cl:defgeneric clear-o-a (proto))
+(cl:unless (cl:fboundp 'clear-o-a)
+  (cl:defgeneric clear-o-a (proto)))
 (cl:defmethod clear-o-a ((self test1proto))
   (cl:setf (cl:slot-value self 'o-a) 0)
   (cl:setf (cl:ldb (cl:byte 1 0) (cl:slot-value self '%has-bits%)) 0)
@@ -418,12 +426,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-o-b (proto))
+(cl:unless (cl:fboundp 'has-o-b)
+  (cl:defgeneric has-o-b (proto)))
 (cl:defmethod has-o-b ((self test1proto))
   (cl:logbitp 1 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-o-b)
 
-(cl:defgeneric clear-o-b (proto))
+(cl:unless (cl:fboundp 'clear-o-b)
+  (cl:defgeneric clear-o-b (proto)))
 (cl:defmethod clear-o-b ((self test1proto))
   (cl:setf (cl:slot-value self 'o-b) 0)
   (cl:setf (cl:ldb (cl:byte 1 1) (cl:slot-value self '%has-bits%)) 0)
@@ -437,12 +447,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-u-int32 (proto))
+(cl:unless (cl:fboundp 'has-u-int32)
+  (cl:defgeneric has-u-int32 (proto)))
 (cl:defmethod has-u-int32 ((self test1proto))
   (cl:logbitp 2 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-u-int32)
 
-(cl:defgeneric clear-u-int32 (proto))
+(cl:unless (cl:fboundp 'clear-u-int32)
+  (cl:defgeneric clear-u-int32 (proto)))
 (cl:defmethod clear-u-int32 ((self test1proto))
   (cl:setf (cl:slot-value self 'u-int32) 0)
   (cl:setf (cl:ldb (cl:byte 1 2) (cl:slot-value self '%has-bits%)) 0)
@@ -456,12 +468,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 3) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-u-int64 (proto))
+(cl:unless (cl:fboundp 'has-u-int64)
+  (cl:defgeneric has-u-int64 (proto)))
 (cl:defmethod has-u-int64 ((self test1proto))
   (cl:logbitp 3 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-u-int64)
 
-(cl:defgeneric clear-u-int64 (proto))
+(cl:unless (cl:fboundp 'clear-u-int64)
+  (cl:defgeneric clear-u-int64 (proto)))
 (cl:defmethod clear-u-int64 ((self test1proto))
   (cl:setf (cl:slot-value self 'u-int64) 0)
   (cl:setf (cl:ldb (cl:byte 1 3) (cl:slot-value self '%has-bits%)) 0)
@@ -475,12 +489,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 4) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-u-uint64 (proto))
+(cl:unless (cl:fboundp 'has-u-uint64)
+  (cl:defgeneric has-u-uint64 (proto)))
 (cl:defmethod has-u-uint64 ((self test1proto))
   (cl:logbitp 4 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-u-uint64)
 
-(cl:defgeneric clear-u-uint64 (proto))
+(cl:unless (cl:fboundp 'clear-u-uint64)
+  (cl:defgeneric clear-u-uint64 (proto)))
 (cl:defmethod clear-u-uint64 ((self test1proto))
   (cl:setf (cl:slot-value self 'u-uint64) 0)
   (cl:setf (cl:ldb (cl:byte 1 4) (cl:slot-value self '%has-bits%)) 0)
@@ -494,12 +510,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 5) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-u-fixed32 (proto))
+(cl:unless (cl:fboundp 'has-u-fixed32)
+  (cl:defgeneric has-u-fixed32 (proto)))
 (cl:defmethod has-u-fixed32 ((self test1proto))
   (cl:logbitp 5 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-u-fixed32)
 
-(cl:defgeneric clear-u-fixed32 (proto))
+(cl:unless (cl:fboundp 'clear-u-fixed32)
+  (cl:defgeneric clear-u-fixed32 (proto)))
 (cl:defmethod clear-u-fixed32 ((self test1proto))
   (cl:setf (cl:slot-value self 'u-fixed32) 0)
   (cl:setf (cl:ldb (cl:byte 1 5) (cl:slot-value self '%has-bits%)) 0)
@@ -513,12 +531,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 6) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-u-fixed64 (proto))
+(cl:unless (cl:fboundp 'has-u-fixed64)
+  (cl:defgeneric has-u-fixed64 (proto)))
 (cl:defmethod has-u-fixed64 ((self test1proto))
   (cl:logbitp 6 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-u-fixed64)
 
-(cl:defgeneric clear-u-fixed64 (proto))
+(cl:unless (cl:fboundp 'clear-u-fixed64)
+  (cl:defgeneric clear-u-fixed64 (proto)))
 (cl:defmethod clear-u-fixed64 ((self test1proto))
   (cl:setf (cl:slot-value self 'u-fixed64) 0)
   (cl:setf (cl:ldb (cl:byte 1 6) (cl:slot-value self '%has-bits%)) 0)
@@ -532,12 +552,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 7) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-u-bool (proto))
+(cl:unless (cl:fboundp 'has-u-bool)
+  (cl:defgeneric has-u-bool (proto)))
 (cl:defmethod has-u-bool ((self test1proto))
   (cl:logbitp 7 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-u-bool)
 
-(cl:defgeneric clear-u-bool (proto))
+(cl:unless (cl:fboundp 'clear-u-bool)
+  (cl:defgeneric clear-u-bool (proto)))
 (cl:defmethod clear-u-bool ((self test1proto))
   (cl:setf (cl:slot-value self 'u-bool) cl:nil)
   (cl:setf (cl:ldb (cl:byte 1 7) (cl:slot-value self '%has-bits%)) 0)
@@ -551,12 +573,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 8) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-u-float (proto))
+(cl:unless (cl:fboundp 'has-u-float)
+  (cl:defgeneric has-u-float (proto)))
 (cl:defmethod has-u-float ((self test1proto))
   (cl:logbitp 8 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-u-float)
 
-(cl:defgeneric clear-u-float (proto))
+(cl:unless (cl:fboundp 'clear-u-float)
+  (cl:defgeneric clear-u-float (proto)))
 (cl:defmethod clear-u-float ((self test1proto))
   (cl:setf (cl:slot-value self 'u-float) 0s0)
   (cl:setf (cl:ldb (cl:byte 1 8) (cl:slot-value self '%has-bits%)) 0)
@@ -570,12 +594,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 9) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-u-double (proto))
+(cl:unless (cl:fboundp 'has-u-double)
+  (cl:defgeneric has-u-double (proto)))
 (cl:defmethod has-u-double ((self test1proto))
   (cl:logbitp 9 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-u-double)
 
-(cl:defgeneric clear-u-double (proto))
+(cl:unless (cl:fboundp 'clear-u-double)
+  (cl:defgeneric clear-u-double (proto)))
 (cl:defmethod clear-u-double ((self test1proto))
   (cl:setf (cl:slot-value self 'u-double) 0d0)
   (cl:setf (cl:ldb (cl:byte 1 9) (cl:slot-value self '%has-bits%)) 0)
@@ -584,16 +610,19 @@
 
 (cl:export 'u-string)
 
-(cl:defgeneric u-string (proto))
+(cl:unless (cl:fboundp 'u-string)
+  (cl:defgeneric u-string (proto)))
 (cl:defmethod u-string ((self test1proto))
   (base:utf8-octets-to-string (cl:slot-value self 'u-string)))
 
 (cl:export 'u-string-octets)
-(cl:defgeneric u-string-octets (proto))
+(cl:unless (cl:fboundp 'u-string-octets)
+  (cl:defgeneric u-string-octets (proto)))
 (cl:defmethod u-string-octets ((self test1proto))
   (cl:slot-value self 'u-string))
 
-(cl:defgeneric (cl:setf u-string) (new-value proto))
+(cl:unless (cl:fboundp '(cl:setf u-string))
+  (cl:defgeneric (cl:setf u-string) (new-value proto)))
 (cl:defmethod (cl:setf u-string) (new-value (self test1proto))
   (cl:etypecase new-value
     ((cl:string)
@@ -608,12 +637,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 10) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-u-string (proto))
+(cl:unless (cl:fboundp 'has-u-string)
+  (cl:defgeneric has-u-string (proto)))
 (cl:defmethod has-u-string ((self test1proto))
   (cl:logbitp 10 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-u-string)
 
-(cl:defgeneric clear-u-string (proto))
+(cl:unless (cl:fboundp 'clear-u-string)
+  (cl:defgeneric clear-u-string (proto)))
 (cl:defmethod clear-u-string ((self test1proto))
   (cl:setf (cl:slot-value self 'u-string)
            (cl:make-array 0 :element-type '(cl:unsigned-byte 8)
@@ -624,16 +655,19 @@
 
 (cl:export 'u-vardata)
 
-(cl:defgeneric u-vardata (proto))
+(cl:unless (cl:fboundp 'u-vardata)
+  (cl:defgeneric u-vardata (proto)))
 (cl:defmethod u-vardata ((self test1proto))
   (base:utf8-octets-to-string (cl:slot-value self 'u-vardata)))
 
 (cl:export 'u-vardata-octets)
-(cl:defgeneric u-vardata-octets (proto))
+(cl:unless (cl:fboundp 'u-vardata-octets)
+  (cl:defgeneric u-vardata-octets (proto)))
 (cl:defmethod u-vardata-octets ((self test1proto))
   (cl:slot-value self 'u-vardata))
 
-(cl:defgeneric (cl:setf u-vardata) (new-value proto))
+(cl:unless (cl:fboundp '(cl:setf u-vardata))
+  (cl:defgeneric (cl:setf u-vardata) (new-value proto)))
 (cl:defmethod (cl:setf u-vardata) (new-value (self test1proto))
   (cl:etypecase new-value
     ((cl:string)
@@ -648,12 +682,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 11) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-u-vardata (proto))
+(cl:unless (cl:fboundp 'has-u-vardata)
+  (cl:defgeneric has-u-vardata (proto)))
 (cl:defmethod has-u-vardata ((self test1proto))
   (cl:logbitp 11 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-u-vardata)
 
-(cl:defgeneric clear-u-vardata (proto))
+(cl:unless (cl:fboundp 'clear-u-vardata)
+  (cl:defgeneric clear-u-vardata (proto)))
 (cl:defmethod clear-u-vardata ((self test1proto))
   (cl:setf (cl:slot-value self 'u-vardata)
            (cl:make-array 0 :element-type '(cl:unsigned-byte 8)
@@ -664,7 +700,8 @@
 
 (cl:export 'u-msg)
 
-(cl:defgeneric u-msg (proto))
+(cl:unless (cl:fboundp 'u-msg)
+  (cl:defgeneric u-msg (proto)))
 (cl:defmethod u-msg ((self test1proto))
   (cl:let ((result (cl:slot-value self 'u-msg)))
     (cl:when (cl:null result)
@@ -677,12 +714,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 12) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-u-msg (proto))
+(cl:unless (cl:fboundp 'has-u-msg)
+  (cl:defgeneric has-u-msg (proto)))
 (cl:defmethod has-u-msg ((self test1proto))
   (cl:logbitp 12 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-u-msg)
 
-(cl:defgeneric clear-u-msg (proto))
+(cl:unless (cl:fboundp 'clear-u-msg)
+  (cl:defgeneric clear-u-msg (proto)))
 (cl:defmethod clear-u-msg ((self test1proto))
   (cl:setf (cl:slot-value self 'u-msg) cl:nil)
   (cl:setf (cl:ldb (cl:byte 1 12) (cl:slot-value self '%has-bits%)) 0)
@@ -691,7 +730,8 @@
 
 (cl:export 'r-int32)
 
-(cl:defgeneric clear-r-int32 (proto))
+(cl:unless (cl:fboundp 'clear-r-int32)
+  (cl:defgeneric clear-r-int32 (proto)))
 (cl:defmethod clear-r-int32 ((self test1proto))
   (cl:setf (cl:slot-value self 'r-int32)
            (cl:make-array 0 :element-type '(cl:signed-byte 32)
@@ -701,7 +741,8 @@
 
 (cl:export 'r-int64)
 
-(cl:defgeneric clear-r-int64 (proto))
+(cl:unless (cl:fboundp 'clear-r-int64)
+  (cl:defgeneric clear-r-int64 (proto)))
 (cl:defmethod clear-r-int64 ((self test1proto))
   (cl:setf (cl:slot-value self 'r-int64)
            (cl:make-array 0 :element-type '(cl:signed-byte 64)
@@ -711,7 +752,8 @@
 
 (cl:export 'r-uint64)
 
-(cl:defgeneric clear-r-uint64 (proto))
+(cl:unless (cl:fboundp 'clear-r-uint64)
+  (cl:defgeneric clear-r-uint64 (proto)))
 (cl:defmethod clear-r-uint64 ((self test1proto))
   (cl:setf (cl:slot-value self 'r-uint64)
            (cl:make-array 0 :element-type '(cl:unsigned-byte 64)
@@ -721,7 +763,8 @@
 
 (cl:export 'r-fixed32)
 
-(cl:defgeneric clear-r-fixed32 (proto))
+(cl:unless (cl:fboundp 'clear-r-fixed32)
+  (cl:defgeneric clear-r-fixed32 (proto)))
 (cl:defmethod clear-r-fixed32 ((self test1proto))
   (cl:setf (cl:slot-value self 'r-fixed32)
            (cl:make-array 0 :element-type '(cl:unsigned-byte 32)
@@ -731,7 +774,8 @@
 
 (cl:export 'r-fixed64)
 
-(cl:defgeneric clear-r-fixed64 (proto))
+(cl:unless (cl:fboundp 'clear-r-fixed64)
+  (cl:defgeneric clear-r-fixed64 (proto)))
 (cl:defmethod clear-r-fixed64 ((self test1proto))
   (cl:setf (cl:slot-value self 'r-fixed64)
            (cl:make-array 0 :element-type '(cl:unsigned-byte 64)
@@ -741,7 +785,8 @@
 
 (cl:export 'r-bool)
 
-(cl:defgeneric clear-r-bool (proto))
+(cl:unless (cl:fboundp 'clear-r-bool)
+  (cl:defgeneric clear-r-bool (proto)))
 (cl:defmethod clear-r-bool ((self test1proto))
   (cl:setf (cl:slot-value self 'r-bool)
            (cl:make-array 0 :element-type 'cl:boolean
@@ -751,7 +796,8 @@
 
 (cl:export 'r-float)
 
-(cl:defgeneric clear-r-float (proto))
+(cl:unless (cl:fboundp 'clear-r-float)
+  (cl:defgeneric clear-r-float (proto)))
 (cl:defmethod clear-r-float ((self test1proto))
   (cl:setf (cl:slot-value self 'r-float)
            (cl:make-array 0 :element-type 'cl:single-float
@@ -761,7 +807,8 @@
 
 (cl:export 'r-double)
 
-(cl:defgeneric clear-r-double (proto))
+(cl:unless (cl:fboundp 'clear-r-double)
+  (cl:defgeneric clear-r-double (proto)))
 (cl:defmethod clear-r-double ((self test1proto))
   (cl:setf (cl:slot-value self 'r-double)
            (cl:make-array 0 :element-type 'cl:double-float
@@ -771,7 +818,8 @@
 
 (cl:export 'r-string)
 
-(cl:defgeneric clear-r-string (proto))
+(cl:unless (cl:fboundp 'clear-r-string)
+  (cl:defgeneric clear-r-string (proto)))
 (cl:defmethod clear-r-string ((self test1proto))
   (cl:setf (cl:slot-value self 'r-string)
            (cl:make-array
@@ -783,7 +831,8 @@
 
 (cl:export 'r-vardata)
 
-(cl:defgeneric clear-r-vardata (proto))
+(cl:unless (cl:fboundp 'clear-r-vardata)
+  (cl:defgeneric clear-r-vardata (proto)))
 (cl:defmethod clear-r-vardata ((self test1proto))
   (cl:setf (cl:slot-value self 'r-vardata)
            (cl:make-array
@@ -795,7 +844,8 @@
 
 (cl:export 'r-msg)
 
-(cl:defgeneric clear-r-msg (proto))
+(cl:unless (cl:fboundp 'clear-r-msg)
+  (cl:defgeneric clear-r-msg (proto)))
 (cl:defmethod clear-r-msg ((self test1proto))
   (cl:setf (cl:slot-value self 'r-msg)
            (cl:make-array 0 :element-type 'test1msg
@@ -805,7 +855,8 @@
 
 (cl:export 'testgroup1)
 
-(cl:defgeneric clear-testgroup1 (proto))
+(cl:unless (cl:fboundp 'clear-testgroup1)
+  (cl:defgeneric clear-testgroup1 (proto)))
 (cl:defmethod clear-testgroup1 ((self test1proto))
   (cl:setf (cl:slot-value self 'testgroup1)
            (cl:make-array 0 :element-type 'test1proto-testgroup1
@@ -815,7 +866,8 @@
 
 (cl:export 'testgroup2)
 
-(cl:defgeneric clear-testgroup2 (proto))
+(cl:unless (cl:fboundp 'clear-testgroup2)
+  (cl:defgeneric clear-testgroup2 (proto)))
 (cl:defmethod clear-testgroup2 ((self test1proto))
   (cl:setf (cl:slot-value self 'testgroup2)
            (cl:make-array 0 :element-type 'test1proto-testgroup2
@@ -830,12 +882,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 26) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-d-int32 (proto))
+(cl:unless (cl:fboundp 'has-d-int32)
+  (cl:defgeneric has-d-int32 (proto)))
 (cl:defmethod has-d-int32 ((self test1proto))
   (cl:logbitp 26 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-d-int32)
 
-(cl:defgeneric clear-d-int32 (proto))
+(cl:unless (cl:fboundp 'clear-d-int32)
+  (cl:defgeneric clear-d-int32 (proto)))
 (cl:defmethod clear-d-int32 ((self test1proto))
   (cl:setf (cl:slot-value self 'd-int32) 12)
   (cl:setf (cl:ldb (cl:byte 1 26) (cl:slot-value self '%has-bits%)) 0)
@@ -844,16 +898,19 @@
 
 (cl:export 'd-string)
 
-(cl:defgeneric d-string (proto))
+(cl:unless (cl:fboundp 'd-string)
+  (cl:defgeneric d-string (proto)))
 (cl:defmethod d-string ((self test1proto))
   (base:utf8-octets-to-string (cl:slot-value self 'd-string)))
 
 (cl:export 'd-string-octets)
-(cl:defgeneric d-string-octets (proto))
+(cl:unless (cl:fboundp 'd-string-octets)
+  (cl:defgeneric d-string-octets (proto)))
 (cl:defmethod d-string-octets ((self test1proto))
   (cl:slot-value self 'd-string))
 
-(cl:defgeneric (cl:setf d-string) (new-value proto))
+(cl:unless (cl:fboundp '(cl:setf d-string))
+  (cl:defgeneric (cl:setf d-string) (new-value proto)))
 (cl:defmethod (cl:setf d-string) (new-value (self test1proto))
   (cl:etypecase new-value
     ((cl:string)
@@ -868,12 +925,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 27) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-d-string (proto))
+(cl:unless (cl:fboundp 'has-d-string)
+  (cl:defgeneric has-d-string (proto)))
 (cl:defmethod has-d-string ((self test1proto))
   (cl:logbitp 27 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-d-string)
 
-(cl:defgeneric clear-d-string (proto))
+(cl:unless (cl:fboundp 'clear-d-string)
+  (cl:defgeneric clear-d-string (proto)))
 (cl:defmethod clear-d-string ((self test1proto))
   (cl:setf (cl:slot-value self 'd-string)
            (cl:make-array 3 :element-type '(cl:unsigned-byte 8)
@@ -889,12 +948,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 28) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-d-bool (proto))
+(cl:unless (cl:fboundp 'has-d-bool)
+  (cl:defgeneric has-d-bool (proto)))
 (cl:defmethod has-d-bool ((self test1proto))
   (cl:logbitp 28 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-d-bool)
 
-(cl:defgeneric clear-d-bool (proto))
+(cl:unless (cl:fboundp 'clear-d-bool)
+  (cl:defgeneric clear-d-bool (proto)))
 (cl:defmethod clear-d-bool ((self test1proto))
   (cl:setf (cl:slot-value self 'd-bool) cl:t)
   (cl:setf (cl:ldb (cl:byte 1 28) (cl:slot-value self '%has-bits%)) 0)
@@ -908,12 +969,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 29) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-dd-int32 (proto))
+(cl:unless (cl:fboundp 'has-dd-int32)
+  (cl:defgeneric has-dd-int32 (proto)))
 (cl:defmethod has-dd-int32 ((self test1proto))
   (cl:logbitp 29 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-dd-int32)
 
-(cl:defgeneric clear-dd-int32 (proto))
+(cl:unless (cl:fboundp 'clear-dd-int32)
+  (cl:defgeneric clear-dd-int32 (proto)))
 (cl:defmethod clear-dd-int32 ((self test1proto))
   (cl:setf (cl:slot-value self 'dd-int32) 12)
   (cl:setf (cl:ldb (cl:byte 1 29) (cl:slot-value self '%has-bits%)) 0)
@@ -922,16 +985,19 @@
 
 (cl:export 'dd-string)
 
-(cl:defgeneric dd-string (proto))
+(cl:unless (cl:fboundp 'dd-string)
+  (cl:defgeneric dd-string (proto)))
 (cl:defmethod dd-string ((self test1proto))
   (base:utf8-octets-to-string (cl:slot-value self 'dd-string)))
 
 (cl:export 'dd-string-octets)
-(cl:defgeneric dd-string-octets (proto))
+(cl:unless (cl:fboundp 'dd-string-octets)
+  (cl:defgeneric dd-string-octets (proto)))
 (cl:defmethod dd-string-octets ((self test1proto))
   (cl:slot-value self 'dd-string))
 
-(cl:defgeneric (cl:setf dd-string) (new-value proto))
+(cl:unless (cl:fboundp '(cl:setf dd-string))
+  (cl:defgeneric (cl:setf dd-string) (new-value proto)))
 (cl:defmethod (cl:setf dd-string) (new-value (self test1proto))
   (cl:etypecase new-value
     ((cl:string)
@@ -946,12 +1012,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 30) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-dd-string (proto))
+(cl:unless (cl:fboundp 'has-dd-string)
+  (cl:defgeneric has-dd-string (proto)))
 (cl:defmethod has-dd-string ((self test1proto))
   (cl:logbitp 30 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-dd-string)
 
-(cl:defgeneric clear-dd-string (proto))
+(cl:unless (cl:fboundp 'clear-dd-string)
+  (cl:defgeneric clear-dd-string (proto)))
 (cl:defmethod clear-dd-string ((self test1proto))
   (cl:setf (cl:slot-value self 'dd-string)
            (cl:make-array 6 :element-type '(cl:unsigned-byte 8)
@@ -967,12 +1035,14 @@
   (cl:declare (cl:ignore x))
   (cl:setf (cl:ldb (cl:byte 1 31) (cl:slot-value self '%has-bits%)) 1))
 
-(cl:defgeneric has-dd-bool (proto))
+(cl:unless (cl:fboundp 'has-dd-bool)
+  (cl:defgeneric has-dd-bool (proto)))
 (cl:defmethod has-dd-bool ((self test1proto))
   (cl:logbitp 31 (cl:slot-value self '%has-bits%)))
 (cl:export 'has-dd-bool)
 
-(cl:defgeneric clear-dd-bool (proto))
+(cl:unless (cl:fboundp 'clear-dd-bool)
+  (cl:defgeneric clear-dd-bool (proto)))
 (cl:defmethod clear-dd-bool ((self test1proto))
   (cl:setf (cl:slot-value self 'dd-bool) cl:t)
   (cl:setf (cl:ldb (cl:byte 1 31) (cl:slot-value self '%has-bits%)) 0)

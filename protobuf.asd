@@ -41,8 +41,8 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *protobuf-directory*
-    "Directory containing the protobuf source code."
-    (make-pathname :directory (pathname-directory *load-truename*))))
+    (make-pathname :directory (pathname-directory *load-truename*))
+    "Directory containing the protobuf source code."))
 
 (defun resolve-relative-pathname (pathname)
   "When PATHNAME doesn't have an absolute directory component, treat it as
@@ -88,7 +88,7 @@ buffer definitions into a Lisp source code."))
   "Compiling a protocol buffer file depends on generating Lisp source code
 for the protobuf, but also on loading package definitions and in-line
 function definitions that the machine-generated protobuf Lisp code uses."
-  `((load-op "package" "base" "protocol-buffer" "varint" "wire-format")
+  `((load-op "protocol-buffer" "varint" "wire-format")
     (proto-to-lisp ,(component-name component))
     ,@(call-next-method)))
 
@@ -96,7 +96,7 @@ function definitions that the machine-generated protobuf Lisp code uses."
   "Loading a protocol buffer file depends on generating Lisp source code
 for the protobuf, but also on loading package definitions and in-line
 function definitions that the machine-generated protobuf Lisp code uses."
-  `((load-op "package" "base" "protocol-buffer" "varint" "wire-format")
+  `((load-op "protocol-buffer" "varint" "wire-format")
     (proto-to-lisp ,(component-name component))
     ,@(call-next-method)))
 
