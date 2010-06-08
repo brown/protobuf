@@ -118,11 +118,15 @@ translated into Lisp source code for this PROTO-FILE component."
   (list *protoc* (proto-input component)))
 
 (defmethod output-files ((operation proto-to-lisp) (component proto-file))
-  (list (component-pathname component)))
+  (values (list (component-pathname component))
+          nil))                         ; allow around methods to translate
 
 (defmethod perform ((operation proto-to-lisp) (component proto-file))
   (let* ((source-file (proto-input component))
-         (output-file (component-pathname component))
+         ;; Around methods on output-file may globally redirect output
+         ;; products, so we must call that method instead of executing
+         ;; (component-pathname component).
+         (output-file (first (output-files operation component)))
          (search-path (cons (directory-namestring source-file)
                             (search-path component)))
          (status
