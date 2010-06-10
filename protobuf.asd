@@ -44,10 +44,11 @@
     (make-pathname :directory (pathname-directory *load-truename*))
     "Directory containing the protobuf source code."))
 
-(defun resolve-relative-pathname (pathname)
+(defun resolve-relative-pathname (path)
   "When PATHNAME doesn't have an absolute directory component, treat it as
 relative to the protobuf source directory."
-  (let ((directory (pathname-directory pathname)))
+  (let* ((pathname (pathname path))
+         (directory (pathname-directory pathname)))
     (if (and (list directory) (eq (car directory) :absolute))
         pathname
         (merge-pathnames pathname *protobuf-directory*))))
@@ -56,7 +57,7 @@ relative to the protobuf source directory."
 ;;; Teach ASDF how to convert protocol buffer definition files into Lisp.
 
 
-(defparameter *protoc* (resolve-relative-pathname #p"google-protobuf/src/protoc")
+(defparameter *protoc* (resolve-relative-pathname "google-protobuf/src/protoc")
   "Pathname of the protocol buffer compiler.")
 
 (defclass proto-file (cl-source-file)
@@ -213,5 +214,5 @@ buffer compiler and support libraries."
    (:proto-file "unittest"
     :proto-pathname "google-protobuf/src/google/protobuf/unittest"
     :depends-on ("unittest_import")
-    :proto-search-path (#p"google-protobuf/src/"))
+    :proto-search-path ("google-protobuf/src/"))
    ))
