@@ -156,7 +156,7 @@ LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
   :description "Protocol buffer code"
   :long-description "A Common Lisp implementation of Google's protocol
 buffer compiler and support libraries."
-  :version "0.3.3"
+  :version "0.3.4"
   :author "Robert Brown"
   :licence "See file COPYING and the copyright messages in individual files."
 
@@ -167,11 +167,14 @@ buffer compiler and support libraries."
 
   :depends-on (#-(or allegro clisp sbcl) :trivial-utf-8)
 
+  ;; XXXXXXXXXXXXXXXXXXXX
+  :in-order-to ((test-op (load-op :protobuf :protobuf-test)))
+  ;; XXXXXXXXXXXXXXXXXXXX
+
   :components
   ((:static-file "COPYING")
    (:static-file "README")
    (:static-file "TODO")
-   (:static-file "golden")
 
    (:cl-source-file "package")
 
@@ -184,35 +187,10 @@ buffer compiler and support libraries."
    (:cl-source-file "optimize" :depends-on ("package"))
    (:cl-source-file "base" :depends-on ("package" "optimize"))
    (:cl-source-file "varint"  :depends-on ("package" "optimize" "base"))
-   (:cl-source-file "varint-test" :depends-on ("package"))
    (:cl-source-file "protocol-buffer" :depends-on ("package"))
-   (:cl-source-file "message-test"
-    :depends-on ("optimize" "base" "protocol-buffer" "unittest"))
    ;; The varint dependency is needed because some varint functions are
    ;; declared in line and so must be loaded before wire-format is compiled.
    (:cl-source-file "wire-format"
     :depends-on ("package" "base" "optimize" "varint"
                  #-(or abcl allegro cmu sbcl) "sysdep"))
-   (:cl-source-file "wire-format-test" :depends-on ("package" "optimize"))
-
-   ;; Old protocol buffer tests
-   ;; XXXX: Delete these when the new proto2 tests cover all the functionality.
-
-   (:cl-source-file "proto-lisp-test"
-    :depends-on ("base" "testproto1" "testproto2"))
-   ;; Two protocol buffers used by the old tests.
-   (:proto-file "testproto1")
-   (:proto-file "testproto2")
-
-   ;; Test protocol buffers and protobuf definitions used by the proto2
-   ;; compiler.
-
-   (:proto-file "descriptor"
-    :proto-pathname "google-protobuf/src/google/protobuf/descriptor")
-   (:proto-file "unittest_import"
-    :proto-pathname "google-protobuf/src/google/protobuf/unittest_import")
-   (:proto-file "unittest"
-    :proto-pathname "google-protobuf/src/google/protobuf/unittest"
-    :depends-on ("unittest_import")
-    :proto-search-path ("google-protobuf/src/"))
    ))
