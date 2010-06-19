@@ -22,5 +22,6 @@
   :components ((:static-file "Makefile")
                (:static-file "README")
                (:cl-source-file "package")
-               (:cl-source-file "address-book" :depends-on ("addressbook"))
-               (protobuf-system:proto-file "addressbook")))
+               (protobuf-system:proto-file "addressbook")
+               (:cl-source-file "address-book"
+                :depends-on ("package" "addressbook"))))
