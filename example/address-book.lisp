@@ -14,7 +14,7 @@
         (let* ((size (file-length input))
                (buffer (make-array size :element-type '(unsigned-byte 8))))
           (read-sequence buffer input)
-          (pb:merge address-book buffer 0 size))))
+          (pb:merge-from-array address-book buffer 0 size))))
     address-book))
 
 (defun write-address-book (address-book)

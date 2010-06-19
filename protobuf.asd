@@ -35,7 +35,8 @@
 
 (defpackage #:protobuf-system
   (:documentation "System definitions for protocol buffer code.")
-  (:use #:common-lisp #:asdf))
+  (:use #:common-lisp #:asdf)
+  (:export #:proto-file))
 
 (in-package #:protobuf-system)
 
@@ -89,7 +90,7 @@ buffer definitions into a Lisp source code."))
   "Compiling a protocol buffer file depends on generating Lisp source code
 for the protobuf, but also on loading package definitions and in-line
 function definitions that the machine-generated protobuf Lisp code uses."
-  `((load-op "protocol-buffer" "varint" "wire-format")
+  `(;;(load-op "protocol-buffer" "varint" "wire-format")
     (proto-to-lisp ,(component-name component))
     ,@(call-next-method)))
 
@@ -97,7 +98,7 @@ function definitions that the machine-generated protobuf Lisp code uses."
   "Loading a protocol buffer file depends on generating Lisp source code
 for the protobuf, but also on loading package definitions and in-line
 function definitions that the machine-generated protobuf Lisp code uses."
-  `((load-op "protocol-buffer" "varint" "wire-format")
+  `(;;(load-op "protocol-buffer" "varint" "wire-format")
     (proto-to-lisp ,(component-name component))
     ,@(call-next-method)))
 

@@ -61,17 +61,17 @@
    (:cl-source-file "proto-lisp-test"
     :depends-on ("base" "testproto1" "testproto2"))
    ;; Two protocol buffers used by the old tests.
-   (:proto-file "testproto1")
-   (:proto-file "testproto2")
+   (protobuf-system:proto-file "testproto1")
+   (protobuf-system:proto-file "testproto2")
 
    ;; Test protocol buffers and protobuf definitions used by the proto2
    ;; compiler.
 
-   (:proto-file "descriptor"
+   (protobuf-system:proto-file "descriptor"
     :proto-pathname "google-protobuf/src/google/protobuf/descriptor")
-   (:proto-file "unittest_import"
+   (protobuf-system:proto-file "unittest_import"
     :proto-pathname "google-protobuf/src/google/protobuf/unittest_import")
-   (:proto-file "unittest"
+   (protobuf-system:proto-file "unittest"
     :proto-pathname "google-protobuf/src/google/protobuf/unittest"
     :depends-on ("unittest_import")
     :proto-search-path ("google-protobuf/src/"))
