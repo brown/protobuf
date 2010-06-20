@@ -36,11 +36,15 @@
 
 (declaim #.optimize:+default+)
 
+(defconst +pwd+ (make-pathname
+                 :directory (pathname-directory
+                             (or *compile-file-truename* *load-truename*))))
 
-(defconst +golden-file-name+ "golden"
-  "Name of a file containing correct protocol buffer data.")
-(defconst +test-file-name+ "test-output-file"
-  "Name of file to which we write protocol buffer data.")
+(defconst +golden-file-name+ (merge-pathnames "golden" +pwd+)
+  "Pathname of a file containing correct protocol buffer data.")
+
+(defconst +test-file-name+ (merge-pathnames "test-output-file" +pwd+)
+  "Pathname of file to which we write protocol buffer data.")
 
 (defmacro assert-string-equal ((field protobuf) string)
   (let* ((field-name (symbol-name field))

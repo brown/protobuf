@@ -43,23 +43,21 @@
 (defsystem protobuf-test
   :name "Protocol Buffer Test"
   :description "Protocol buffer test code"
-  :long-description "Code to test the protocol buffe compiler and support libraries."
+  :long-description "Code to test the protocol buffer compiler and support libraries."
   :version "0.3.4"
   :author "Robert Brown"
   :licence "See file COPYING and the copyright messages in individual files."
   :depends-on (:protobuf)
   :components
   ((:static-file "golden")
-   (:cl-source-file "varint-test" :depends-on ("package"))
-   (:cl-source-file "message-test"
-    :depends-on ("optimize" "base" "protocol-buffer" "unittest"))
-   (:cl-source-file "wire-format-test" :depends-on ("package" "optimize"))
+   (:cl-source-file "varint-test")
+   (:cl-source-file "message-test" :depends-on ("unittest"))
+   (:cl-source-file "wire-format-test")
 
    ;; Old protocol buffer tests
    ;; XXXX: Delete these when the new proto2 tests cover all the functionality.
 
-   (:cl-source-file "proto-lisp-test"
-    :depends-on ("base" "testproto1" "testproto2"))
+   (:cl-source-file "proto-lisp-test" :depends-on ("testproto1" "testproto2"))
    ;; Two protocol buffers used by the old tests.
    (protobuf-system:proto-file "testproto1")
    (protobuf-system:proto-file "testproto2")
@@ -76,3 +74,15 @@
     :depends-on ("unittest_import")
     :proto-search-path ("google-protobuf/src/"))
    ))
+
+
+(defmethod operation-done-p ((operation test-op)
+                             (component (eql (find-system :protobuf-test))))
+  nil)
+
+(defmethod perform ((operation test-op)
+                    (component (eql (find-system :protobuf-test))))
+  (funcall (intern (string '#:test) '#:varint))
+  (funcall (intern (string '#:test) '#:proto-lisp-test))
+  (funcall (intern (string '#:test) '#:wire-format-test))
+  (funcall (intern (string '#:test) '#:message-test)))

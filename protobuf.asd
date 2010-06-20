@@ -195,3 +195,13 @@ buffer compiler and support libraries."
     :depends-on ("package" "base" "optimize" "varint"
                  #-(or abcl allegro cmu sbcl) "sysdep"))
    ))
+
+
+(defmethod operation-done-p ((operation test-op)
+                             (component (eql (find-system :protobuf))))
+  nil)
+
+(defmethod perform ((operation test-op)
+                    (component (eql (find-system :protobuf))))
+  (operate 'asdf:load-op :protobuf-test)
+  (operate 'asdf:test-op :protobuf-test))

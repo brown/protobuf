@@ -35,11 +35,18 @@
 
 (declaim #.optimize:+default+)
 
+(defconst +pwd+ (make-pathname
+                 :directory (pathname-directory
+                             (or *compile-file-truename* *load-truename*))))
+
 (defconst +golden-file-name+
-  "google-protobuf/src/google/protobuf/testdata/golden_message")
+  (merge-pathnames
+   "google-protobuf/src/google/protobuf/testdata/golden_message" +pwd+))
 
 (defconst +golden-packed-file-name+
-  "google-protobuf/src/google/protobuf/testdata/golden_packed_fields_message")
+  (merge-pathnames
+   "google-protobuf/src/google/protobuf/testdata/golden_packed_fields_message"
+   +pwd+))
 
 (defparameter *optional-field-info*
   ;; field name, default value, value set by tests
