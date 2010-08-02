@@ -27,6 +27,26 @@
       (write-sequence buffer output)))
   (values))
 
+(defun add-person (&key id name email-address phone-numbers)
+  (let ((address-book (read-address-book))
+        (person (make-instance 'pb:person)))
+    (setf (pb:id person) id)
+    (setf (pb:name person) name)
+    (when email-address
+      (setf (pb:email person) email-address))
+    (loop for (type . number) in phone-numbers do
+          (let ((phone-number (make-instance 'pb:person-phonenumber))
+                (type (ecase type
+                        (mobile pb:+person-phonetype-mobile+)
+                        (home pb:+person-phonetype-home+)
+                        (work pb:+person-phonetype-work+))))
+            (setf (pb:number phone-number) number)
+            (setf (pb:type phone-number) type)
+            (vector-push-extend phone-number (pb:phone person))))
+    (vector-push-extend person (pb:person address-book))
+    (write-address-book address-book))
+  (values))
+
 (defun list-people ()
   (let ((address-book (read-address-book)))
     (loop for person across (pb:person address-book) do
@@ -42,24 +62,4 @@
                          (#.pb:+person-phonetype-work+ "Work"))))
                   (format t "  ~A phone #: ~A~%"
                           location (pb:number phone-number))))))
-  (values))
-
-(defun add-person (&key id name email-address phone-numbers)
-  (let ((address-book (read-address-book))
-        (person (make-instance 'pb:person)))
-    (setf (pb:id person) id)
-    (setf (pb:name person) name)
-    (when email-address
-      (setf (pb:email person) email-address))
-    (loop for (type . number) in phone-numbers do
-          (let ((phone-number (make-instance 'pb:person-phonenumber))
-                (type (ecase type
-                        (mobile 'pb:+person-phonetype-mobile+)
-                        (home pb:+person-phonetype-home+)
-                        (work pb:+person-phonetype-work+))))
-            (setf (pb:number phone-number) number)
-            (setf (pb:type phone-number) type)
-            (vector-push-extend phone-number (pb:phone person))))
-    (vector-push-extend person (pb:person address-book))
-    (write-address-book address-book))
   (values))

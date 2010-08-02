@@ -36,30 +36,23 @@
 (defpackage #:protobuf-system
   (:documentation "System definitions for protocol buffer code.")
   (:use #:common-lisp #:asdf)
-  (:export #:proto-file))
+  (:export #:proto-file
+           #:*protobuf-compiler*))
 
 (in-package #:protobuf-system)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter *protobuf-directory*
-    (make-pathname :directory (pathname-directory *load-truename*))
-    "Directory containing the protobuf source code."))
 
-(defun resolve-relative-pathname (path)
-  "When PATHNAME doesn't have an absolute directory component, treat it as
-relative to the protobuf source directory."
-  (let* ((pathname (pathname path))
-         (directory (pathname-directory pathname)))
-    (if (and (list directory) (eq (car directory) :absolute))
-        pathname
-        (merge-pathnames pathname *protobuf-directory*))))
+;; Pathname of Google's protocol buffer compiler.  You must replace this
+;; pathname with whatever is appropriate for your system by setting
+;; PROTOBUF-ASD:*PROTOC* before this file is loaded.
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (unless (boundp '*protoc*)
+    (defparameter *protobuf-compiler* #p"/home/brown/toe/protobuf/google-protobuf/src/protoc"
+      "Pathname of the protocol buffer compiler.")))
 
 
 ;;; Teach ASDF how to convert protocol buffer definition files into Lisp.
 
-
-(defparameter *protoc* (resolve-relative-pathname "google-protobuf/src/protoc")
-  "Pathname of the protocol buffer compiler.")
 
 (defclass proto-file (cl-source-file)
   ((relative-proto-pathname
@@ -75,11 +68,6 @@ relative to the protobuf source directory."
 compiler should search for imported protobuf files.  Non-absolute pathnames
 are treated as relative to the protobuf source directory."))
   (:documentation "A protocol buffer definition file."))
-
-(defmethod shared-initialize :after ((component proto-file) slot-names &rest init-args)
-  (declare (ignore slot-names init-args))
-  (with-slots (search-path) component
-    (setf search-path (mapcar #'resolve-relative-pathname search-path))))
 
 (defclass proto-to-lisp (operation)
   ()
@@ -117,11 +105,31 @@ translated into Lisp source code for this PROTO-FILE component."
         (merge-pathnames (make-pathname :type "proto") lisp-pathname))))
 
 (defmethod input-files ((operation proto-to-lisp) (component proto-file))
-  (list *protoc* (proto-input component)))
+  (list *protobuf-compiler* (proto-input component)))
 
 (defmethod output-files ((operation proto-to-lisp) (component proto-file))
   (values (list (component-pathname component))
           nil))                         ; allow around methods to translate
+
+(defun resolve-relative-pathname (path parent-path)
+  "When PATH doesn't have an absolute directory component, treat it as
+relative to PARENT-PATH."
+  (let* ((pathname (pathname path))
+         (directory (pathname-directory pathname)))
+    (if (and (list directory) (eq (car directory) :absolute))
+        pathname
+        (let ((resolved-path (merge-pathnames pathname parent-path)))
+          (make-pathname :directory (pathname-directory resolved-path)
+                         :name nil
+                         :type nil
+                         :defaults resolved-path)))))
+
+(defun resolve-search-path (proto-file)
+  (let ((search-path (search-path proto-file)))
+    (let ((parent-path (component-pathname (component-parent proto-file))))
+      (mapcar (lambda (path)
+                (resolve-relative-pathname path parent-path))
+              search-path))))
 
 (defmethod perform ((operation proto-to-lisp) (component proto-file))
   (let* ((source-file (proto-input component))
@@ -129,14 +137,12 @@ translated into Lisp source code for this PROTO-FILE component."
          ;; products, so we must call that method instead of executing
          ;; (component-pathname component).
          (output-file (first (output-files operation component)))
-         (search-path (cons (directory-namestring source-file)
-                            (search-path component)))
-         (status
-          (run-shell-command "~A --proto_path=~{~A~^:~} --lisp_out=~A ~A"
-                             (namestring *protoc*)
-                             search-path
-                             (directory-namestring output-file)
-                             (namestring source-file))))
+         (search-path (cons (directory-namestring source-file) (resolve-search-path component)))
+         (status (run-shell-command "~A --proto_path=~{~A~^:~} --lisp_out=~A ~A"
+                                    (namestring *protobuf-compiler*)
+                                    search-path
+                                    (directory-namestring output-file)
+                                    (namestring source-file))))
     (unless (zerop status)
       (error 'compile-failed :component component :operation operation))))
 
@@ -149,59 +155,39 @@ LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
              (call-next-method)))
 
 
-;;; A Common Lisp implementation of Google's protocol buffers
+;;; Protocol buffer support code.
 
 
 (defsystem protobuf
   :name "Protocol Buffer"
   :description "Protocol buffer code"
   :long-description "A Common Lisp implementation of Google's protocol
-buffer compiler and support libraries."
-  :version "0.3.4"
+buffer support libraries."
+  :version "0.4"
   :author "Robert Brown"
   :licence "See file COPYING and the copyright messages in individual files."
-
   ;; After loading the system, announce its availability.
   :perform (load-op :after (operation component)
              (pushnew :protobuf cl:*features*)
              (provide 'protobuf))
-
   :depends-on (#-(or allegro clisp sbcl) :trivial-utf-8)
-
-  ;; XXXXXXXXXXXXXXXXXXXX
-  :in-order-to ((test-op (load-op :protobuf :protobuf-test)))
-  ;; XXXXXXXXXXXXXXXXXXXX
-
   :components
   ((:static-file "COPYING")
    (:static-file "README")
    (:static-file "TODO")
-
    (:cl-source-file "package")
-
    #-(or abcl allegro cmu sbcl)
    (:module "sysdep"
     :pathname ""           ; this module's files are not in a subdirectory
     :depends-on ("package")
     :components ((:cl-source-file "portable-float")))
-
    (:cl-source-file "optimize" :depends-on ("package"))
    (:cl-source-file "base" :depends-on ("package" "optimize"))
    (:cl-source-file "varint"  :depends-on ("package" "optimize" "base"))
    (:cl-source-file "protocol-buffer" :depends-on ("package"))
    ;; The varint dependency is needed because some varint functions are
-   ;; declared in line and so must be loaded before wire-format is compiled.
+   ;; declared in line, and so must be loaded before wire-format is compiled.
    (:cl-source-file "wire-format"
     :depends-on ("package" "base" "optimize" "varint"
                  #-(or abcl allegro cmu sbcl) "sysdep"))
    ))
-
-
-(defmethod operation-done-p ((operation test-op)
-                             (component (eql (find-system :protobuf))))
-  nil)
-
-(defmethod perform ((operation test-op)
-                    (component (eql (find-system :protobuf))))
-  (operate 'asdf:load-op :protobuf-test)
-  (operate 'asdf:test-op :protobuf-test))

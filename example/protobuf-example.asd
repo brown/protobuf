@@ -14,8 +14,9 @@
 (defsystem protobuf-example
   :name "Protocol Buffer Example"
   :description "Protocol buffer example code"
-  :long-description "Example code that shows how to compile and use protocol buffer definitions."
-  :version "0.3.4"
+  :long-description "Example code that shows how to compile and use protocol
+buffer definitions."
+  :version "0.4"
   :author "Robert Brown"
   :licence "See file COPYING and the copyright messages in individual files."
   :depends-on (:protobuf)

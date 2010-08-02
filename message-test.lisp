@@ -35,18 +35,16 @@
 
 (declaim #.optimize:+default+)
 
-(defconst +pwd+ (make-pathname
-                 :directory (pathname-directory
-                             (or *compile-file-truename* *load-truename*))))
+(defconst +pwd+ #.(make-pathname
+                   :directory (pathname-directory
+                               (or *compile-file-truename* *load-truename*))))
 
 (defconst +golden-file-name+
-  (merge-pathnames
-   "google-protobuf/src/google/protobuf/testdata/golden_message" +pwd+))
+  (merge-pathnames "google-protobuf/src/google/protobuf/testdata/golden_message" +pwd+))
 
 (defconst +golden-packed-file-name+
-  (merge-pathnames
-   "google-protobuf/src/google/protobuf/testdata/golden_packed_fields_message"
-   +pwd+))
+  (merge-pathnames "google-protobuf/src/google/protobuf/testdata/golden_packed_fields_message"
+                   +pwd+))
 
 (defparameter *optional-field-info*
   ;; field name, default value, value set by tests
@@ -316,7 +314,7 @@
 
   ;; repeated fields
   (let ((field-info *repeated-field-info*))
-    (loop for (field . values) in field-info do
+    (loop for (field . nil) in field-info do
           (let ((accessor (field-function "" field)))
             (assert (zerop (length (funcall accessor m))))))))
 

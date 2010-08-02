@@ -6,4 +6,5 @@
 
 (defpackage #:address-book
   (:use #:common-lisp)
-  (:export #:add-person #:lisp-people))
+  (:export #:add-person
+           #:list-people))
