@@ -11,32 +11,31 @@ has also worked with Allegro Common Lisp, but I have not tested it recently.
 
 This git repository requires another git repository called google-protobuf,
 which contains Google's protocol buffer compiler, modified to generate
-Common Lisp code.  The google-protobuf repository is pulled in using git's
-submodule feature.
+Common Lisp code.
 
 
 INSTALLATION
 ============
 
-1. Clone the protobuf git repository and google-protobuf git repository that
-it pulls in as a submodule dependency:
+1. Clone the protobuf git repository and the google-protobuf git repository.
+In addition, make a link to google-protobuf inside protobuf so the Lisp
+tests know where to find certain .proto files.
 
     git clone git://github.com/brown/protobuf.git
-    cd protobuf
-    git submodule init
-    git submodule update
+    git clone git://github.com/brown/google-protobuf.git
+    (cd protobuf ; ln -s ../google-protobuf .)
 
 
-2. Install the software needed to compile Google's C++ protocol buffer
-compiler.  You'll need at least G+++ and libtool, which on a Linux system can
-often be installed with:
+2. Install the software needed to compile Google's protocol buffer compiler.
+You'll need at least G++ and libtool, which on a Linux system can often be
+installed with:
 
     apt-get install g++ libtool
 
 
-3. Compile Google's C++ protocol buffer compiler, which can translate
-protocol buffer definition files into Common Lisp code.  On my system I
-install the protocol buffer compiler in directory
+3. Compile Google's protocol buffer compiler, which can translate protocol
+buffer definition files into Common Lisp code.  On my system I install the
+protocol buffer compiler in directory
 /local/software/package/google-protobuf.  You are free to install it
 elsewhere.
 
