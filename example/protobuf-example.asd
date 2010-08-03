@@ -19,10 +19,9 @@ buffer definitions."
   :version "0.4"
   :author "Robert Brown"
   :licence "See file COPYING and the copyright messages in individual files."
-  :depends-on (:protobuf)
+  :defsystem-depends-on (:protobuf)
   :components ((:static-file "Makefile")
                (:static-file "README")
                (:cl-source-file "package")
-               (protobuf-system:proto-file "addressbook")
-               (:cl-source-file "address-book"
-                :depends-on ("package" "addressbook"))))
+               (:protobuf-source-file "addressbook")
+               (:cl-source-file "address-book" :depends-on ("package" "addressbook"))))

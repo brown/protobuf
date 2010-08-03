@@ -61,29 +61,30 @@ protobuf.asd in your ASDF:*CENTRAL-REGISTRY* directory or load the file into
 your running Lisp with (load "protobuf.asd").
 
 
-6. Compile and load the protobuf code.  Once it's loaded, specifiy the
-location of the protocol buffer compiler.
+6. Specify the location of the protocol buffer compiler.  The path to use
+depends on the installation location you chose when you ran "configure" in
+the google-protobuf directory.
 
-    (asdf:operate 'asdf:load-op 'protobuf)
-    (defparameter *protobuf-compiler*
-      #p"/local/software/package/google-protobuf/bin/protoc")
+    (defvar asdf::*protobuf-compiler*
+            #p"/local/software/package/google-protobuf/bin/protoc")
+
 
 7. Run the tests:
 
-   (asdf:operate 'asdf:test-op 'protobuf-test)
+    (asdf:operate 'asdf:test-op 'protobuf-test)
 
 8. Compile and run the example code:
 
-   (asdf:operate 'asdf:load-up 'protobuf-example)
+    (asdf:operate 'asdf:load-up 'protobuf-example)
 
-   (in-package address-book)
-   (add-person :id 100
-               :name "Robert Brown"
-               :email-address "brown@foo.com"
-               :phone-numbers '((home . "718-555-1212")
-                                (work . "212-589-1212")
-                                (mobile . "917-555-1212")))
-   (list-prople)
+    (in-package address-book)
+    (add-person :id 100
+                :name "Robert Brown"
+                :email-address "brown@foo.com"
+                :phone-numbers '((home . "718-555-1212")
+                                 (work . "212-589-1212")
+                                 (mobile . "917-555-1212")))
+    (list-prople)
 
 
 BUGS
