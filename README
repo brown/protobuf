@@ -75,7 +75,7 @@ the google-protobuf directory.
 
 8. Compile and run the example code:
 
-    (asdf:operate 'asdf:load-up 'protobuf-example)
+    (asdf:operate 'asdf:load-op 'protobuf-example)
 
     (in-package address-book)
     (add-person :id 100
@@ -84,7 +84,7 @@ the google-protobuf directory.
                 :phone-numbers '((home . "718-555-1212")
                                  (work . "212-589-1212")
                                  (mobile . "917-555-1212")))
-    (list-prople)
+    (list-people)
 
 
 BUGS
