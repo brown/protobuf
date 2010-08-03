@@ -1,10 +1,83 @@
 
-The code in portable-float.lisp was derived from public domain code in SBCL.
-See if there have been recent bug fixes applied to the SBCL version.
+high priority
+=============
 
-Upload the most recent code into github.com.
+Add more tests for merging from a protobuf instance.
 
-Port the tests to a unit test framework.
+Implement extensions
+  Add tests
+
+Look at all XXXX comments in the compiler source and remove them.
+  involves filing some bugs against C++ code
+
+
+General stuff
+=============
+
+5. read the binary description of a protocol buffer into RAM
+   output S-expression protobuf forms
+   Compare output to S-expression backend of compiler on all Google protobufs.
+   Talk to Kenton about which approach he prefers -- backend or binary reader.
+
+6. read S-expression protobuf forms
+   create internal protobuf data structures that represent the messages
+   generate Lisp code that uses proto form to read and write binary data
+   generate Lisp code that directly reads and writes binary data
+
+Look at the Java unit tests for unittest.proto
+  Maybe the Java semantics are what we want, since protos are more
+  immutable in the Java world.
+
+What do we do with strings?
+  Some are declared as byte(octet) arrays, others as strings.
+
+add slick check-several bits code to clear / is-initialized
+
+implement RPC service stubs ??
+
+
+protobuf
+========
+
+move more unit test code from google-protobuf/src/google/protobuf into protobuf
+
+review proto-lisp-test code ... remove it ?
+
+move the package decl for protocol-buffer into each compiled file?
+  would be nice of users could just load a compiled protobuf
+
+pick a testing framework
+Port the tests to the unit test framework.
+look at all tests in google-protobuf/src/google/protobuf
+  start migrating them here
+
+create a testing directory?
+
+Figure out a strategy for specifying Common Lisp optimization levels and
+apply it uniformally.  There's some support for this in optimize.lisp, and
+there are some #+opt conditionalizations sprinkled around the code.
+
+Currently, all classes that implement protocol buffers are placed in the
+Lisp package PROTOCOL-BUFFER.  Is this the right approach?
+
+
+google-protobuf
+===============
+
+primitive field octet size and serialize do not work with packed
+repeated data ... 
+    search for "packed" in at lease cpp_primitive_field.cc and
+    cpp_enum_field.cc
+
+add extensions and other features needed to load protobuf files
+
+add README file to the top level explaining the Lisp changes
+
+merge in latest Google changes
+
+
+other
+=====
 
 Implement a protocol buffer compiler.  There are several ways to do this.
 Here are my favorites:
@@ -29,15 +102,3 @@ Here are my favorites:
   are translated at run time.  In the second case, the CLOS generic
   functions for a protobuf would just be small stubs.  When they are ever
   called, they replace themselves with the right access code.
-
-Add more testing code to proto-lisp-test.lisp.  This can wait until we are
-generating CLOS classes from protobuf descriptions.
-
-Figure out a strategy for specifying optimization levels and apply it
-uniformally.  There's some support for this in optimize.lisp, and there are
-some #+opt conditionalizations sprinkled around the code.
-
-Currently, all classes that implement protocol buffers are placed in the
-Lisp package PROTOCOL-BUFFER.  Is this the right approach?
-
-Rename proto-lisp-test.lisp.
