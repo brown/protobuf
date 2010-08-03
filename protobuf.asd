@@ -78,16 +78,14 @@ buffer definitions into a Lisp source code."))
   "Compiling a protocol buffer file depends on generating Lisp source code
 for the protobuf, but also on loading package definitions and in-line
 function definitions that the machine-generated protobuf Lisp code uses."
-  `(;;(load-op "protocol-buffer" "varint" "wire-format")
-    (proto-to-lisp ,(component-name component))
+  `((proto-to-lisp ,(component-name component))
     ,@(call-next-method)))
 
 (defmethod component-depends-on ((operation load-op) (component proto-file))
   "Loading a protocol buffer file depends on generating Lisp source code
 for the protobuf, but also on loading package definitions and in-line
 function definitions that the machine-generated protobuf Lisp code uses."
-  `(;;(load-op "protocol-buffer" "varint" "wire-format")
-    (proto-to-lisp ,(component-name component))
+  `((proto-to-lisp ,(component-name component))
     ,@(call-next-method)))
 
 (defun proto-input (proto-file)
@@ -109,7 +107,7 @@ translated into Lisp source code for this PROTO-FILE component."
 
 (defmethod output-files ((operation proto-to-lisp) (component proto-file))
   (values (list (component-pathname component))
-          nil))                         ; allow around methods to translate
+          t))                     ; do not allow around methods to translate
 
 (defun resolve-relative-pathname (path parent-path)
   "When PATH doesn't have an absolute directory component, treat it as
