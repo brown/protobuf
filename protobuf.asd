@@ -107,8 +107,10 @@ translated into Lisp source code for this PROTO-FILE component."
   (list *protobuf-compiler* (proto-input component)))
 
 (defmethod output-files ((operation proto-to-lisp) (component protobuf-source-file))
+  "Arrange for the Lisp output file of PROTO-TO-LISP operations to be stored
+where fasl files are located."
   (values (list (component-pathname component))
-          t))                     ; do not allow around methods to translate
+          nil))                     ; allow around methods to translate
 
 (defun resolve-relative-pathname (path parent-path)
   "When PATH doesn't have an absolute directory component, treat it as
@@ -145,13 +147,46 @@ relative to PARENT-PATH."
     (unless (zerop status)
       (error 'compile-failed :component component :operation operation))))
 
-(defmethod asdf::component-self-dependencies ((op load-op) (c protobuf-source-file))
+(defmethod asdf::component-self-dependencies :around ((op load-op) (c protobuf-source-file))
   "Remove PROTO-TO-LISP operations from self dependencies.  Otherwise, the
 Lisp output files of PROTO-TO-LISP are considered to be input files for
 LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
   (remove-if (lambda (x)
                (eq (car x) 'proto-to-lisp))
              (call-next-method)))
+
+;; The following code was copied from asdf.lisp and modified slightly to set
+;; SOURCE-FILE to a pathname in the directory where fasl files are stored.
+;; The PERFORM method defined in asdf.lisp for instances of CL-SOURCE-FILE
+;; computes SOURCE-FILE by calling COMPONENT-PATHNAME instead of by calling
+;; the INPUT-FILES generic function.  I think this is a misfeature of ASDF.
+
+(defmethod perform ((operation compile-op) (c protobuf-source-file))
+  (let ((source-file (make-pathname :name (pathname-name (component-pathname c))
+                                    :type "lisp"
+                                    :defaults (first (output-files operation c))))
+        (output-file (first (output-files operation c)))
+        (*compile-file-warnings-behaviour* (operation-on-warnings operation))
+        (*compile-file-failure-behaviour* (operation-on-failure operation)))
+    (multiple-value-bind (output warnings-p failure-p)
+        (apply #'compile-file* source-file :output-file output-file
+               (asdf::compile-op-flags operation))
+      (when warnings-p
+        (case (operation-on-warnings operation)
+          (:warn (warn
+                  "~@<COMPILE-FILE warned while performing ~A on ~A.~@:>"
+                  operation c))
+          (:error (error 'compile-warned :component c :operation operation))
+          (:ignore nil)))
+      (when failure-p
+        (case (operation-on-failure operation)
+          (:warn (warn
+                  "~@<COMPILE-FILE failed while performing ~A on ~A.~@:>"
+                  operation c))
+          (:error (error 'compile-failed :component c :operation operation))
+          (:ignore nil)))
+      (unless output
+        (error 'compile-error :component c :operation operation)))))
 
 
 ;;; Protocol buffer support code.
