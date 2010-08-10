@@ -75,6 +75,32 @@ reading beyond LIMIT, then signal PROTOCOL-BUFFER-READ-ERROR."))
   (:documentation "Merge the contents SOURCE-PROTOCOL-BUFFER into
 PROTOCOL-BUFFER."))
 
+(cl:defconstant +single-float-positive-infinity+
+  #+sbcl sb-ext:single-float-positive-infinity
+  #-sbcl 0s0)
+
+(cl:defconstant +single-float-negative-infinity+
+  #+sbcl sb-ext:single-float-negative-infinity
+  #-sbcl 0s0)
+
+(cl:defconstant +single-float-nan+
+  ;; XXXX: SBCL can't handle class definition with NaN initform.
+  #+sbcl 0s0 ; (sb-int:with-float-traps-masked (:invalid) (cl:/ 0s0 0s0))
+  #-sbcl 0s0)
+
+(cl:defconstant +double-float-positive-infinity+
+  #+sbcl sb-ext:double-float-positive-infinity
+  #-sbcl 0s0)
+
+(cl:defconstant +double-float-negative-infinity+
+  #+sbcl sb-ext:double-float-negative-infinity
+  #-sbcl 0s0)
+
+(cl:defconstant +double-float-nan+
+  ;; XXXX: SBCL can't handle class definition with NaN initform.
+  #+sbcl 0d0 ; (sb-int:with-float-traps-masked (:invalid) (cl:/ 0d0 0d0))
+  #-sbcl 0d0)
+
 
 #|
 
