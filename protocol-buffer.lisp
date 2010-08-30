@@ -84,8 +84,8 @@ PROTOCOL-BUFFER."))
   #-sbcl 0s0)
 
 (cl:defconstant +single-float-nan+
-  ;; XXXX: SBCL can't handle class definition with NaN initform.
-  #+sbcl 0s0 ; (sb-int:with-float-traps-masked (:invalid) (cl:/ 0s0 0s0))
+  ;; XXXX: SBCL can't handle class definitions with NaN initforms.
+  #+sbcl 0s0 ; (sb-kernel:make-single-float -1)
   #-sbcl 0s0)
 
 (cl:defconstant +double-float-positive-infinity+
@@ -97,8 +97,8 @@ PROTOCOL-BUFFER."))
   #-sbcl 0s0)
 
 (cl:defconstant +double-float-nan+
-  ;; XXXX: SBCL can't handle class definition with NaN initform.
-  #+sbcl 0d0 ; (sb-int:with-float-traps-masked (:invalid) (cl:/ 0d0 0d0))
+  ;; XXXX: SBCL can't handle class definitions with NaN initforms.
+  #+sbcl 0d0 ; (sb-kernel:make-double-float -1 0)
   #-sbcl 0d0)
 
 
