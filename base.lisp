@@ -59,50 +59,7 @@ DOC-STRING is supplied, make it the constant's documentation."
 (deftype uint64 () '(unsigned-byte 64))
 
 
-;;; Signed to unsigned integer conversions.  These are used when
-;;; interoperating with C++ code.
-
-
-(declaim (ftype (function (int32) uint32) int32-to-uint32)
-         #+opt (inline int32-to-uint32))
-
-(defun int32-to-uint32 (value)
-  "Convert the int32 VALUE into a uint32.  The conversion is identical to
-that done by the C++ expression static_cast<uint32>(X)."
-  (declare (type int32 value)
-           (optimize (debug 0) (safety 0) (speed 3)))
-  (if (minusp value)
-      (+ value (ash 1 32))
-      value))
-
-(declaim (ftype (function (int32) uint64) int32-to-uint64)
-         #+opt (inline int32-to-uint64))
-
-(defun int32-to-uint64 (value)
-  "Convert the int32 VALUE into a uint64.  The conversion is identical to
-that done by the C++ expression static_cast<uint64>(X)."
-  (declare (type int32 value)
-           (optimize (debug 0) (safety 0) (speed 3)))
-  (if (minusp value)
-      (+ value (ash 1 64))
-      value))
-
-(declaim (ftype (function (int64) uint64) int64-to-uint64)
-         #+opt (inline int64-to-uint64))
-
-(defun int64-to-uint64 (value)
-  "Convert the int64 value X into a uint64.  The conversion is identical to
-that done by the C++ expression static_cast<uint64>(X)."
-  (declare (type int64 value)
-           (optimize (debug 0) (safety 0) (speed 3)
-                     #+sbcl (sb-ext:inhibit-warnings 3)))
-  (if (minusp value)
-      (+ value (ash 1 64))
-      value))
-
-
 ;;; Octet vectors
-
 
 (deftype vector-index () '(integer 0 #.(1- array-dimension-limit)))
 

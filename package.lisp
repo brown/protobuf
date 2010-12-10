@@ -48,9 +48,6 @@
            #:int64
            #:uint32
            #:uint64
-           #:int32-to-uint32
-           #:int32-to-uint64
-           #:int64-to-uint64
            #:octet
            #:octet-vector
            #:octet-vector-index
