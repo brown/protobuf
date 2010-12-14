@@ -2,13 +2,21 @@
 high priority
 =============
 
-Add more tests for merging from a protobuf instance.
+Fix generated code so that unknown proto fields are collected into a data
+structure.
+
+Remove all references to the BASE package in generated code.  Make generated
+files independently loadable.
+
+Add more tests for merging from a protobuf instance.  Use Stefil??
 
 Implement extensions
   Add tests
 
 Look at all XXXX comments in the compiler source and remove them.
   involves filing some bugs against C++ code
+
+Update C++ Google protobuf compiler source to latest version.
 
 
 General stuff
