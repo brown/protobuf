@@ -1,2 +1,7 @@
 This directory contains a Common Lisp version of the example code in
 google-protobuf/examples.
+
+The file protobuf-example.asd shows how you can include protocol buffer
+definition files in your ASDF project definitions.
+
+The file address-book.lisp shows how to use protocol buffers.

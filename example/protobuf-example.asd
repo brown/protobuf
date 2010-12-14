@@ -23,5 +23,9 @@ buffer definitions."
   :components ((:static-file "Makefile")
                (:static-file "README")
                (:cl-source-file "package")
+               ;; The file addressbook.proto contains protocol buffer
+               ;; definitions.  Using the ASDF component type
+               ;; PROTOBUF-SOURCE-FILE causes the proto file to be converted
+               ;; into Lisp code, which is then compiled and/or loaded.
                (:protobuf-source-file "addressbook")
                (:cl-source-file "address-book" :depends-on ("package" "addressbook"))))

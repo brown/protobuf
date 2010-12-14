@@ -97,7 +97,7 @@ translated into Lisp source code for this PROTO-FILE component."
       (merge-pathnames
        (make-pathname :type "proto")
        (merge-pathnames (pathname (proto-pathname protobuf-source-file))
-                        (asdf::component-parent-pathname protobuf-source-file)))
+                        (component-pathname (component-parent protobuf-source-file))))
       ;; No :PROTO-PATHNAME was specified, so the path of the protobuf
       ;; defaults to that of the Lisp file, but with a ".proto" suffix.
       (let ((lisp-pathname (component-pathname protobuf-source-file)))
@@ -131,6 +131,12 @@ relative to PARENT-PATH."
       (mapcar (lambda (path)
                 (resolve-relative-pathname path parent-path))
               search-path))))
+
+;; XXXX: This before method would not be needed if PROTO-TO-LISP were a
+;; subclass of COMPILE-OP.  Should we make that change?
+
+(defmethod perform :before ((operation proto-to-lisp) (component protobuf-source-file))
+  (map nil #'ensure-directories-exist (output-files operation component)))
 
 (defmethod perform ((operation proto-to-lisp) (component protobuf-source-file))
   (let* ((source-file (proto-input component))
