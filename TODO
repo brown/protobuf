@@ -18,6 +18,8 @@ Look at all XXXX comments in the compiler source and remove them.
 
 Update C++ Google protobuf compiler source to latest version.
 
+Use base::vector-index or elimineate it.  It's not in package.lisp.
+
 
 General stuff
 =============
