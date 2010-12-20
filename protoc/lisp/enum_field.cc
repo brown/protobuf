@@ -105,7 +105,7 @@ void EnumFieldGenerator::GenerateSerializeWithCachedSizes(
       " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
       "(cl:setf index\n"
       " (varint:encode-uint64-carefully buffer index limit\n"
-      "  (base:int32-to-uint64 (cl:slot-value self '$name$))))");
+      "  (cl:ldb (cl:byte 64 0) (cl:slot-value self '$name$))))");
 }
 
 void EnumFieldGenerator::GenerateMergeFromArray(
@@ -169,7 +169,7 @@ void RepeatedEnumFieldGenerator::GenerateOctetSize(io::Printer* printer)
       "  (cl:incf size (cl:* $tag_size$ length))\n"
       "  (cl:dotimes (i length)\n"
       "    (cl:incf size"
-      " (varint:length32 (base:int32-to-uint32 (cl:aref x i))))))");
+      " (varint:length32 (cl:ldb (cl:byte 32 0) (cl:aref x i))))))");
 }
 
 void RepeatedEnumFieldGenerator::GenerateAccessor(io::Printer* printer) const {
@@ -186,7 +186,7 @@ void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizes(
       "    (cl:setf index"
       " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
       "    (cl:setf index (varint:encode-uint64-carefully buffer index limit\n"
-      "                    (base:int32-to-uint64 (cl:aref v i))))))");
+      "                    (cl:ldb (cl:byte 64 0) (cl:aref v i))))))");
 }
 
 // XXXXXXXXXXXXXXXXXXXX C++ code for packed repeated enums adds the enum if

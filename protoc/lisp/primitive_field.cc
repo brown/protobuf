@@ -118,10 +118,10 @@ string Serialize(const FieldDescriptor* field) {
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32:
       return ("(varint:encode-uint64-carefully"
-              " buffer index limit (base:int32-to-uint64 $fetch$))");
+              " buffer index limit (cl:ldb (cl:byte 64 0) $fetch$))");
     case FieldDescriptor::TYPE_INT64:
       return ("(varint:encode-uint64-carefully"
-              " buffer index limit (base:int64-to-uint64 $fetch$))");
+              " buffer index limit (cl:ldb (cl:byte 64 0) $fetch$))");
     case FieldDescriptor::TYPE_UINT32:
       return "(varint:encode-uint32-carefully buffer index limit $fetch$)";
     case FieldDescriptor::TYPE_UINT64:
