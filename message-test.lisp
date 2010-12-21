@@ -40,11 +40,10 @@
                                (or *compile-file-truename* *load-truename*))))
 
 (defconst +golden-file-name+
-  (merge-pathnames "google-protobuf/src/google/protobuf/testdata/golden_message" +pwd+))
+  (merge-pathnames "google/protobuf/testdata/golden_message" +pwd+))
 
 (defconst +golden-packed-file-name+
-  (merge-pathnames "google-protobuf/src/google/protobuf/testdata/golden_packed_fields_message"
-                   +pwd+))
+  (merge-pathnames "google/protobuf/testdata/golden_packed_fields_message" +pwd+))
 
 (defparameter *optional-field-info*
   ;; field name, default value, value set by tests

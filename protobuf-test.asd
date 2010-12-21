@@ -66,13 +66,13 @@
    ;; compiler.
 
    (:protobuf-source-file "descriptor"
-    :proto-pathname "google-protobuf/src/google/protobuf/descriptor")
+    :proto-pathname "google/protobuf/descriptor")
    (:protobuf-source-file "unittest_import"
-    :proto-pathname "google-protobuf/src/google/protobuf/unittest_import")
+    :proto-pathname "google/protobuf/unittest_import")
    (:protobuf-source-file "unittest"
-    :proto-pathname "google-protobuf/src/google/protobuf/unittest"
+    :proto-pathname "google/protobuf/unittest"
     :depends-on ("unittest_import")
-    :proto-search-path ("google-protobuf/src/"))))
+    :proto-search-path ("./"))))
 
 
 (defmethod operation-done-p ((operation test-op)
