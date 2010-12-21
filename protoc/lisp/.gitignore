@@ -1,0 +1,13 @@
+enum.o
+enum_field.o
+field.o
+file.o
+generator.o
+helpers.o
+message.o
+message_field.o
+primitive_field.o
+protoc-gen-lisp
+protoc_gen_lisp.o
+service.o
+string_field.o
