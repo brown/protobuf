@@ -34,13 +34,18 @@
 (cl:in-package #:asdf)
 
 ;; Pathname of Google's protocol buffer compiler.  You must replace this
-;; pathname with whatever is appropriate for your system by setting
-;; ASDF:*PROTOBUF-COMPILER* before this file is loaded.
+;; pathname with the appropriate one for your system.
 
-(defvar *protobuf-compiler* #p"/home/brown/toe/protobuf/google-protobuf/src/protoc"
-  "Pathname of the protocol buffer compiler.")
+(defvar *protoc* #p"/local/software/package/google-protobuf/bin/protoc"
+  "Pathname of Google's protocol buffer compiler.")
+(export '*protoc*)
 
-(export '*protobuf-compiler*)
+;; Pathname of the Lisp protocol buffer compiler backend.  You must replace
+;; this pathname with the appropriate one for your system.
+
+(defvar *protoc-gen-lisp* #p"/local/software/package/protoc-gen-lisp/bin/protoc-gen-lisp"
+  "Pathname of the Lisp protocol buffer compiler backend, protoc-gen-lisp.")
+(export '*protoc-gen-lisp*)
 
 (defclass protobuf-source-file (cl-source-file)
   ((relative-proto-pathname
@@ -104,7 +109,7 @@ translated into Lisp source code for this PROTO-FILE component."
         (merge-pathnames (make-pathname :type "proto") lisp-pathname))))
 
 (defmethod input-files ((operation proto-to-lisp) (component protobuf-source-file))
-  (list *protobuf-compiler* (proto-input component)))
+  (list *protoc* *protoc-gen-lisp* (proto-input component)))
 
 (defmethod output-files ((operation proto-to-lisp) (component protobuf-source-file))
   "Arrange for the Lisp output file of PROTO-TO-LISP operations to be stored
@@ -145,8 +150,9 @@ relative to PARENT-PATH."
          ;; (component-pathname component).
          (output-file (first (output-files operation component)))
          (search-path (cons (directory-namestring source-file) (resolve-search-path component)))
-         (status (run-shell-command "~A --proto_path=~{~A~^:~} --lisp_out=~A ~A"
-                                    (namestring *protobuf-compiler*)
+         (status (run-shell-command "~A --plugin=~A --proto_path=~{~A~^:~} --lisp_out=~A ~A"
+                                    (namestring *protoc*)
+                                    (namestring *protoc-gen-lisp*)
                                     search-path
                                     (directory-namestring output-file)
                                     (namestring source-file))))

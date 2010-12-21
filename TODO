@@ -2,6 +2,11 @@
 high priority
 =============
 
+Use autoconf/automake to configure protoc/lisp and protoc/sexp.
+
+Document the new compilation and installationn procedure for
+protoc-gen-lisp.
+
 Fix generated code so that unknown proto fields are collected into a data
 structure.
 
@@ -16,9 +21,7 @@ Implement extensions
 Look at all XXXX comments in the compiler source and remove them.
   involves filing some bugs against C++ code
 
-Update C++ Google protobuf compiler source to latest version.
-
-Use base::vector-index or elimineate it.  It's not in package.lisp.
+Use base::vector-index or eliminate it in protobuf Lisp files?
 
 
 General stuff

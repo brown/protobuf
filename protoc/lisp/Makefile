@@ -1,5 +1,7 @@
 
-PROTOC_ROOT = /local/software/package/google-protobuf-2010-12-13
+INSTALL_ROOT = /local/software/package/protoc-gen-lisp
+
+PROTOC_ROOT = /local/software/package/google-protobuf
 PROTOC_INCLUDE = $(PROTOC_ROOT)/include
 PROTOC_LIB = $(PROTOC_ROOT)/lib
 
@@ -12,8 +14,12 @@ LIBS = -Wl,-L$(PROTOC_LIB) -Wl,-rpath -Wl,$(PROTOC_LIB) -lprotoc -lprotobuf -lpt
 protoc-gen-lisp: $(OFILES) Makefile
 	$(CXX) -o protoc-gen-lisp $(OFILES) $(LIBS)
 
+install: protoc-gen-lisp
+	mkdir -p $(INSTALL_ROOT)/bin
+	cp protoc-gen-lisp $(INSTALL_ROOT)/bin
+
 clean:
-	rm $(OFILES) protoc-gen-lisp
+	rm -f $(OFILES) protoc-gen-lisp
 
 
 enum.o: enum.h helpers.h 
