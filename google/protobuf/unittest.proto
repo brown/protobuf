@@ -34,6 +34,7 @@
 //
 // A proto file we will use for unit testing.
 
+syntax = "proto2";      // for compatibility with internal Google compiler
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default

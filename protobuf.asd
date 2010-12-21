@@ -47,6 +47,11 @@
   "Pathname of the Lisp protocol buffer compiler backend, protoc-gen-lisp.")
 (export '*protoc-gen-lisp*)
 
+(defvar *protoc-relative-path* nil
+  "Proto file arguments to the protobuf compiler are relative paths?")
+(export '*protoc-relative-path*)
+
+
 (defclass protobuf-source-file (cl-source-file)
   ((relative-proto-pathname
     :initarg :proto-pathname
@@ -145,6 +150,9 @@ relative to PARENT-PATH."
 
 (defmethod perform ((operation proto-to-lisp) (component protobuf-source-file))
   (let* ((source-file (proto-input component))
+         (source-file-argument (if *protoc-relative-path*
+                                   (file-namestring source-file)
+                                   (namestring source-file)))
          ;; Around methods on output-file may globally redirect output
          ;; products, so we must call that method instead of executing
          ;; (component-pathname component).
@@ -155,7 +163,7 @@ relative to PARENT-PATH."
                                     (namestring *protoc-gen-lisp*)
                                     search-path
                                     (directory-namestring output-file)
-                                    (namestring source-file))))
+                                    source-file-argument)))
     (unless (zerop status)
       (error 'compile-failed :component component :operation operation))))
 
