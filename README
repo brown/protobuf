@@ -1,77 +1,87 @@
 
-Protobuf is a Common Lisp implementation of Google's protocol buffers.
+Protobuf is an implementation of Google's protocol buffers for Common Lisp.
 
-This directory contains a preliminary release of the support functions
-needed to serialize protocol buffers.  Not all features are currently
-implemented.  The code works well enough that simple serialization tests
-pass.
+The protobuf repository contains a compiler from .proto files to Lisp and
+the run time support needed by the generated Lisp code.  Not all protocol
+buffer features are implemented but the code works well enough that simple
+serialization tests pass.
 
-The code has been tested with ABCL, CCL, CLISP, and SBCL.  In the past it
-has also worked with Allegro Common Lisp, but I have not tested it recently.
-
-This git repository requires another git repository called google-protobuf,
-which contains Google's protocol buffer compiler, modified to generate
-Common Lisp code.
+The protobuf code has been tested with ABCL, CCL, CLISP, and SBCL.  In the
+past it has also worked with Allegro Common Lisp, but I have not tested it
+recently.
 
 
 INSTALLATION
 ============
 
-1. Clone the protobuf git repository and the google-protobuf git repository.
-You may need to change the google-protobuf link inside protobuf if you have
-not installed protobuf and google-protobuf in the same directory.
+0.  Install the software needed to clone a git repository and compile C++
+code.  You'll need at least git, G++, and libtool, which on a Linux system
+can often be installed with a package manager:
+
+    apt-get install git g++ libtool
+
+
+1. The Common Lisp protocol buffer compiler is implemented as a plugin to
+Google's protocol buffer compiler, so you must first build and install
+Google's compiler, which is called protoc.  The required code and
+documentation are available here:
+
+    http://code.google.com/p/protobuf/
+
+
+2.  Clone the protobuf git repository to get a local copy.
 
     git clone git://github.com/brown/protobuf.git
-    git clone git://github.com/brown/google-protobuf.git
 
 
-2. Install the software needed to compile Google's protocol buffer compiler.
-You'll need at least G++ and libtool, which on a Linux system can often be
-installed with:
+3.  Compile protoc-gen-lisp, the Common Lisp protocol buffer plugin.
+Currently, this step only works for Linux and is accomplished as follows:
 
-    apt-get install g++ libtool
+    cd protobuf/protoc/lisp
+    Manually edit INSTALL_ROOT and PROTOC_ROOT in Makefile.
+    make install
 
+Eventually, I will add GNU configure support and the compilation steps for
+installing protoc-gen-lisp to /local/software/package/protoc-gen-lisp will
+become:
 
-3. Compile Google's protocol buffer compiler, which can translate protocol
-buffer definition files into Common Lisp code.  On my system I install the
-protocol buffer compiler in directory
-/local/software/package/google-protobuf.  You are free to install it
-elsewhere.
-
-    cd google-protobuf
+    cd protobuf/protoc/lisp
     ./autogen.sh
-    ./configure --prefix=/local/software/package/google-protobuf
-    make
+    ./configure \
+        --prefix=/local/software/package/protoc-gen-lisp \
+        --with-protoc=/local/software/package/google-protobuf
     make install
 
 
-4. Download and install the Common Lisp packages that protobuf depends on:
+4. Download and install the Common Lisp packages that protobuf depends on.
+You'll need ASDF, but it comes pre-installed in most Common Lisp
+distributions.  If you're not using Allegro, CLisp, or SBCL, you may need
+trivial-utf8, which is available here:
 
-    ASDF
-    trivial-utf-8       (not needed for Allegro, CLisp, and SBCL)
-
-Note that some Common Lisp implementations, such as SBCL, already contain a
-copy of the ASDF library.
-
-
-5. Make protobuf.asd available to ASDF.  Either create a symbolic link to
-protobuf.asd in your ASDF:*CENTRAL-REGISTRY* directory or load the file into
-your running Lisp with (load "protobuf.asd").
+    http://common-lisp.net/project/trivial-utf-8/
 
 
-6. Specify the location of the protocol buffer compiler.  The path to use
-depends on the installation location you chose when you ran "configure" in
-the google-protobuf directory.
+5. Make protobuf.asd available to ASDF.  There are several ways to do this
+and you should consult the ASDF documentation to determine what will work
+best for you.  ASDF and its manual are available here:
 
-    (defvar asdf::*protobuf-compiler*
-            #p"/local/software/package/google-protobuf/bin/protoc")
+    http://common-lisp.net/project/asdf/
 
 
-7. Run the tests:
+6. Tell ASDF where to find Google's protocol buffer compiler and the Common
+Lisp plugin.  The file paths to use depend on where you have installed each.
+You can either edit the pathnames used to initialize ASDF::*PROTOC* and
+ASDF:*PROTOC-GEN-LISP* in protobuf.asd or you can set these variables in a
+Lisp initialization file before protobuf.asd is loaded by ASDF.
+
+
+7. Compile all the protobuf code and run the tests:
 
     (asdf:operate 'asdf:test-op 'protobuf-test)
 
-8. Compile and run the example code:
+
+8. Compile and run the example code, which shows how to incorporate protocol
+buffer definition files into your own projects:
 
     (asdf:operate 'asdf:load-op 'protobuf-example)
 
