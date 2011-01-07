@@ -2,10 +2,9 @@
 high priority
 =============
 
-Use autoconf/automake to configure protoc/lisp and protoc/sexp.
+Update the web site to reflect the new installation instructions.
 
-Document the new compilation and installationn procedure for
-protoc-gen-lisp.
+Use autoconf/automake to configure protoc/lisp and protoc/sexp.
 
 Fix generated code so that unknown proto fields are collected into a data
 structure.
