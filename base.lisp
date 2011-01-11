@@ -72,7 +72,7 @@ DOC-STRING is supplied, make it the constant's documentation."
 (defconst +illegal-octet-vector-index+ (1- array-dimension-limit))
 
 
-(declaim (ftype (function (fixnum &key (:initial-contents list)) octet-vector)
+(declaim (ftype (function (fixnum &key (:initial-contents list)) (values octet-vector &optional))
                 make-octet-vector))
 
 (defun make-octet-vector (octet-count &key initial-contents)
@@ -87,9 +87,8 @@ the vector is initialized to the contents of list INITIAL-CONTENTS."
                   :initial-contents initial-contents)
       (make-array octet-count :element-type 'octet :initial-element 0)))
 
-(declaim (ftype (function (string
-                           &key (:start vector-index) (:end vector-index))
-                          octet-vector)
+(declaim (ftype (function (string &key (:start vector-index) (:end vector-index))
+                          (values octet-vector &optional))
                 string-to-utf8-octets))
 
 (defun string-to-utf8-octets (string &key (start 0) (end (length string)))
@@ -108,9 +107,8 @@ the vector is initialized to the contents of list INITIAL-CONTENTS."
   #-(or allegro clisp sbcl)
   (trivial-utf-8:string-to-utf-8-bytes (subseq string start end)))
 
-(declaim (ftype (function (octet-vector
-                           &key (:start vector-index) (:end vector-index))
-                          string)
+(declaim (ftype (function (octet-vector &key (:start vector-index) (:end vector-index))
+                          (values string &optional))
                 utf8-octets-to-string))
 
 (defun utf8-octets-to-string (octets &key (start 0) (end (length octets)))

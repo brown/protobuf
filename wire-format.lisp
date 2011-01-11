@@ -83,7 +83,7 @@ been asked to skip over of parse backwards."))
 
 
 (declaim (ftype (function (octet-vector octet-vector-index fixnum)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 skip-element))
 
 (defun skip-element (buffer index start-code)
@@ -111,7 +111,7 @@ been asked to skip over of parse backwards."))
                            octet-vector-index
                            octet-vector-index
                            boolean)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 write-boolean-carefully)
          #+opt (inline write-boolean-carefully))
 
@@ -126,7 +126,7 @@ been asked to skip over of parse backwards."))
   index)
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values boolean octet-vector-index))
+                          (values boolean octet-vector-index &optional))
                 read-boolean-carefully)
          #+opt (inline read-boolean-carefully))
 
@@ -142,7 +142,7 @@ been asked to skip over of parse backwards."))
                            octet-vector-index
                            octet-vector-index
                            int32)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 write-int32-carefully)
          #+opt (inline write-int32-carefully))
 
@@ -166,7 +166,7 @@ been asked to skip over of parse backwards."))
                            octet-vector-index
                            octet-vector-index
                            uint32)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 write-uint32-carefully)
          #+opt (inline write-uint32-carefully))
 
@@ -186,7 +186,7 @@ been asked to skip over of parse backwards."))
   (incf index)
   index)
 
-(declaim (ftype (function (octet-vector octet-vector-index uint32) (values))
+(declaim (ftype (function (octet-vector octet-vector-index uint32) (values &optional))
                 write-uint32)
          #+opt (inline write-uint32))
 
@@ -200,13 +200,14 @@ been asked to skip over of parse backwards."))
   (incf index)
   (setf (aref buffer index) (ldb (byte 8 16) value))
   (incf index)
-  (setf (aref buffer index) (ldb (byte 8 24) value)))
+  (setf (aref buffer index) (ldb (byte 8 24) value))
+  (values))
 
 (declaim (ftype (function (octet-vector
                            octet-vector-index
                            octet-vector-index
                            int64)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 write-int64-carefully)
          #+opt (inline write-int64-carefully))
 
@@ -238,7 +239,7 @@ been asked to skip over of parse backwards."))
                            octet-vector-index
                            octet-vector-index
                            uint64)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 write-uint64-carefully)
          #+opt (inline write-uint64-carefully))
 
@@ -267,7 +268,7 @@ been asked to skip over of parse backwards."))
   index)
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values uint32 octet-vector-index))
+                          (values uint32 octet-vector-index &optional))
                 read-uint32-carefully)
          #+opt (inline read-uint32-carefully))
 
@@ -287,7 +288,7 @@ been asked to skip over of parse backwards."))
     (values result index)))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values int32 octet-vector-index))
+                          (values int32 octet-vector-index &optional))
                 read-int32-carefully)
          #+opt (inline read-int32-carefully))
 
@@ -300,7 +301,7 @@ been asked to skip over of parse backwards."))
       (decf result (ash 1 32)))
     (values result new-index)))
 
-(declaim (ftype (function (octet-vector octet-vector-index) uint32)
+(declaim (ftype (function (octet-vector octet-vector-index) (values uint32 &optional))
                 read-uint32)
          #+opt (inline read-uint32))
 
@@ -317,7 +318,7 @@ been asked to skip over of parse backwards."))
     result))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values uint64 octet-vector-index))
+                          (values uint64 octet-vector-index &optional))
                 read-uint64-carefully)
          #+opt (inline read-uint64-carefully))
 
@@ -344,7 +345,7 @@ been asked to skip over of parse backwards."))
     (values result index)))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values int64 octet-vector-index))
+                          (values int64 octet-vector-index &optional))
                 read-int64-carefully)
          #+opt (inline read-int64-carefully))
 
@@ -360,7 +361,7 @@ been asked to skip over of parse backwards."))
                            octet-vector-index
                            octet-vector-index
                            single-float)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 write-single-float-carefully)
          #+opt (inline write-single-float-carefully))
 
@@ -399,7 +400,7 @@ LIMIT, then signal ENCODE-OVERFLOW."
                            octet-vector-index
                            octet-vector-index
                            double-float)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 write-double-float-carefully)
          #+opt (inline write-double-float-carefully))
 
@@ -457,7 +458,7 @@ LIMIT, then signal ENCODE-OVERFLOW."
 (declaim (ftype (function (octet-vector
                            octet-vector-index
                            octet-vector-index)
-                          (values single-float octet-vector-index))
+                          (values single-float octet-vector-index &optional))
                 read-single-float-carefully)
          #+opt (inline read-single-float-carefully))
 
@@ -498,7 +499,7 @@ PARSE-OVERFLOW."
 (declaim (ftype (function (octet-vector
                            octet-vector-index
                            octet-vector-index)
-                          (values double-float octet-vector-index))
+                          (values double-float octet-vector-index &optional))
                 read-double-float-carefully)
          #+opt (inline read-double-float-carefully))
 
@@ -550,7 +551,7 @@ PARSE-OVERFLOW."
                            octet-vector-index
                            octet-vector-index
                            octet-vector)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 write-octets-carefully)
          #+opt (inline write-octets-carefully))
 
@@ -568,7 +569,7 @@ PARSE-OVERFLOW."
 (declaim (ftype (function (octet-vector
                            octet-vector-index
                            octet-vector-index)
-                          (values octet-vector octet-vector-index))
+                          (values octet-vector octet-vector-index &optional))
                 read-octets-carefully)
          #+opt (inline read-octets-carefully))
 
@@ -583,25 +584,25 @@ PARSE-OVERFLOW."
         (error 'data-exhausted))
       (values (subseq buffer start-index end-index) end-index))))
 
-(declaim (ftype (function (int32) uint32) zig-zag-encode32)
+(declaim (ftype (function (int32) (values uint32 &optional)) zig-zag-encode32)
          (inline zig-zag-encode32))
 
 (defun zig-zag-encode32 (v)
   (logxor (ash v 1) (ash v -31)))
 
-(declaim (ftype (function (uint32) int32) zig-zag-decode32)
+(declaim (ftype (function (uint32) (values int32 &optional)) zig-zag-decode32)
          (inline zig-zag-decode32))
 
 (defun zig-zag-decode32 (v)
   (logxor (ash v -1) (- (logand v 1))))
 
-(declaim (ftype (function (int64) uint64) zig-zag-encode64)
+(declaim (ftype (function (int64) (values uint64 &optional)) zig-zag-encode64)
          (inline zig-zag-encode64))
 
 (defun zig-zag-encode64 (v)
   (logxor (ash v 1) (ash v -63)))
 
-(declaim (ftype (function (uint64) int64) zig-zag-decode64)
+(declaim (ftype (function (uint64) (values int64 &optional)) zig-zag-decode64)
          (inline zig-zag-decode64))
 
 (defun zig-zag-decode64 (v)

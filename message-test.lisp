@@ -55,12 +55,9 @@
     (optional-float 0s0 111s0) (optional-double 0d0 112d0)
     (optional-bool nil t)
     (optional-string "" "115") (optional-bytes "" "116")
-    (optional-nested-enum
-     #.pb:+testalltypes-nestedenum-foo+ #.pb:+testalltypes-nestedenum-baz+)
-    (optional-foreign-enum
-     #.pb:+foreignenum-foreign-foo+ #.pb:+foreignenum-foreign-baz+)
-    (optional-import-enum
-     #.pb:+importenum-import-foo+ #.pb:+importenum-import-baz+)
+    (optional-nested-enum #.pb:+testalltypes-nestedenum-foo+ #.pb:+testalltypes-nestedenum-baz+)
+    (optional-foreign-enum #.pb:+foreignenum-foreign-foo+ #.pb:+foreignenum-foreign-baz+)
+    (optional-import-enum #.pb:+importenum-import-foo+ #.pb:+importenum-import-baz+)
     ;; XXXX: C++ test does not verify these fields.
     (optional-string-piece "" "124") (optional-cord "" "125")
     ))
@@ -75,12 +72,9 @@
     (default-float 51.5s0 411s0) (default-double 52d3 412d0)
     (default-bool t nil)
     (default-string "hello" "415") (default-bytes "world" "416")
-    (default-nested-enum
-     #.pb:+testalltypes-nestedenum-bar+ #.pb:+testalltypes-nestedenum-foo+)
-    (default-foreign-enum
-     #.pb:+foreignenum-foreign-bar+ #.pb:+foreignenum-foreign-foo+)
-    (default-import-enum
-     #.pb:+importenum-import-bar+ #.pb:+importenum-import-foo+)
+    (default-nested-enum #.pb:+testalltypes-nestedenum-bar+ #.pb:+testalltypes-nestedenum-foo+)
+    (default-foreign-enum #.pb:+foreignenum-foreign-bar+ #.pb:+foreignenum-foreign-foo+)
+    (default-import-enum #.pb:+importenum-import-bar+ #.pb:+importenum-import-foo+)
     ;; XXXX: C++ test does not verify these fields.
     (default-string-piece "abc" "424") (default-cord "123" "425")
     ))
@@ -199,8 +193,7 @@
     (packed-sfixed32 609 709) (packed-sfixed64 610 710)
     (packed-float 611s0 711s0) (packed-double 612d0 712d0)
     (packed-bool t nil)
-    (packed-enum
-     #.pb:+foreignenum-foreign-bar+ #.pb:+foreignenum-foreign-baz+)))
+    (packed-enum #.pb:+foreignenum-foreign-bar+ #.pb:+foreignenum-foreign-baz+)))
 
 (defun expect-packed-fields-set (m)
   (loop for (field . values) in +packed-field-info+ do

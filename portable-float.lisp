@@ -23,7 +23,7 @@
 	(logior uresult
 		(logand -1 (lognot mask))))))
 
-(declaim (ftype (function (single-float) (signed-byte 32)) single-float-bits))
+(declaim (ftype (function (single-float) (values (signed-byte 32) &optional) single-float-bits))
 
 (defun single-float-bits (x)
   (declare (type single-float x))
@@ -77,7 +77,7 @@
 	    (1 unsigned-result)
 	    (-1 (logior unsigned-result (- (expt 2 31)))))))))
 
-(declaim (ftype (function (double-float) (signed-byte 64)) double-float-bits))
+(declaim (ftype (function (double-float) (values (signed-byte 64) &optional)) double-float-bits))
 
 (defun double-float-bits (x)
   (declare (type double-float x))
@@ -130,7 +130,7 @@
 	    (1 unsigned-result)
 	    (-1 (logior unsigned-result (- (expt 2 63)))))))))
 
-(declaim (ftype (function ((signed-byte 32)) single-float)
+(declaim (ftype (function ((signed-byte 32)) (values single-float &optional))
                 make-single-float))
 
 (defun make-single-float (bits)
@@ -153,7 +153,7 @@
                            (expt 0.5 23))))
          (* sign (expt 2.0 exponent) mantissa)))))
 
-(declaim (ftype (function ((signed-byte 32) (unsigned-byte 32)) double-float)
+(declaim (ftype (function ((signed-byte 32) (unsigned-byte 32)) (values double-float &optional))
                 make-double-float))
 
 (defun make-double-float (high-bits low-bits)

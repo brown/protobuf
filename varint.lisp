@@ -77,7 +77,7 @@ been asked to skip over or parse backwards."))
 
 
 (declaim (ftype (function (octet-vector octet-vector-index uint32)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 encode-uint32)
          #+opt (inline encode-uint32))
 
@@ -130,7 +130,7 @@ been asked to skip over or parse backwards."))
                            octet-vector-index
                            octet-vector-index
                            uint32)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 encode-uint32-carefully)
          #+opt (inline encode-uint32-carefully))
 
@@ -192,7 +192,7 @@ encode V, then raise ENCODE-OVERFLOW."
   index)
 
 (declaim (ftype (function (octet-vector octet-vector-index uint64)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 encode-uint64)
          #+opt (inline encode-uint64))
 
@@ -213,7 +213,7 @@ encode V, then raise ENCODE-OVERFLOW."
                            octet-vector-index
                            octet-vector-index
                            uint64)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 encode-uint64-carefully)
          #+opt (inline encode-uint64-carefully))
 
@@ -235,7 +235,7 @@ encode V, then raise ENCODE-OVERFLOW."
   index)
 
 (declaim (ftype (function (octet-vector octet-vector-index)
-                          (values uint32 octet-vector-index))
+                          (values uint32 octet-vector-index &optional))
                 parse-uint32)
          #+opt (inline parse-uint32))
 
@@ -262,7 +262,7 @@ encode V, then raise ENCODE-OVERFLOW."
     (return (values result index))))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values uint32 octet-vector-index))
+                          (values uint32 octet-vector-index &optional))
                 parse-uint32-carefully)
          #+opt (inline parse-uint32-carefully))
 
@@ -301,7 +301,7 @@ encode V, then raise ENCODE-OVERFLOW."
            (return (values result index))))))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values (unsigned-byte 31) octet-vector-index));XXXX
+                          (values (unsigned-byte 31) octet-vector-index &optional));XXXX
                 parse-uint31-carefully)
          #+opt (inline parse-uint31-carefully))
 
@@ -315,7 +315,7 @@ encode V, then raise ENCODE-OVERFLOW."
     (values result new-index)))
 
 (declaim (ftype (function (octet-vector octet-vector-index)
-                          (values uint64 octet-vector-index))
+                          (values uint64 octet-vector-index &optional))
                 parse-uint64)
          #+opt (inline parse-uint64))
 
@@ -363,7 +363,7 @@ encode V, then raise ENCODE-OVERFLOW."
                     index))))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values uint64 octet-vector-index))
+                          (values uint64 octet-vector-index &optional))
                 parse-uint64-carefully)
          #+opt (inline parse-uint64-carefully))
 
@@ -424,7 +424,7 @@ encode V, then raise ENCODE-OVERFLOW."
                     index))))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values int64 octet-vector-index))
+                          (values int64 octet-vector-index &optional))
                 parse-int64-carefully)
          #+opt (inline parse-int64-carefully))
 
@@ -438,7 +438,7 @@ encode V, then raise ENCODE-OVERFLOW."
     (values result new-index)))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values int32 octet-vector-index))
+                          (values int32 octet-vector-index &optional))
                 parse-int32-carefully)
          #+opt (inline parse-int32-carefully))
 
@@ -451,7 +451,7 @@ encode V, then raise ENCODE-OVERFLOW."
       (error 'value-out-of-range))
     (values result new-index)))
 
-(declaim (ftype (function (octet-vector octet-vector-index) octet-vector-index)
+(declaim (ftype (function (octet-vector octet-vector-index) (values octet-vector-index &optional))
                 skip32)
          #+opt (inline skip32))
 
@@ -473,7 +473,7 @@ encode V, then raise ENCODE-OVERFLOW."
      DONE
      (return (1+ index))))
 
-(declaim (ftype (function (octet-vector octet-vector-index) octet-vector-index)
+(declaim (ftype (function (octet-vector octet-vector-index) (values octet-vector-index &optional))
                 skip64)
          #+opt (inline skip64))
 
@@ -506,7 +506,7 @@ encode V, then raise ENCODE-OVERFLOW."
      (return (1+ index))))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 skip32-backward-slow))
 
 (defun skip32-backward-slow (buffer index base)
@@ -524,7 +524,7 @@ encode V, then raise ENCODE-OVERFLOW."
   (error 'alignment))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          octet-vector-index)
+                          (values octet-vector-index &optional))
                 skip64-backward-slow))
 
 (defun skip64-backward-slow (buffer index base)
@@ -542,7 +542,8 @@ encode V, then raise ENCODE-OVERFLOW."
   (error 'alignment))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          octet-vector-index) skip32-backward)
+                          (values octet-vector-index &optional))
+                skip32-backward)
          #+opt (inline skip32-backward))
 
 (defun skip32-backward (buffer index base)
@@ -563,7 +564,8 @@ encode V, then raise ENCODE-OVERFLOW."
          (return (1+ index)))))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          octet-vector-index) skip64-backward)
+                          (values octet-vector-index &optional))
+                skip64-backward)
          #+opt (inline skip64-backward))
 
 (defun skip64-backward (buffer index base)
@@ -589,7 +591,7 @@ encode V, then raise ENCODE-OVERFLOW."
          (return (1+ index)))))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values uint32 octet-vector-index))
+                          (values uint32 octet-vector-index &optional))
                 parse32-backward-slow))
 
 (defun parse32-backward-slow (buffer index base)
@@ -599,7 +601,7 @@ encode V, then raise ENCODE-OVERFLOW."
     (values (parse-uint32 buffer prev) prev)))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values uint64 octet-vector-index))
+                          (values uint64 octet-vector-index &optional))
                 parse64-backward-slow))
 
 (defun parse64-backward-slow (buffer index base)
@@ -609,7 +611,7 @@ encode V, then raise ENCODE-OVERFLOW."
     (values (parse-uint64 buffer prev) prev)))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values uint32 octet-vector-index))
+                          (values uint32 octet-vector-index &optional))
                 parse32-backward)
          #+opt (inline parse32-backward))
 
@@ -643,7 +645,7 @@ encode V, then raise ENCODE-OVERFLOW."
          (return (values result (1+ index))))))
 
 (declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values uint64 octet-vector-index))
+                          (values uint64 octet-vector-index &optional))
                 parse64-backward)
          #+opt (inline parse64-backward))
 
@@ -691,7 +693,7 @@ encode V, then raise ENCODE-OVERFLOW."
          DONE
          (return (values result (1+ index))))))
 
-(declaim (ftype (function (uint32) (integer 1 5)) length32)
+(declaim (ftype (function (uint32) (values (integer 1 5) &optional)) length32)
          #+opt (inline length32))
 
 (defun length32 (v)
@@ -730,7 +732,7 @@ encode V, then raise ENCODE-OVERFLOW."
 ;      done
 ;      (return result)))
 
-(declaim (ftype (function (uint64) (integer 1 10)) length64)
+(declaim (ftype (function (uint64) (values (integer 1 10) &optional)) length64)
          #+opt (inline length64))
 
 (defun length64 (v)

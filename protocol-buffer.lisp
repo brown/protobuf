@@ -75,53 +75,58 @@ reading beyond LIMIT, then signal PROTOCOL-BUFFER-READ-ERROR."))
   (:documentation "Merge the contents SOURCE-PROTOCOL-BUFFER into
 PROTOCOL-BUFFER."))
 
-(cl:defconstant +single-float-positive-infinity+
+
+;; Common Lisp does not define floating point infinities and NaNs, so some
+;; platforms support them and others do not.
+
+;; Infinities
+
+(cl:define-symbol-macro +single-float-positive-infinity+
+  #+abcl extensions:single-float-positive-infinity
   #+sbcl sb-ext:single-float-positive-infinity
-  #-sbcl 0s0)
+  #-(or abcl sbcl) (cl:error "unimplemented"))
 
-(cl:defconstant +single-float-negative-infinity+
+(cl:define-symbol-macro +single-float-negative-infinity+
+  #+abcl extensions:single-float-negative-infinity
   #+sbcl sb-ext:single-float-negative-infinity
-  #-sbcl 0s0)
+  #-(or abcl sbcl) (cl:error "unimplemented"))
 
-(cl:defconstant +single-float-nan+
-  ;; XXXX: SBCL can't handle class definitions with NaN initforms.
-  #+sbcl 0s0 ; (sb-kernel:make-single-float -1)
-  #-sbcl 0s0)
-
-(cl:defconstant +double-float-positive-infinity+
+(cl:define-symbol-macro +double-float-positive-infinity+
+  #+abcl extensions:double-float-positive-infinity
   #+sbcl sb-ext:double-float-positive-infinity
-  #-sbcl 0s0)
+  #-(or abcl sbcl) (cl:error "unimplemented"))
 
-(cl:defconstant +double-float-negative-infinity+
+(cl:define-symbol-macro +double-float-negative-infinity+
+  #+abcl extensions:double-float-negative-infinity
   #+sbcl sb-ext:double-float-negative-infinity
-  #-sbcl 0s0)
+  #-(or abcl sbcl) (cl:error "unimplemented"))
 
-(cl:defconstant +double-float-nan+
-  ;; XXXX: SBCL can't handle class definitions with NaN initforms.
-  #+sbcl 0d0 ; (sb-kernel:make-double-float -1 0)
-  #-sbcl 0d0)
+;; NaNs
+
+(cl:define-symbol-macro +single-float-nan+
+  #+sbcl #.(sb-kernel:make-single-float -1)
+  #-sbcl (cl:error "unimplemented"))
+
+(cl:define-symbol-macro +double-float-nan+
+  #+sbcl #.(sb-kernel:make-double-float -1 0)
+  #-sbcl (cl:error "unimplemented"))
 
 
-#|
 
-XXXXXXXXXXXXXXXXXXXX: Can anything be done with these declarations?
-XXXXXXXXXXXXXXXXXXXX: There may be no way to declare these function types.
+;; Can anything useful be done with declarations such as these?
 
-(cl:declaim (cl:ftype (cl:function (protocol-buffer) (cl:values)) clear))
-(cl:declaim (cl:ftype (cl:function (protocol-buffer) cl:boolean)
-                      is-initialized))
-(cl:declaim (cl:ftype (cl:function (protocol-buffer) cl:fixnum)
-                      octet-size))
-(cl:declaim (cl:ftype (cl:function (protocol-buffer
-                                    base:octet-vector
-                                    base:octet-vector-index
-                                    base:octet-vector-index)
-                                   (cl:values))
-                      serialize))
-(cl:declaim (cl:ftype (cl:function (protocol-buffer
-                                    base:octet-vector
-                                    base:octet-vector-index
-                                    base:octet-vector-index)
-                                   (cl:values))
-                      merge))
-|#
+;; (cl:declaim (cl:ftype (cl:function (protocol-buffer) (cl:values)) clear))
+;; (cl:declaim (cl:ftype (cl:function (protocol-buffer) cl:boolean) is-initialized))
+;; (cl:declaim (cl:ftype (cl:function (protocol-buffer) cl:fixnum) octet-size))
+;; (cl:declaim (cl:ftype (cl:function (protocol-buffer
+;;                                     base:octet-vector
+;;                                     base:octet-vector-index
+;;                                     base:octet-vector-index)
+;;                                    (cl:values))
+;;                       serialize))
+;; (cl:declaim (cl:ftype (cl:function (protocol-buffer
+;;                                     base:octet-vector
+;;                                     base:octet-vector-index
+;;                                     base:octet-vector-index)
+;;                                    (cl:values))
+;;                       merge))
