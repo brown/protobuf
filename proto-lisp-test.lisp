@@ -33,8 +33,7 @@
 
 
 (in-package #:proto-lisp-test)
-
-(declaim #.optimize:+default+)
+(declaim #.*optimize-default*)
 
 (defconst +pwd+ #.(make-pathname
                    :directory (pathname-directory

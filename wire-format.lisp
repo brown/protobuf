@@ -32,8 +32,7 @@
 
 
 (in-package #:wire-format)
-
-(declaim #.optimize:+default+)
+(declaim #.*optimize-default*)
 
 
 ;; Tags used to delimit values in protocol buffers.
@@ -82,12 +81,12 @@ decoding values from a buffer."))
 been asked to skip over of parse backwards."))
 
 
-(declaim (ftype (function (octet-vector octet-vector-index fixnum)
-                          (values octet-vector-index &optional))
+(declaim (ftype (function (octet-vector vector-index fixnum)
+                          (values vector-index &optional))
                 skip-element))
 
 (defun skip-element (buffer index start-code)
-  (declare (type octet-vector-index index))
+  (declare (type vector-index index))
   (let ((tag (ldb (byte 3 0) start-code)))
     (cond ((= tag +numeric+) (varint:skip64 buffer index))
           ((= tag +double+) (+ index 8))
@@ -108,16 +107,16 @@ been asked to skip over of parse backwards."))
           (t (error 'alignment)))))
 
 (declaim (ftype (function (octet-vector
-                           octet-vector-index
-                           octet-vector-index
+                           vector-index
+                           vector-index
                            boolean)
-                          (values octet-vector-index &optional))
+                          (values vector-index &optional))
                 write-boolean-carefully)
          #+opt (inline write-boolean-carefully))
 
 (defun write-boolean-carefully (buffer index limit value)
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit)
+           (type vector-index index limit)
            (type boolean value))
   (when (>= index limit)
     (error 'buffer-overflow))
@@ -125,8 +124,8 @@ been asked to skip over of parse backwards."))
   (incf index)
   index)
 
-(declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values boolean octet-vector-index &optional))
+(declaim (ftype (function (octet-vector vector-index vector-index)
+                          (values boolean vector-index &optional))
                 read-boolean-carefully)
          #+opt (inline read-boolean-carefully))
 
@@ -139,16 +138,16 @@ been asked to skip over of parse backwards."))
     (values (if (zerop bool) nil t) (1+ index))))
 
 (declaim (ftype (function (octet-vector
-                           octet-vector-index
-                           octet-vector-index
+                           vector-index
+                           vector-index
                            int32)
-                          (values octet-vector-index &optional))
+                          (values vector-index &optional))
                 write-int32-carefully)
          #+opt (inline write-int32-carefully))
 
 (defun write-int32-carefully (buffer index limit value)
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit)
+           (type vector-index index limit)
            (type int32 value))
   (when (> (+ index 4) limit)
     (error 'buffer-overflow))
@@ -163,16 +162,16 @@ been asked to skip over of parse backwards."))
   index)
 
 (declaim (ftype (function (octet-vector
-                           octet-vector-index
-                           octet-vector-index
+                           vector-index
+                           vector-index
                            uint32)
-                          (values octet-vector-index &optional))
+                          (values vector-index &optional))
                 write-uint32-carefully)
          #+opt (inline write-uint32-carefully))
 
 (defun write-uint32-carefully (buffer index limit value)
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit)
+           (type vector-index index limit)
            (type uint32 value))
   (when (> (+ index 4) limit)
     (error 'buffer-overflow))
@@ -186,13 +185,13 @@ been asked to skip over of parse backwards."))
   (incf index)
   index)
 
-(declaim (ftype (function (octet-vector octet-vector-index uint32) (values &optional))
+(declaim (ftype (function (octet-vector vector-index uint32) (values &optional))
                 write-uint32)
          #+opt (inline write-uint32))
 
 (defun write-uint32 (buffer index value)
   (declare (type octet-vector buffer)
-           (type octet-vector-index index)
+           (type vector-index index)
            (type uint32 value))
   (setf (aref buffer index) (ldb (byte 8 0) value))
   (incf index)
@@ -204,16 +203,16 @@ been asked to skip over of parse backwards."))
   (values))
 
 (declaim (ftype (function (octet-vector
-                           octet-vector-index
-                           octet-vector-index
+                           vector-index
+                           vector-index
                            int64)
-                          (values octet-vector-index &optional))
+                          (values vector-index &optional))
                 write-int64-carefully)
          #+opt (inline write-int64-carefully))
 
 (defun write-int64-carefully (buffer index limit value)
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit)
+           (type vector-index index limit)
            (type int64 value))
   (when (> (+ index 8) limit)
     (error 'buffer-overflow))
@@ -236,16 +235,16 @@ been asked to skip over of parse backwards."))
   index)
 
 (declaim (ftype (function (octet-vector
-                           octet-vector-index
-                           octet-vector-index
+                           vector-index
+                           vector-index
                            uint64)
-                          (values octet-vector-index &optional))
+                          (values vector-index &optional))
                 write-uint64-carefully)
          #+opt (inline write-uint64-carefully))
 
 (defun write-uint64-carefully (buffer index limit value)
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit)
+           (type vector-index index limit)
            (type uint64 value))
   (when (> (+ index 8) limit)
     (error 'buffer-overflow))
@@ -267,14 +266,14 @@ been asked to skip over of parse backwards."))
   (incf index)
   index)
 
-(declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values uint32 octet-vector-index &optional))
+(declaim (ftype (function (octet-vector vector-index vector-index)
+                          (values uint32 vector-index &optional))
                 read-uint32-carefully)
          #+opt (inline read-uint32-carefully))
 
 (defun read-uint32-carefully (buffer index limit)
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit))
+           (type vector-index index limit))
   (when (> (+ index 4) limit)
     (error 'data-exhausted))
   (let ((result (aref buffer index)))
@@ -287,27 +286,27 @@ been asked to skip over of parse backwards."))
     (incf index)
     (values result index)))
 
-(declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values int32 octet-vector-index &optional))
+(declaim (ftype (function (octet-vector vector-index vector-index)
+                          (values int32 vector-index &optional))
                 read-int32-carefully)
          #+opt (inline read-int32-carefully))
 
 (defun read-int32-carefully (buffer index limit)
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit))
+           (type vector-index index limit))
   (multiple-value-bind (result new-index)
       (read-uint32-carefully buffer index limit)
     (when (= (ldb (byte 1 31) result) 1)    ; sign bit set, so negative value
       (decf result (ash 1 32)))
     (values result new-index)))
 
-(declaim (ftype (function (octet-vector octet-vector-index) (values uint32 &optional))
+(declaim (ftype (function (octet-vector vector-index) (values uint32 &optional))
                 read-uint32)
          #+opt (inline read-uint32))
 
 (defun read-uint32 (buffer index)
   (declare (type octet-vector buffer)
-           (type octet-vector-index index))
+           (type vector-index index))
   (let ((result (aref buffer index)))
     (incf index)
     (setf result (logior result (ash (aref buffer index) 8)))
@@ -317,13 +316,13 @@ been asked to skip over of parse backwards."))
     (setf result (logior result (ash (aref buffer index) 24)))
     result))
 
-(declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values uint64 octet-vector-index &optional))
+(declaim (ftype (function (octet-vector vector-index vector-index)
+                          (values uint64 vector-index &optional))
                 read-uint64-carefully)
          #+opt (inline read-uint64-carefully))
 
 (defun read-uint64-carefully (buffer index limit)
-  (declare (type octet-vector-index index limit))
+  (declare (type vector-index index limit))
   (when (> (+ index 8) limit)
     (error 'data-exhausted))
   (let ((result (aref buffer index)))
@@ -344,13 +343,13 @@ been asked to skip over of parse backwards."))
     (incf index)
     (values result index)))
 
-(declaim (ftype (function (octet-vector octet-vector-index octet-vector-index)
-                          (values int64 octet-vector-index &optional))
+(declaim (ftype (function (octet-vector vector-index vector-index)
+                          (values int64 vector-index &optional))
                 read-int64-carefully)
          #+opt (inline read-int64-carefully))
 
 (defun read-int64-carefully (buffer index limit)
-  (declare (type octet-vector-index index limit))
+  (declare (type vector-index index limit))
   (multiple-value-bind (result new-index)
       (read-uint64-carefully buffer index limit)
     (when (= (ldb (byte 1 63) result) 1)    ; sign bit set, so negative value
@@ -358,10 +357,10 @@ been asked to skip over of parse backwards."))
     (values result new-index)))
 
 (declaim (ftype (function (octet-vector
-                           octet-vector-index
-                           octet-vector-index
+                           vector-index
+                           vector-index
                            single-float)
-                          (values octet-vector-index &optional))
+                          (values vector-index &optional))
                 write-single-float-carefully)
          #+opt (inline write-single-float-carefully))
 
@@ -371,7 +370,7 @@ FLOAT to BUFFER starting at INDEX.  Return the index value of the first
 octet following FLOAT.  If encoding FLOAT requires space in BUFFER past
 LIMIT, then signal ENCODE-OVERFLOW."
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit)
+           (type vector-index index limit)
            (type single-float float))
   (when (> (+ index 4) limit)
     (error 'buffer-overflow))
@@ -397,10 +396,10 @@ LIMIT, then signal ENCODE-OVERFLOW."
     index))
 
 (declaim (ftype (function (octet-vector
-                           octet-vector-index
-                           octet-vector-index
+                           vector-index
+                           vector-index
                            double-float)
-                          (values octet-vector-index &optional))
+                          (values vector-index &optional))
                 write-double-float-carefully)
          #+opt (inline write-double-float-carefully))
 
@@ -410,7 +409,7 @@ FLOAT to BUFFER starting at INDEX.  Return the index value of the first
 octet following FLOAT.  If encoding FLOAT requires space in BUFFER past
 LIMIT, then signal ENCODE-OVERFLOW."
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit)
+           (type vector-index index limit)
            (type double-float float))
   (when (> (+ index 8) limit)
     (error 'buffer-overflow))
@@ -456,9 +455,9 @@ LIMIT, then signal ENCODE-OVERFLOW."
   index)
 
 (declaim (ftype (function (octet-vector
-                           octet-vector-index
-                           octet-vector-index)
-                          (values single-float octet-vector-index &optional))
+                           vector-index
+                           vector-index)
+                          (values single-float vector-index &optional))
                 read-single-float-carefully)
          #+opt (inline read-single-float-carefully))
 
@@ -469,7 +468,7 @@ float and the index of the first octet following it are returned.  If
 reading the float would require octets beyond LIMIT, then signal
 PARSE-OVERFLOW."
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit))
+           (type vector-index index limit))
   (when (> (+ index 4) limit)
     (error 'data-exhausted))
   (let ((bits (aref buffer index)))
@@ -497,9 +496,9 @@ PARSE-OVERFLOW."
     (values (sb-kernel:make-single-float bits) index)))
 
 (declaim (ftype (function (octet-vector
-                           octet-vector-index
-                           octet-vector-index)
-                          (values double-float octet-vector-index &optional))
+                           vector-index
+                           vector-index)
+                          (values double-float vector-index &optional))
                 read-double-float-carefully)
          #+opt (inline read-double-float-carefully))
 
@@ -510,7 +509,7 @@ float and the index of the first octet following it are returned.  If
 reading the float would require octets beyond LIMIT, then signal
 PARSE-OVERFLOW."
   (declare (type octet-vector buffer)
-           (type octet-vector-index index))
+           (type vector-index index))
   (when (> (+ index 8) limit)
     (error 'data-exhausted))
   (let ((low (aref buffer index)))
@@ -548,16 +547,16 @@ PARSE-OVERFLOW."
       (values (sb-kernel:make-double-float high low) index))))
 
 (declaim (ftype (function (octet-vector
-                           octet-vector-index
-                           octet-vector-index
+                           vector-index
+                           vector-index
                            octet-vector)
-                          (values octet-vector-index &optional))
+                          (values vector-index &optional))
                 write-octets-carefully)
          #+opt (inline write-octets-carefully))
 
 (defun write-octets-carefully (buffer index limit octets)
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit)
+           (type vector-index index limit)
            (type octet-vector octets))
   (let ((size (length octets)))
     (setf index (varint:encode-uint32-carefully buffer index limit size))
@@ -567,19 +566,19 @@ PARSE-OVERFLOW."
     (+ index size)))
 
 (declaim (ftype (function (octet-vector
-                           octet-vector-index
-                           octet-vector-index)
-                          (values octet-vector octet-vector-index &optional))
+                           vector-index
+                           vector-index)
+                          (values octet-vector vector-index &optional))
                 read-octets-carefully)
          #+opt (inline read-octets-carefully))
 
 (defun read-octets-carefully (buffer index limit)
   (declare (type octet-vector buffer)
-           (type octet-vector-index index limit))
+           (type vector-index index limit))
   (multiple-value-bind (length start-index)
       (varint:parse-uint32-carefully buffer index limit)
     (let ((end-index (+ start-index length)))
-      (declare (type octet-vector-index end-index))
+      (declare (type vector-index end-index))
       (when (> end-index limit)
         (error 'data-exhausted))
       (values (subseq buffer start-index end-index) end-index))))

@@ -32,8 +32,7 @@
 
 
 (in-package #:wire-format-test)
-
-(declaim #.optimize:+default+)
+(declaim #.*optimize-default*)
 
 
 (defun test-zig-zag-encoding ()

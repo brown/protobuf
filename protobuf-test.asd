@@ -44,20 +44,19 @@
   :name "Protocol Buffer Test"
   :description "Protocol buffer test code"
   :long-description "Code to test the protocol buffer compiler and support libraries."
-  :version "0.4"
+  :version "0.5"
   :author "Robert Brown"
   :licence "See file COPYING and the copyright messages in individual files."
   :defsystem-depends-on (:protobuf)
   :components
   ((:static-file "golden")
-   (:cl-source-file "varint-test")
-   (:cl-source-file "message-test" :depends-on ("unittest"))
-   (:cl-source-file "wire-format-test")
+   (:file "message-test" :depends-on ("unittest"))
+   (:file "wire-format-test")
 
    ;; Old protocol buffer tests
    ;; XXXX: Delete these when the new proto2 tests cover all the functionality.
 
-   (:cl-source-file "proto-lisp-test" :depends-on ("testproto1" "testproto2"))
+   (:file "proto-lisp-test" :depends-on ("testproto1" "testproto2"))
    ;; Two protocol buffers used by the old tests.
    (:protobuf-source-file "testproto1")
    (:protobuf-source-file "testproto2")
@@ -65,10 +64,8 @@
    ;; Test protocol buffers and protobuf definitions used by the proto2
    ;; compiler.
 
-   (:protobuf-source-file "descriptor"
-    :proto-pathname "google/protobuf/descriptor")
-   (:protobuf-source-file "unittest_import"
-    :proto-pathname "google/protobuf/unittest_import")
+   (:protobuf-source-file "descriptor" :proto-pathname "google/protobuf/descriptor")
+   (:protobuf-source-file "unittest_import" :proto-pathname "google/protobuf/unittest_import")
    (:protobuf-source-file "unittest"
     :proto-pathname "google/protobuf/unittest"
     :depends-on ("unittest_import")
@@ -81,7 +78,6 @@
 
 (defmethod perform ((operation test-op)
                     (component (eql (find-system :protobuf-test))))
-  (funcall (intern (string '#:test) '#:varint))
   (funcall (intern (string '#:test) '#:proto-lisp-test))
   (funcall (intern (string '#:test) '#:wire-format-test))
   (funcall (intern (string '#:test) '#:message-test)))

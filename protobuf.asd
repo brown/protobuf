@@ -216,30 +216,23 @@ LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
   :name "Protocol Buffer"
   :description "Protocol buffer code"
   :long-description "A Common Lisp implementation of Google's protocol buffer support libraries."
-  :version "0.6"
+  :version "0.7"
   :author "Robert Brown"
   :licence "See file COPYING and the copyright messages in individual files."
   ;; After loading the system, announce its availability.
   :perform (load-op :after (operation component)
              (pushnew :protobuf cl:*features*)
              (provide 'protobuf))
-  :depends-on (#-(or allegro clisp sbcl) :trivial-utf-8)
+  :depends-on (#:base #:varint #-(or allegro clisp sbcl) #:trivial-utf-8)
   :components
   ((:static-file "COPYING")
    (:static-file "README")
    (:static-file "TODO")
-   (:cl-source-file "package")
+   (:file "package")
    #-(or abcl allegro cmu sbcl)
    (:module "sysdep"
     :pathname ""           ; this module's files are not in a subdirectory
     :depends-on ("package")
-    :components ((:cl-source-file "portable-float")))
-   (:cl-source-file "optimize" :depends-on ("package"))
-   (:cl-source-file "base" :depends-on ("package" "optimize"))
-   (:cl-source-file "varint"  :depends-on ("package" "optimize" "base"))
-   (:cl-source-file "protocol-buffer" :depends-on ("package"))
-   ;; The varint dependency is needed because some varint functions are
-   ;; declared in line, and so must be loaded before wire-format is compiled.
-   (:cl-source-file "wire-format"
-    :depends-on ("package" "base" "optimize" "varint"
-                 #-(or abcl allegro cmu sbcl) "sysdep"))))
+    :components ((:file "portable-float")))
+   (:file "protocol-buffer" :depends-on ("package"))
+   (:file "wire-format" :depends-on ("package" #-(or abcl allegro cmu sbcl) "sysdep"))))

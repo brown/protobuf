@@ -34,70 +34,6 @@
 (in-package #:common-lisp-user)
 
 
-(defpackage #:optimize
-  (:documentation "Compiler optimization settings")
-  (:use #:common-lisp)
-  (:export #:+default+
-           #:+fast-unsafe+))
-
-(defpackage #:base
-  (:documentation "Basic types and other low-level stuff")
-  (:use #:common-lisp)
-  (:export #:defconst
-           #:int32
-           #:int64
-           #:uint32
-           #:uint64
-           #:vector-index
-           #:octet
-           #:octet-vector
-           #:octet-vector-index
-           #:+octet-vector-index-bits+
-           #:+illegal-octet-vector-index+
-           #:make-octet-vector
-           #:string-to-utf8-octets
-           #:utf8-octets-to-string))
-
-(defpackage #:varint
-  (:documentation "Variable-size encoding and decoding of integers and floats")
-  (:use #:common-lisp #:base)
-  (:export ;; Constants
-           #:+max-bytes-32+
-           #:+max-bytes-64+
-           ;; Conditions
-           #:varint-error
-           #:encoding-error
-           #:buffer-overflow
-           #:parsing-error
-           #:data-exhausted
-           #:value-out-of-range
-           #:alignment
-           ;; Functions
-           #:encode-uint32
-           #:encode-uint32-carefully
-           #:encode-uint64
-           #:encode-uint64-carefully
-           #:parse-uint32
-           #:parse-uint32-carefully
-           #:parse-uint31-carefully
-           #:parse-uint64
-           #:parse-uint64-carefully
-           #:parse-int64-carefully
-           #:parse-int32-carefully
-           #:skip32
-           #:skip64
-           #:skip32-backward-slow
-           #:skip64-backward-slow
-           #:skip32-backward
-           #:skip64-backward
-           #:parse32-backward-slow
-           #:parse64-backward-slow
-           #:parse32-backward
-           #:parse64-backward
-           #:length32
-           #:length64
-           ))
-
 (defpackage #:protocol-buffer
   (:documentation "Machine generated protocol buffers")
   (:nicknames #:pb)
@@ -128,8 +64,7 @@
 
 (defpackage #:proto-lisp-test
   (:documentation "Test the Lisp implementation of protocol buffers")
-  (:use #:common-lisp)
-  (:import-from #:base #:defconst)
+  (:use #:common-lisp #:base)
   (:export #:test))
 
 (defpackage #:wire-format
@@ -173,11 +108,10 @@
 
 (defpackage #:wire-format-test
   (:documentation "Tests for protocol buffer wire format functions.")
-  (:use #:common-lisp #:wire-format)
+  (:use #:common-lisp #:base #:wire-format)
   (:export #:test))
 
 (defpackage #:message-test
   (:documentation "Tests for protocol buffer messages.")
-  (:use #:common-lisp)
-  (:import-from #:base #:defconst)
+  (:use #:common-lisp #:base)
   (:export #:test))

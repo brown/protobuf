@@ -60,6 +60,13 @@ trivial-utf8, which is available here:
 
     http://common-lisp.net/project/trivial-utf-8/
 
+To run all the tests, you'll need the Stefil testing package and its
+dependencies:
+
+    hu.dwim.stefil
+    hu.dwim.asdf
+    alexandria
+
 
 5. Make protobuf.asd available to ASDF.  There are several ways to do this
 and you should consult the ASDF documentation to determine what will work
@@ -75,15 +82,21 @@ ASDF:*PROTOC-GEN-LISP* in protobuf.asd or you can set these variables in a
 Lisp initialization file before protobuf.asd is loaded by ASDF.
 
 
-7. Compile all the protobuf code and run the tests:
+7. Compile and load all the protobuf code:
 
-    (asdf:operate 'asdf:test-op 'protobuf-test)
+    (asdf:load-system 'protobuf)
 
 
-8. Compile and run the example code, which shows how to incorporate protocol
+8. Optionally, load and run all the tests:
+
+    (asdf:test-system 'varint)
+    (asdf:test-system 'protobuf-test)
+
+
+9. Compile and run the example code, which shows how to incorporate protocol
 buffer definition files into your own projects:
 
-    (asdf:operate 'asdf:load-op 'protobuf-example)
+    (asdf:load-system 'protobuf-example)
 
     (in-package address-book)
     (add-person :id 100
