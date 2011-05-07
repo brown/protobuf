@@ -218,7 +218,7 @@ LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
   :long-description "A Common Lisp implementation of Google's protocol buffer support libraries."
   :version "0.7"
   :author "Robert Brown"
-  :licence "See file COPYING and the copyright messages in individual files."
+  :license "See file COPYING and the copyright messages in individual files."
   ;; After loading the system, announce its availability.
   :perform (load-op :after (operation component)
              (pushnew :protobuf cl:*features*)

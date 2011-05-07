@@ -488,14 +488,13 @@ message TestExtremeDefaultValues {
   optional float small_negative_float = 13 [default = -8e-28];
 
   // Text for nonfinite floating-point values.
-  optional double inf_double = 14 [default = inf];
-  optional double neg_inf_double = 15 [default = -inf];
-// XXXXXXXXXX: SBCL cannot handle NaN initforms.
-//  optional double nan_double = 16 [default = nan];
-  optional float inf_float = 17 [default = inf];
-  optional float neg_inf_float = 18 [default = -inf];
-// XXXXXXXXXX: SBCL cannot handle NaN initforms.
-//  optional float nan_float = 19 [default = nan];
+  // XXXXXXXXXX: Common Lisp does not have standard infinities and NaNs.
+  // optional double inf_double = 14 [default = inf];
+  // optional double neg_inf_double = 15 [default = -inf];
+  // optional double nan_double = 16 [default = nan];
+  // optional float inf_float = 17 [default = inf];
+  // optional float neg_inf_float = 18 [default = -inf];
+  // optional float nan_float = 19 [default = nan];
 }
 
 message SparseEnumMessage {
