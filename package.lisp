@@ -56,8 +56,7 @@
 (defpackage #:portable-float
   (:documentation "Access the bits of IEEE floating point numbers")
   (:use #:common-lisp)
-  (:export #:mask-and-sign-extend
-           #:single-float-bits
+  (:export #:single-float-bits
            #:double-float-bits
            #:make-single-float
            #:make-double-float))

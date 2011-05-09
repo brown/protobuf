@@ -10,20 +10,7 @@
 
 (in-package #:portable-float)
 
-;; XXXX: add type declaration
-
-(defun mask-and-sign-extend (x n)
-  "Return the low N bits of X as a signed N-bit value."
-  (assert (plusp n))
-  (let* ((high-bit (ash 1 (1- n)))
-	 (mask (1- (ash high-bit 1)))
-	 (uresult (logand mask x)))
-    (if (zerop (logand uresult high-bit))
-	uresult
-	(logior uresult
-		(logand -1 (lognot mask))))))
-
-(declaim (ftype (function (single-float) (values (signed-byte 32) &optional) single-float-bits))
+(declaim (ftype (function (single-float) (values (signed-byte 32) &optional)) single-float-bits))
 
 (defun single-float-bits (x)
   (declare (type single-float x))

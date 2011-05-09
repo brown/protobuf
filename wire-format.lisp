@@ -420,7 +420,7 @@ LIMIT, then signal ENCODE-OVERFLOW."
     #-(or abcl allegro cmu sbcl)
     (let ((bits (portable-float:double-float-bits float)))
       (setf low (logand #xffffffff bits))
-      (setf high (portable-float:mask-and-sign-extend (ash bits -32) 32)))
+      (setf high (ash bits -32)))
     #+abcl
     (progn (setf low (system:double-float-low-bits float))
            (setf high (system:double-float-high-bits float)))
