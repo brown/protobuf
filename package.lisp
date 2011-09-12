@@ -63,12 +63,12 @@
 
 (defpackage #:proto-lisp-test
   (:documentation "Test the Lisp implementation of protocol buffers")
-  (:use #:common-lisp #:base)
+  (:use #:common-lisp #:com.google.base)
   (:export #:test))
 
 (defpackage #:wire-format
   (:documentation "Wire format for protocol buffers")
-  (:use #:common-lisp #:base)
+  (:use #:common-lisp #:com.google.base)
   (:export ;; Conditions
            #:protocol-error
            #:encoding-error
@@ -107,10 +107,10 @@
 
 (defpackage #:wire-format-test
   (:documentation "Tests for protocol buffer wire format functions.")
-  (:use #:common-lisp #:base #:wire-format)
+  (:use #:common-lisp #:com.google.base #:wire-format)
   (:export #:test))
 
 (defpackage #:message-test
   (:documentation "Tests for protocol buffer messages.")
-  (:use #:common-lisp #:base)
+  (:use #:common-lisp #:com.google.base)
   (:export #:test))

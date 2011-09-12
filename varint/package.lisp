@@ -32,7 +32,7 @@
 
 (defpackage #:varint
   (:documentation "Variable-size encoding and decoding of integers and floats")
-  (:use #:common-lisp #:base)
+  (:use #:common-lisp #:com.google.base)
   (:export ;; Constants
            #:+max-bytes-32+
            #:+max-bytes-64+

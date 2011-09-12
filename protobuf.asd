@@ -223,7 +223,9 @@ LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
   :perform (load-op :after (operation component)
              (pushnew :protobuf cl:*features*)
              (provide 'protobuf))
-  :depends-on (#:base #:varint #-(or allegro clisp sbcl) #:trivial-utf-8)
+  :depends-on (#:com.google.base
+               #:varint
+               #-(or allegro clisp sbcl) #:trivial-utf-8)
   :components
   ((:static-file "COPYING")
    (:static-file "README")

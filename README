@@ -29,7 +29,7 @@ documentation are available here:
     http://code.google.com/p/protobuf/
 
 
-2.  Clone the protobuf git repository to get a local copy.
+2.  Clone the protobuf git repository to get a local copy:
 
     git clone git://github.com/brown/protobuf.git
 
@@ -53,9 +53,14 @@ become:
     make install
 
 
-4. Download and install the Common Lisp packages that protobuf depends on.
-You'll need ASDF, but it comes pre-installed in most Common Lisp
-distributions.  If you're not using Allegro, CLisp, or SBCL, you may need
+4. Download and install other Common Lisp packages that protobuf
+depends on.  You'll need ASDF, but it comes pre-installed in most
+Common Lisp distributions.  You'll also need com.google.base, which
+you can download by cloning its git repository:
+
+    git clone git://github.com/brown/base.git
+
+If you're not using Allegro, CLisp, or SBCL, you may need
 trivial-utf8, which is available here:
 
     http://common-lisp.net/project/trivial-utf-8/
@@ -68,11 +73,21 @@ dependencies:
     alexandria
 
 
-5. Make protobuf.asd available to ASDF.  There are several ways to do this
-and you should consult the ASDF documentation to determine what will work
-best for you.  ASDF and its manual are available here:
+5. Make com.google.base.asd and protobuf.asd available to ASDF.  There
+are several ways to do this and you should consult the ASDF
+documentation to determine what will work best for you.  ASDF and its
+manual are available here:
 
     http://common-lisp.net/project/asdf/
+
+On my system, I tell ASDF the locations of the com.google.base and
+protobuf systems by creating a file called source-registry.conf in
+directory /home/brown/.config/common-lisp/ with the following contents:
+
+  (:source-registry
+   (:tree "/home/brown/src/base/")
+   (:tree "/home/brown/src/protobuf/")
+   :inherit-configuration)
 
 
 6. Tell ASDF where to find Google's protocol buffer compiler and the Common

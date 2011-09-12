@@ -34,7 +34,7 @@
 
 (defpackage #:varint-test
   (:documentation "Test code in the VARINT package.")
-  (:use #:common-lisp #:base #:hu.dwim.stefil #:varint)
+  (:use #:common-lisp #:com.google.base #:hu.dwim.stefil #:varint)
   (:export #:test-varint))
 
 (in-package #:varint-test)
@@ -71,7 +71,7 @@
   (let ((encoded-end (funcall encoder buffer 0 n)))
     (is (= encoded-end length))
     (loop for i upfrom 0 below encoded-end do
-          (is (= (aref buffer i) (aref golden i))))
+      (is (= (aref buffer i) (aref golden i))))
     (multiple-value-bind (decoded end)
         (funcall parser buffer 0)
       (is (= end encoded-end))
@@ -123,15 +123,15 @@
 
     ;; Decode backward.  Index already points just past the last value.
     (loop for p from 63 downto 0 do
-          (when (< p 32)
-            (multiple-value-bind (value32 new-index)
-                (parse32-backward buffer index 0)
-              (is (= value32 (ash 1 p)))
-              (setf index new-index)))
-          (multiple-value-bind (value64 new-index)
-              (parse64-backward buffer index 0)
-            (is (= value64 (ash 1 p)))
-            (setf index new-index)))
+      (when (< p 32)
+        (multiple-value-bind (value32 new-index)
+            (parse32-backward buffer index 0)
+          (is (= value32 (ash 1 p)))
+          (setf index new-index)))
+      (multiple-value-bind (value64 new-index)
+          (parse64-backward buffer index 0)
+        (is (= value64 (ash 1 p)))
+        (setf index new-index)))
     (is (zerop index))
 
     ;; Skip forward.
@@ -143,9 +143,9 @@
 
     ;; Skip backwards.
     (loop for p from 63 downto 0 do
-          (when (< p 32)
-            (setf index (skip32-backward buffer index 0)))
-          (setf index (skip64-backward buffer index 0)))
+      (when (< p 32)
+        (setf index (skip32-backward buffer index 0)))
+      (setf index (skip64-backward buffer index 0)))
     (is (zerop index)))
 
   ;; Encode 1000 random numbers as both 32-bit and 64-bit varints.
@@ -180,30 +180,30 @@
 
     ;; Decode backward.
     (loop for i from (1- trial-count) downto 0 do
-          (multiple-value-bind (value32 new-index)
-              (parse32-backward buffer32 index32 0)
-            (is (= value32 (aref values32 i)))
-            (setf index32 new-index))
-          (multiple-value-bind (value64 new-index)
-              (parse64-backward buffer64 index64 0)
-            (is (= value64 (aref values64 i)))
-            (setf index64 new-index)))))
+      (multiple-value-bind (value32 new-index)
+          (parse32-backward buffer32 index32 0)
+        (is (= value32 (aref values32 i)))
+        (setf index32 new-index))
+      (multiple-value-bind (value64 new-index)
+          (parse64-backward buffer64 index64 0)
+        (is (= value64 (aref values64 i)))
+        (setf index64 new-index)))))
 
 ;; Add tests for:
 ;;   encode-uint32-carefully
 ;;   encode-uint64-carefully
 
-; (deftest varint-parse32-with-limit ()
-;   (let ((buffer (make-octet-vector
-;                  10
-;                  :initial-contents
-;                  '(#x80 #x81 #x82 #x83 #x84 #x85 #x86 #x87 #x88 0))))
-;     (should-get-exception?? (parse32-with-limit buffer 0 +max-bytes-32+))))
+;; (deftest varint-parse32-with-limit ()
+;;   (let ((buffer (make-octet-vector
+;;                  10
+;;                  :initial-contents
+;;                  '(#x80 #x81 #x82 #x83 #x84 #x85 #x86 #x87 #x88 0))))
+;;     (should-get-exception?? (parse32-with-limit buffer 0 +max-bytes-32+))))
 
-; (deftest varint-skip64-backward ()
-;   (let ((buffer (make-octet-array
-;                  12
-;                  :initial-contents
-;                  '(#x80 #x81 #x82 #x83 #x84 #x85 #x86 #x87 #x88 #x89
-;                    #x80 #x00))))
-;     (should-get-exception?? (skip64-backward buffer 11 0))))
+;; (deftest varint-skip64-backward ()
+;;   (let ((buffer (make-octet-array
+;;                  12
+;;                  :initial-contents
+;;                  '(#x80 #x81 #x82 #x83 #x84 #x85 #x86 #x87 #x88 #x89
+;;                    #x80 #x00))))
+;;     (should-get-exception?? (skip64-backward buffer 11 0))))

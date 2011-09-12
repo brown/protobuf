@@ -37,7 +37,7 @@
 (in-package #:varint-system)
 
 (defsystem #:varint
-  :depends-on (#:base)
+  :depends-on (#:com.google.base)
   :in-order-to ((test-op (test-op :varint-test)))
   :components
   ((:file "package")

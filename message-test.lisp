@@ -88,13 +88,13 @@
     (repeated-float 211s0 311s0 511s0) (repeated-double 212d0 312d0 512d0)
     (repeated-bool t nil t)
     (repeated-string
-     #.(base:string-to-utf8-octets "215")
-     #.(base:string-to-utf8-octets "315")
-     #.(base:string-to-utf8-octets "515"))
+     #.(string-to-utf8-octets "215")
+     #.(string-to-utf8-octets "315")
+     #.(string-to-utf8-octets "515"))
     (repeated-bytes
-     #.(base:string-to-utf8-octets "216")
-     #.(base:string-to-utf8-octets "316")
-     #.(base:string-to-utf8-octets "516"))
+     #.(string-to-utf8-octets "216")
+     #.(string-to-utf8-octets "316")
+     #.(string-to-utf8-octets "516"))
     (repeated-nested-enum
      #.pb:+testalltypes-nestedenum-bar+
      #.pb:+testalltypes-nestedenum-baz+
@@ -109,13 +109,13 @@
      #.pb:+importenum-import-foo+)
     ;; XXXX: C++ test does not verify these fields.
     (repeated-string-piece
-     #.(base:string-to-utf8-octets "224")
-     #.(base:string-to-utf8-octets "324")
-     #.(base:string-to-utf8-octets "524"))
+     #.(string-to-utf8-octets "224")
+     #.(string-to-utf8-octets "324")
+     #.(string-to-utf8-octets "524"))
     (repeated-cord
-     #.(base:string-to-utf8-octets "225")
-     #.(base:string-to-utf8-octets "325")
-     #.(base:string-to-utf8-octets "525"))
+     #.(string-to-utf8-octets "225")
+     #.(string-to-utf8-octets "325")
+     #.(string-to-utf8-octets "525"))
     ))
 
 (defun field-equal (x y)

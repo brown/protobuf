@@ -50,8 +50,7 @@
          (field-octets (intern (concatenate 'string field-name "-OCTETS")
                                "PROTOCOL-BUFFER")))
     `(progn (assert (equalp (,field ,protobuf) ,string))
-            (assert (equalp (,field-octets ,protobuf)
-                            (base:string-to-utf8-octets ,string))))))
+            (assert (equalp (,field-octets ,protobuf) (string-to-utf8-octets ,string))))))
 
 (defun correctness-tests ()
   ;; Check that required strings are cleared by CLEAR.
@@ -124,10 +123,10 @@
     (vector-push-extend -1.75f0 (pb:r-float p))
     (vector-push-extend 3.3d0 (pb:r-double p))
     (vector-push-extend -1.2d0 (pb:r-double p))
-    (vector-push-extend (base:string-to-utf8-octets "foo") (pb:r-string p))
-    (vector-push-extend (base:string-to-utf8-octets "bar") (pb:r-string p))
-    (vector-push-extend (base:string-to-utf8-octets "ping") (pb:r-vardata p))
-    (vector-push-extend (base:string-to-utf8-octets "pong") (pb:r-vardata p))
+    (vector-push-extend (string-to-utf8-octets "foo") (pb:r-string p))
+    (vector-push-extend (string-to-utf8-octets "bar") (pb:r-string p))
+    (vector-push-extend (string-to-utf8-octets "ping") (pb:r-vardata p))
+    (vector-push-extend (string-to-utf8-octets "pong") (pb:r-vardata p))
 
     (let ((x (make-instance 'pb:Test1Msg))
           (y (make-instance 'pb:Test1Msg)))
@@ -168,7 +167,7 @@
 
     ;; write buffer to a file
     (let ((size (pb:octet-size p)))
-      (let* ((output-buffer (base:make-octet-vector size))
+      (let* ((output-buffer (make-octet-vector size))
              (end (pb:serialize p output-buffer 0 size)))
         (assert (= end size))
         (with-open-file (output-stream +test-file-name+ :direction :output
@@ -182,8 +181,8 @@
         (with-open-file (test-input +test-file-name+ :direction :input
                          :element-type 'unsigned-byte)
           (assert (= (file-length test-input) size))
-          (let ((golden-buffer (base:make-octet-vector size))
-                (test-buffer (base:make-octet-vector size)))
+          (let ((golden-buffer (make-octet-vector size))
+                (test-buffer (make-octet-vector size)))
             (read-sequence golden-buffer golden-input)
             (read-sequence test-buffer test-input)
             (assert (equalp golden-buffer test-buffer))))))
@@ -209,7 +208,7 @@
     (with-open-file (golden-input +golden-file-name+ :direction :input
                      :element-type 'unsigned-byte)
       (let* ((size (file-length golden-input))
-             (buffer (base:make-octet-vector size)))
+             (buffer (make-octet-vector size)))
         (read-sequence buffer golden-input)
         (assert (= (pb:merge-from-array p buffer 0 size) size))))
 
@@ -248,11 +247,9 @@
     (test-repeated (pb:r-float p) '(1.5f0 -1.75f0))
     (test-repeated (pb:r-double p) '(3.3d0 -1.2d0))
     (test-repeated (pb:r-string p)
-                   (list (base:string-to-utf8-octets "foo")
-                         (base:string-to-utf8-octets "bar")))
+                   (list (string-to-utf8-octets "foo") (string-to-utf8-octets "bar")))
     (test-repeated (pb:r-vardata p)
-                   (list (base:string-to-utf8-octets "ping")
-                         (base:string-to-utf8-octets "pong")))
+                   (list (string-to-utf8-octets "ping") (string-to-utf8-octets "pong")))
 
     (assert (= (length (pb:r-msg p)) 2))
     (assert (= (pb:foo (aref (pb:r-msg p) 0)) 12))
@@ -279,7 +276,7 @@
         (setf (pb:v2 new) 80)
         (vector-push-extend new (pb:g src))))
 
-    (let* ((buffer (base:make-octet-vector 10000))
+    (let* ((buffer (make-octet-vector 10000))
            ;; XXXXXXXXXX
            (size (pb:serialize src buffer 0 10000)))
       (time (dotimes (i iterations)

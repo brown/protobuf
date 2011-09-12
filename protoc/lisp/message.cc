@@ -567,8 +567,8 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
 void MessageGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer) {
   printer->Print(
       "(cl:defmethod serialize ((self $classname$) buffer index limit)\n"
-      "  (cl:declare (cl:type base:octet-vector buffer)\n"
-      "              (cl:type base:vector-index index limit)\n"
+      "  (cl:declare (cl:type com.google.base:octet-vector buffer)\n"
+      "              (cl:type com.google.base:vector-index index limit)\n"
       "              (cl:ignorable buffer limit))\n",
       "classname", classname_);
   printer->Indent();
@@ -629,11 +629,11 @@ void MessageGenerator::GenerateMergeFromArray(io::Printer* printer) {
   printer->Print(
       "(cl:defmethod merge-from-array"
       " ((self $classname$) buffer start limit)\n"
-      "  (cl:declare (cl:type base:octet-vector buffer)\n"
-      "              (cl:type base:vector-index start limit))\n"
+      "  (cl:declare (cl:type com.google.base:octet-vector buffer)\n"
+      "              (cl:type com.google.base:vector-index start limit))\n"
       "  (cl:do ((index start index))\n"
       "      ((cl:>= index limit) index)\n"
-      "    (cl:declare (cl:type base:vector-index index))\n"
+      "    (cl:declare (cl:type com.google.base:vector-index index))\n"
       "    (cl:multiple-value-bind (tag new-index)\n"
       "        (varint:parse-uint32-carefully buffer index limit)\n"
       "      (cl:setf index new-index)\n"
