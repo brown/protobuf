@@ -461,6 +461,7 @@ LIMIT, then signal ENCODE-OVERFLOW."
                 read-single-float-carefully)
          #+opt (inline read-single-float-carefully))
 
+#-lispworks
 (defun read-single-float-carefully (buffer index limit)
   "Read a SINGLE-FLOAT from BUFFER starting at INDEX.  The float is stored
 in BUFFER as a 4-octet little-endian IEEE single precision value.  Both the
@@ -495,6 +496,30 @@ PARSE-OVERFLOW."
     #+sbcl
     (values (sb-kernel:make-single-float bits) index)))
 
+#+lispworks
+(defun unsigned-bytes-to-float (bytes)
+ #-ieee-floating-point (error "fixme")
+ (let ((ft (ecase (length bytes)
+             (4 :lisp-single-float)
+             (8 :lisp-double-float))))
+   (fli:with-dynamic-foreign-objects
+       ((x (:unsigned :byte)
+           :initial-contents (coerce bytes 'list)
+           :nelems (length bytes)))
+     (fli:with-coerced-pointer
+         (y :type ft) x
+       (fli:dereference y)))))
+
+#+lispworks
+(defun read-single-float-carefully (buffer index limit)
+  (when (> (+ index 4) limit)
+    (error 'data-exhausted))
+  (values (unsigned-bytes-to-float
+           (#+big-endian nreverse
+                         #+little-endian identity
+                         (subseq buffer index (+ index 4))))
+          (+ index 4)))
+
 (declaim (ftype (function (octet-vector
                            vector-index
                            vector-index)
@@ -502,6 +527,7 @@ PARSE-OVERFLOW."
                 read-double-float-carefully)
          #+opt (inline read-double-float-carefully))
 
+#-lispworks
 (defun read-double-float-carefully (buffer index limit)
   "Read a DOUBLE-FLOAT from BUFFER starting at INDEX.  The float is stored
 in BUFFER as an 8-octet little-endian IEEE double precision value.  Both the
@@ -545,6 +571,16 @@ PARSE-OVERFLOW."
       (values (kernel:make-double-float high low) index)
       #+sbcl
       (values (sb-kernel:make-double-float high low) index))))
+
+#+lispworks
+(defun read-double-float-carefully (buffer index limit)
+  (when (> (+ index 8) limit)
+    (error 'data-exhausted))
+  (values (unsigned-bytes-to-float
+           (#+big-endian nreverse
+                         #+little-endian identity
+                         (subseq buffer index (+ index 8))))
+          (+ index 8)))
 
 (declaim (ftype (function (octet-vector
                            vector-index
