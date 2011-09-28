@@ -497,28 +497,18 @@ PARSE-OVERFLOW."
     (values (sb-kernel:make-single-float bits) index)))
 
 #+lispworks
-(defun unsigned-bytes-to-float (bytes)
- #-ieee-floating-point (error "fixme")
- (let ((ft (ecase (length bytes)
-             (4 :lisp-single-float)
-             (8 :lisp-double-float))))
-   (fli:with-dynamic-foreign-objects
-       ((x (:unsigned :byte)
-           :initial-contents (coerce bytes 'list)
-           :nelems (length bytes)))
-     (fli:with-coerced-pointer
-         (y :type ft) x
-       (fli:dereference y)))))
-
-#+lispworks
 (defun read-single-float-carefully (buffer index limit)
-  (when (> (+ index 4) limit)
-    (error 'data-exhausted))
-  (values (unsigned-bytes-to-float
-           (#+big-endian nreverse
-                         #+little-endian identity
-                         (subseq buffer index (+ index 4))))
-          (+ index 4)))
+  (fli:with-dynamic-foreign-objects ((value :lisp-single-float))
+    (fli:with-coerced-pointer (bytes :type '(:unsigned :char)) value
+      (dotimes (byte-index 4)
+        (when (>= index limit)
+          (error 'parse-overflow))
+        (let ((endian-byte-index #+LITTLE-ENDIAN byte-index
+                                 #-LITTLE-ENDIAN (- 3 byte-index)))
+          (setf (fli:dereference bytes :index endian-byte-index)
+                (aref buffer index)))
+        (incf index))
+      (values (fli:dereference value) index))))
 
 (declaim (ftype (function (octet-vector
                            vector-index
@@ -574,13 +564,17 @@ PARSE-OVERFLOW."
 
 #+lispworks
 (defun read-double-float-carefully (buffer index limit)
-  (when (> (+ index 8) limit)
-    (error 'data-exhausted))
-  (values (unsigned-bytes-to-float
-           (#+big-endian nreverse
-                         #+little-endian identity
-                         (subseq buffer index (+ index 8))))
-          (+ index 8)))
+  (fli:with-dynamic-foreign-objects ((value :lisp-double-float))
+    (fli:with-coerced-pointer (bytes :type '(:unsigned :char)) value
+      (dotimes (byte-index 8)
+        (when (>= index limit)
+          (error 'parse-overflow))
+        (let ((endian-byte-index #+LITTLE-ENDIAN byte-index
+                                 #-LITTLE-ENDIAN (- 7 byte-index)))
+          (setf (fli:dereference bytes :index endian-byte-index)
+                (aref buffer index)))
+        (incf index))
+      (values (fli:dereference value) index))))
 
 (declaim (ftype (function (octet-vector
                            vector-index
