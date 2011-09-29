@@ -30,15 +30,28 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+(in-package #:common-lisp-user)
+
+(defpackage #:wire-format-test
+  (:documentation "Tests for protocol buffer wire format functions.")
+  (:use #:common-lisp
+        #:com.google.base
+        #:hu.dwim.stefil
+        #:wire-format)
+  (:export #:test-wire-format))
 
 (in-package #:wire-format-test)
 (declaim #.*optimize-default*)
 
+(defsuite (test-wire-format :in root-suite) ()
+  (run-child-tests))
 
-(defun test-zig-zag-encoding ()
+(in-suite test-wire-format)
+
+(deftest test-zig-zag-encoding ()
   (flet ((verify (fun arg-results)
            (loop for (arg result) in arg-results
-                 do (assert (= (funcall fun arg) result)))))
+                 do (is (= (funcall fun arg) result)))))
     (verify #'zig-zag-encode32
             `((0 0) (-1 1) (1 2) (-2 3)
               (#x3fffffff #x7ffffffe)
@@ -71,16 +84,11 @@
   ;; Some easier-to-verify round-trip tests.  The inputs (other than 0, 1, -1)
   ;; were chosen semi-randomly via keyboard bashing.
   (flet ((round-trip32 (n)
-           (assert (= n (zig-zag-decode32 (zig-zag-encode32 n)))))
+           (is (= n (zig-zag-decode32 (zig-zag-encode32 n)))))
          (round-trip64 (n)
-           (assert (= n (zig-zag-decode64 (zig-zag-encode64 n))))))
+           (is (= n (zig-zag-decode64 (zig-zag-encode64 n))))))
     (dolist (n '(0 1 -1 14927 -3612))
       (round-trip32 n))
     (dolist (n '(0 1 -1 14927 -3612 856912304801416 -75123905439571256))
       (round-trip64 n)))
-  (values))
-
-(defun test ()
-  (test-zig-zag-encoding)
-  (print "PASS")
   (values))

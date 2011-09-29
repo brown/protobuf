@@ -30,9 +30,7 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 (in-package #:common-lisp-user)
-
 
 (defpackage #:protocol-buffer
   (:documentation "Machine generated protocol buffers")
@@ -60,11 +58,6 @@
            #:double-float-bits
            #:make-single-float
            #:make-double-float))
-
-(defpackage #:proto-lisp-test
-  (:documentation "Test the Lisp implementation of protocol buffers")
-  (:use #:common-lisp #:com.google.base)
-  (:export #:test))
 
 (defpackage #:wire-format
   (:documentation "Wire format for protocol buffers")
@@ -102,15 +95,4 @@
            #:zig-zag-encode32
            #:zig-zag-decode32
            #:zig-zag-encode64
-           #:zig-zag-decode64
-           ))
-
-(defpackage #:wire-format-test
-  (:documentation "Tests for protocol buffer wire format functions.")
-  (:use #:common-lisp #:com.google.base #:wire-format)
-  (:export #:test))
-
-(defpackage #:message-test
-  (:documentation "Tests for protocol buffer messages.")
-  (:use #:common-lisp #:com.google.base)
-  (:export #:test))
+           #:zig-zag-decode64))

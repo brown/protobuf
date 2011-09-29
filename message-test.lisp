@@ -30,9 +30,22 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+(in-package #:common-lisp-user)
+
+(defpackage #:message-test
+  (:documentation "Tests for protocol buffer messages.")
+  (:use #:common-lisp
+        #:com.google.base
+        #:hu.dwim.stefil)
+  (:export #:test-message))
 
 (in-package #:message-test)
 (declaim #.*optimize-default*)
+
+(defsuite (test-message :in root-suite) ()
+  (run-child-tests))
+
+(in-suite test-message)
 
 (defconst +pwd+ #.(make-pathname
                    :directory (pathname-directory
@@ -58,8 +71,7 @@
     (optional-foreign-enum #.pb:+foreignenum-foreign-foo+ #.pb:+foreignenum-foreign-baz+)
     (optional-import-enum #.pb:+importenum-import-foo+ #.pb:+importenum-import-baz+)
     ;; XXXX: C++ test does not verify these fields.
-    (optional-string-piece "" "124") (optional-cord "" "125")
-    ))
+    (optional-string-piece "" "124") (optional-cord "" "125")))
 
 (defparameter *default-field-info*
   ;; field name, default value, value set by tests
@@ -75,8 +87,7 @@
     (default-foreign-enum #.pb:+foreignenum-foreign-bar+ #.pb:+foreignenum-foreign-foo+)
     (default-import-enum #.pb:+importenum-import-bar+ #.pb:+importenum-import-foo+)
     ;; XXXX: C++ test does not verify these fields.
-    (default-string-piece "abc" "424") (default-cord "123" "425")
-    ))
+    (default-string-piece "abc" "424") (default-cord "123" "425")))
 
 (defparameter *repeated-field-info*
   ;; field name, default value, value set by tests, modification value
@@ -115,8 +126,7 @@
     (repeated-cord
      #.(string-to-utf8-octets "225")
      #.(string-to-utf8-octets "325")
-     #.(string-to-utf8-octets "525"))
-    ))
+     #.(string-to-utf8-octets "525"))))
 
 (defun field-equal (x y)
   (cond ((stringp x) (and (stringp y) (string= x y)))
@@ -139,24 +149,24 @@
           (let ((has (field-function "HAS-" field))
                 (accessor (field-function "" field))
                 (value (second values)))
-            (assert (funcall has m))
-            (assert (field-equal (funcall accessor m) value)))))
+            (is (funcall has m))
+            (is (field-equal (funcall accessor m) value)))))
 
-  (assert (pb:has-optionalgroup m))
-  (assert (pb:has-a (pb:optionalgroup m)))
-  (assert (= (pb:a (pb:optionalgroup m)) 117))
+  (is (pb:has-optionalgroup m))
+  (is (pb:has-a (pb:optionalgroup m)))
+  (is (= (pb:a (pb:optionalgroup m)) 117))
 
-  (assert (pb:has-optional-nested-message m))
-  (assert (pb:has-bb (pb:optional-nested-message m)))
-  (assert (= (pb:bb (pb:optional-nested-message m)) 118))
+  (is (pb:has-optional-nested-message m))
+  (is (pb:has-bb (pb:optional-nested-message m)))
+  (is (= (pb:bb (pb:optional-nested-message m)) 118))
 
-  (assert (pb:has-optional-foreign-message m))
-  (assert (pb:has-c (pb:optional-foreign-message m)))
-  (assert (= (pb:c (pb:optional-foreign-message m)) 119))
+  (is (pb:has-optional-foreign-message m))
+  (is (pb:has-c (pb:optional-foreign-message m)))
+  (is (= (pb:c (pb:optional-foreign-message m)) 119))
 
-  (assert (pb:has-optional-import-message m))
-  (assert (pb:has-d (pb:optional-import-message m)))
-  (assert (= (pb:d (pb:optional-import-message m)) 120))
+  (is (pb:has-optional-import-message m))
+  (is (pb:has-d (pb:optional-import-message m)))
+  (is (= (pb:d (pb:optional-import-message m)) 120))
 
   ;; repeated fields
   (let ((field-info *repeated-field-info*))
@@ -164,25 +174,25 @@
           (let ((accessor (field-function "" field))
                 (v0 (first values))
                 (v1 (second values)))
-            (assert (= (length (funcall accessor m)) 2))
-            (assert (field-equal (aref (funcall accessor m) 0) v0))
-            (assert (field-equal (aref (funcall accessor m) 1) v1)))))
+            (is (= (length (funcall accessor m)) 2))
+            (is (field-equal (aref (funcall accessor m) 0) v0))
+            (is (field-equal (aref (funcall accessor m) 1) v1)))))
   (let ((v (pb:repeatedgroup m)))
-    (assert (= (length v) 2))
-    (assert (= (pb:a (aref v 0)) 217))
-    (assert (= (pb:a (aref v 1)) 317)))
+    (is (= (length v) 2))
+    (is (= (pb:a (aref v 0)) 217))
+    (is (= (pb:a (aref v 1)) 317)))
   (let ((v (pb:repeated-nested-message m)))
-    (assert (= (length v) 2))
-    (assert (= (pb:bb (aref v 0)) 218))
-    (assert (= (pb:bb (aref v 1)) 318)))
+    (is (= (length v) 2))
+    (is (= (pb:bb (aref v 0)) 218))
+    (is (= (pb:bb (aref v 1)) 318)))
   (let ((v (pb:repeated-foreign-message m)))
-    (assert (= (length v) 2))
-    (assert (= (pb:c (aref v 0)) 219))
-    (assert (= (pb:c (aref v 1)) 319)))
+    (is (= (length v) 2))
+    (is (= (pb:c (aref v 0)) 219))
+    (is (= (pb:c (aref v 1)) 319)))
   (let ((v (pb:repeated-import-message m)))
-    (assert (= (length v) 2))
-    (assert (= (pb:d (aref v 0)) 220))
-    (assert (= (pb:d (aref v 1)) 320))))
+    (is (= (length v) 2))
+    (is (= (pb:d (aref v 0)) 220))
+    (is (= (pb:d (aref v 1)) 320))))
 
 (defconst +packed-field-info+
   '((packed-int32 601 701) (packed-int64 602 702)
@@ -199,9 +209,9 @@
         (let ((accessor (field-function "" field))
               (v0 (first values))
               (v1 (second values)))
-          (assert (= (length (funcall accessor m)) 2))
-          (assert (field-equal (aref (funcall accessor m) 0) v0))
-          (assert (field-equal (aref (funcall accessor m) 1) v1)))))
+          (is (= (length (funcall accessor m)) 2))
+          (is (field-equal (aref (funcall accessor m) 0) v0))
+          (is (field-equal (aref (funcall accessor m) 1) v1)))))
 
 (defun read-message (class-name file-name)
   (let ((message (make-instance class-name)))
@@ -213,11 +223,11 @@
         (pb:merge-from-array message buffer 0 size)))
     message))
 
-(defun test-parse-from-file ()
+(deftest test-parse-from-file ()
   (let ((message (read-message 'pb:testalltypes +golden-file-name+)))
     (expect-all-fields-set message)))
 
-(defun test-parse-packed-from-file ()
+(deftest test-parse-packed-from-file ()
   (let ((message (read-message 'pb:testpackedtypes +golden-packed-file-name+)))
     (expect-packed-fields-set message)))
 
@@ -266,7 +276,7 @@
     (vector-push-extend v0 (pb:repeated-import-message m))
     (vector-push-extend v1 (pb:repeated-import-message m))))
 
-(defun test-parse-helpers ()
+(deftest test-parse-helpers ()
   (let ((m1 (make-instance 'pb:testalltypes))
         (m2 (make-instance 'pb:testalltypes)))
     (set-all-fields m1)
@@ -284,30 +294,30 @@
           (let ((has (field-function "HAS-" field))
                 (accessor (field-function "" field))
                 (default-value (first values)))
-            (assert (not (funcall has m)))
-            (assert (field-equal (funcall accessor m) default-value)))))
+            (is (not (funcall has m)))
+            (is (field-equal (funcall accessor m) default-value)))))
 
-  (assert (not (pb:has-optionalgroup m)))
-  (assert (not (pb:has-a (pb:optionalgroup m))))
-  (assert (= (pb:a (pb:optionalgroup m)) 0))
+  (is (not (pb:has-optionalgroup m)))
+  (is (not (pb:has-a (pb:optionalgroup m))))
+  (is (= (pb:a (pb:optionalgroup m)) 0))
 
-  (assert (not (pb:has-optional-nested-message m)))
-  (assert (not (pb:has-bb (pb:optional-nested-message m))))
-  (assert (= (pb:bb (pb:optional-nested-message m)) 0))
+  (is (not (pb:has-optional-nested-message m)))
+  (is (not (pb:has-bb (pb:optional-nested-message m))))
+  (is (= (pb:bb (pb:optional-nested-message m)) 0))
 
-  (assert (not (pb:has-optional-foreign-message m)))
-  (assert (not (pb:has-c (pb:optional-foreign-message m))))
-  (assert (= (pb:c (pb:optional-foreign-message m)) 0))
+  (is (not (pb:has-optional-foreign-message m)))
+  (is (not (pb:has-c (pb:optional-foreign-message m))))
+  (is (= (pb:c (pb:optional-foreign-message m)) 0))
 
-  (assert (not (pb:has-optional-import-message m)))
-  (assert (not (pb:has-d (pb:optional-import-message m))))
-  (assert (= (pb:d (pb:optional-import-message m)) 0))
+  (is (not (pb:has-optional-import-message m)))
+  (is (not (pb:has-d (pb:optional-import-message m))))
+  (is (= (pb:d (pb:optional-import-message m)) 0))
 
   ;; repeated fields
   (let ((field-info *repeated-field-info*))
     (loop for (field . nil) in field-info do
           (let ((accessor (field-function "" field)))
-            (assert (zerop (length (funcall accessor m))))))))
+            (is (zerop (length (funcall accessor m))))))))
 
 (defun modify-repeated-fields (m)
   (let ((field-info *repeated-field-info*))
@@ -326,27 +336,27 @@
           (let ((accessor (field-function "" field))
                 (v0 (first values))
                 (v1 (third values)))
-            (assert (= (length (funcall accessor m)) 2))
-            (assert (field-equal (aref (funcall accessor m) 0) v0))
-            (assert (field-equal (aref (funcall accessor m) 1) v1)))))
+            (is (= (length (funcall accessor m)) 2))
+            (is (field-equal (aref (funcall accessor m) 0) v0))
+            (is (field-equal (aref (funcall accessor m) 1) v1)))))
   (let ((v (pb:repeatedgroup m)))
-    (assert (= (length v) 2))
-    (assert (= (pb:a (aref v 0)) 217))
-    (assert (= (pb:a (aref v 1)) 517)))
+    (is (= (length v) 2))
+    (is (= (pb:a (aref v 0)) 217))
+    (is (= (pb:a (aref v 1)) 517)))
   (let ((v (pb:repeated-nested-message m)))
-    (assert (= (length v) 2))
-    (assert (= (pb:bb (aref v 0)) 218))
-    (assert (= (pb:bb (aref v 1)) 518)))
+    (is (= (length v) 2))
+    (is (= (pb:bb (aref v 0)) 218))
+    (is (= (pb:bb (aref v 1)) 518)))
   (let ((v (pb:repeated-foreign-message m)))
-    (assert (= (length v) 2))
-    (assert (= (pb:c (aref v 0)) 219))
-    (assert (= (pb:c (aref v 1)) 519)))
+    (is (= (length v) 2))
+    (is (= (pb:c (aref v 0)) 219))
+    (is (= (pb:c (aref v 1)) 519)))
   (let ((v (pb:repeated-import-message m)))
-    (assert (= (length v) 2))
-    (assert (= (pb:d (aref v 0)) 220))
-    (assert (= (pb:d (aref v 1)) 520))))
+    (is (= (length v) 2))
+    (is (= (pb:d (aref v 0)) 220))
+    (is (= (pb:d (aref v 1)) 520))))
 
-(defun test-modify-repeated-fields ()
+(deftest test-modify-repeated-fields ()
   (let ((m (make-instance 'pb:testalltypes)))
     (expect-clear m)
     (set-all-fields m)
@@ -356,7 +366,7 @@
     (pb:clear m)
     (expect-clear m)))
 
-(defun test-serialize-and-merge ()
+(deftest test-serialize-and-merge ()
   (let ((m1 (make-instance 'pb:testalltypes))
         (m2 (make-instance 'pb:testalltypes))
         (m3 (make-instance 'pb:testalltypes)))
@@ -369,12 +379,3 @@
       (pb:merge-from-array m3 buffer 0 size))
     (expect-all-fields-set m2)
     (expect-all-fields-set m3)))
-
-(defun test ()
-  (test-parse-from-file)
-  (test-parse-packed-from-file)
-  (test-parse-helpers)
-  (test-modify-repeated-fields)
-  (test-serialize-and-merge)
-  (print "PASS")
-  (values))

@@ -31,9 +31,22 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+(in-package #:common-lisp-user)
+
+(defpackage #:proto-lisp-test
+  (:documentation "Test the Lisp implementation of protocol buffers.")
+  (:use #:common-lisp
+        #:com.google.base
+        #:hu.dwim.stefil)
+  (:export #:test-proto-lisp))
 
 (in-package #:proto-lisp-test)
 (declaim #.*optimize-default*)
+
+(defsuite (test-proto-lisp :in root-suite) ()
+  (run-child-tests))
+
+(in-suite test-proto-lisp)
 
 (defconst +pwd+ #.(make-pathname
                    :directory (pathname-directory
@@ -49,10 +62,10 @@
   (let* ((field-name (symbol-name field))
          (field-octets (intern (concatenate 'string field-name "-OCTETS")
                                "PROTOCOL-BUFFER")))
-    `(progn (assert (equalp (,field ,protobuf) ,string))
-            (assert (equalp (,field-octets ,protobuf) (string-to-utf8-octets ,string))))))
+    `(progn (is (equalp (,field ,protobuf) ,string))
+            (is (equalp (,field-octets ,protobuf) (string-to-utf8-octets ,string))))))
 
-(defun correctness-tests ()
+(deftest correctness-tests ()
   ;; Check that required strings are cleared by CLEAR.
   (let ((p (make-instance 'pb:TestProtocol)))
     (assert-string-equal (pb:zero p) "")
@@ -76,22 +89,22 @@
     (assert-string-equal (pb:optstring p) "opt"))
   (values))
 
-(defun test-pb-write ()
+(deftest test-pb-write ()
   (let ((p (make-instance 'pb:Test1Proto)))
     ;; verify enum values
-    (assert (= pb:+Test1Proto-EnumCode-FOO+ 0))
-    (assert (= pb:+Test1Proto-EnumCode-BAR+ 1))
-    (assert (= pb:+Test1Proto-EnumCode-BAZ+ 2))
+    (is (= pb:+Test1Proto-EnumCode-FOO+ 0))
+    (is (= pb:+Test1Proto-EnumCode-BAR+ 1))
+    (is (= pb:+Test1Proto-EnumCode-BAZ+ 2))
 
     ;; default settings
-    (assert (= (pb:d-int32 p) 12))
+    (is (= (pb:d-int32 p) 12))
     (assert-string-equal (pb:d-string p) "foo")
-    (assert (eq (pb:d-bool p) t))
+    (is (eq (pb:d-bool p) t))
 
     ;; test is-initialized
-    (assert (not (pb:is-initialized p)))
+    (is (not (pb:is-initialized p)))
     (setf (pb:o-a p) 20)
-    (assert (pb:is-initialized p))
+    (is (pb:is-initialized p))
 
     ;; unrepeated things
     (setf (pb:u-int32 p) 20)
@@ -169,7 +182,7 @@
     (let ((size (pb:octet-size p)))
       (let* ((output-buffer (make-octet-vector size))
              (end (pb:serialize p output-buffer 0 size)))
-        (assert (= end size))
+        (is (= end size))
         (with-open-file (output-stream +test-file-name+ :direction :output
                          :if-exists :supersede :element-type 'unsigned-byte)
           (write-sequence output-buffer output-stream)))
@@ -177,57 +190,57 @@
       ;; check against the golden data
       (with-open-file (golden-input +golden-file-name+ :direction :input
                        :element-type 'unsigned-byte)
-        (assert (= (file-length golden-input) size))
+        (is (= (file-length golden-input) size))
         (with-open-file (test-input +test-file-name+ :direction :input
                          :element-type 'unsigned-byte)
-          (assert (= (file-length test-input) size))
+          (is (= (file-length test-input) size))
           (let ((golden-buffer (make-octet-vector size))
                 (test-buffer (make-octet-vector size)))
             (read-sequence golden-buffer golden-input)
             (read-sequence test-buffer test-input)
-            (assert (equalp golden-buffer test-buffer))))))
+            (is (equalp golden-buffer test-buffer))))))
 
     ;; clean up
     (delete-file +test-file-name+)))
 
 (defun test-repeated (value golden)
   (let ((golden-size (length golden)))
-    (assert (= (length value) golden-size))
+    (is (= (length value) golden-size))
     (loop for v across value
           for g in golden
           ;; V and G are either NIL/T, numbers, or strings, actually simple
           ;; arrays of octets.
           do (cond ((and (member v '(t nil)) (member g '(t nil)))
-                    (assert (eq v g)))
-                   ((and (numberp v) (numberp g)) (assert (= v g)))
-                   ((and (arrayp v) (arrayp g)) (assert (equalp v g)))
-                   (t (assert (progn "type mismatch" nil)))))))
+                    (is (eq v g)))
+                   ((and (numberp v) (numberp g)) (is (= v g)))
+                   ((and (arrayp v) (arrayp g)) (is (equalp v g)))
+                   (t (is (progn "type mismatch" nil)))))))
 
-(defun test-pb-read ()
+(deftest test-pb-read ()
   (let ((p (make-instance 'pb:Test1Proto)))
     (with-open-file (golden-input +golden-file-name+ :direction :input
                      :element-type 'unsigned-byte)
       (let* ((size (file-length golden-input))
              (buffer (make-octet-vector size)))
         (read-sequence buffer golden-input)
-        (assert (= (pb:merge-from-array p buffer 0 size) size))))
+        (is (= (pb:merge-from-array p buffer 0 size) size))))
 
     ;; unrepeated things
-    (assert (pb:has-o-a p))
-    (assert (= (pb:o-a p) 20))
-    (assert (not (pb:has-o-b p)))
-    (assert (= (pb:u-int32 p) 20))
-    (assert (= (pb:u-int64 p) -20))
-    (assert (= (pb:u-uint64 p) 12345678900))
-    (assert (= (pb:u-fixed32 p) 100))
-    (assert (= (pb:u-fixed64 p) 12345678900))
-    (assert (eq (pb:u-bool p) t))
-    (assert (= (pb:u-float p) 3.14159f0))
-    (assert (= (pb:u-double p) 3.14159265d0))
+    (is (pb:has-o-a p))
+    (is (= (pb:o-a p) 20))
+    (is (not (pb:has-o-b p)))
+    (is (= (pb:u-int32 p) 20))
+    (is (= (pb:u-int64 p) -20))
+    (is (= (pb:u-uint64 p) 12345678900))
+    (is (= (pb:u-fixed32 p) 100))
+    (is (= (pb:u-fixed64 p) 12345678900))
+    (is (eq (pb:u-bool p) t))
+    (is (= (pb:u-float p) 3.14159f0))
+    (is (= (pb:u-double p) 3.14159265d0))
 
     ;; Lisp implementation omits "has" function for embedded messages.
-    ;;(assert (has-u-msg p))
-    (assert (= (pb:foo (pb:u-msg p)) 12))
+    ;;(is (has-u-msg p))
+    (is (= (pb:foo (pb:u-msg p)) 12))
 
     ;; repeated things
     (test-repeated (pb:r-int32 p)
@@ -251,22 +264,22 @@
     (test-repeated (pb:r-vardata p)
                    (list (string-to-utf8-octets "ping") (string-to-utf8-octets "pong")))
 
-    (assert (= (length (pb:r-msg p)) 2))
-    (assert (= (pb:foo (aref (pb:r-msg p) 0)) 12))
-    (assert (= (pb:foo (aref (pb:r-msg p) 1)) 13))
+    (is (= (length (pb:r-msg p)) 2))
+    (is (= (pb:foo (aref (pb:r-msg p) 0)) 12))
+    (is (= (pb:foo (aref (pb:r-msg p) 1)) 13))
 
     ;; groups
-    (assert (= (length (pb:testgroup1 p)) 1))
-    (assert (= (pb:a (aref (pb:testgroup1 p) 0)) 80))
+    (is (= (length (pb:testgroup1 p)) 1))
+    (is (= (pb:a (aref (pb:testgroup1 p) 0)) 80))
 
-    (assert (= (length (pb:testgroup2 p)) 2))
-    (assert (= (pb:b (aref (pb:testgroup2 p) 0)) 100))
-    (assert (= (pb:b (aref (pb:testgroup2 p) 1)) 130))
+    (is (= (length (pb:testgroup2 p)) 2))
+    (is (= (pb:b (aref (pb:testgroup2 p) 0)) 100))
+    (is (= (pb:b (aref (pb:testgroup2 p) 1)) 130))
 
     ;; default settings
-    (assert (= (pb:d-int32 p) 12))
+    (is (= (pb:d-int32 p) 12))
     (assert-string-equal (pb:d-string p) "foo")
-    (assert (eq (pb:d-bool p) t))))
+    (is (eq (pb:d-bool p) t))))
 
 (defun parser-timing (iterations)
   (let ((src (make-instance 'pb:TimeProtocol)))
@@ -285,28 +298,27 @@
 
 ;; XXXXXXXXXXXXXXXXXXXX use parser-timing here
 
-(defun output-timing ())
-(defun test-copy-and-merge ())
-(defun auto-tests ())
+;; (defun output-timing ())
+;; (defun test-copy-and-merge ())
+;; (defun auto-tests ())
 
-(defun test (&key
-             (time-raw-parse nil)
-             (time-auto-parse nil)
-             (time-raw-output nil)
-             (time-auto-output nil)
-             (iterations 10000))
-  (if (or time-raw-parse time-auto-parse)
-      (parser-timing iterations)
-      (if (or time-raw-output time-auto-output)
-          (output-timing)
-          (progn (correctness-tests)
-                 (test-pb-write)
-                 (test-pb-read)
-                 (test-copy-and-merge)
-                 ;; XXXX initialize random number generator ??
-                 (auto-tests)
-                 (print "PASS"))))
-  (values))
-
+;; (defun test (&key
+;;              (time-raw-parse nil)
+;;              (time-auto-parse nil)
+;;              (time-raw-output nil)
+;;              (time-auto-output nil)
+;;              (iterations 10000))
+;;   (if (or time-raw-parse time-auto-parse)
+;;       (parser-timing iterations)
+;;       (if (or time-raw-output time-auto-output)
+;;           (output-timing)
+;;           (progn (correctness-tests)
+;;                  (test-pb-write)
+;;                  (test-pb-read)
+;;                  (test-copy-and-merge)
+;;                  ;; XXXX initialize random number generator ??
+;;                  (auto-tests)
+;;                  (print "PASS"))))
+;;   (values))
 
 ;; XXXXXXXXXXXXXXXXXXXX add more test code here

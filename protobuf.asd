@@ -30,7 +30,6 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 (cl:in-package #:asdf)
 
 ;; Pathname of Google's protocol buffer compiler.  You must replace this
@@ -216,7 +215,7 @@ LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
   :name "Protocol Buffer"
   :description "Protocol buffer code"
   :long-description "A Common Lisp implementation of Google's protocol buffer support libraries."
-  :version "0.7"
+  :version "0.7.1"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
   ;; After loading the system, announce its availability.
@@ -226,6 +225,7 @@ LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
   :depends-on (#:com.google.base
                #:varint
                #-(or allegro clisp sbcl) #:trivial-utf-8)
+  :in-order-to ((test-op (test-op :protobuf-test)))
   :components
   ((:static-file "COPYING")
    (:static-file "README")

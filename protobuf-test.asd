@@ -30,7 +30,6 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 (cl:in-package #:common-lisp-user)
 
 (defpackage #:protobuf-test-system
@@ -39,15 +38,15 @@
 
 (in-package #:protobuf-test-system)
 
-
 (defsystem protobuf-test
   :name "Protocol Buffer Test"
   :description "Protocol buffer test code"
   :long-description "Code to test the protocol buffer compiler and support libraries."
-  :version "0.5"
+  :version "0.5.1"
   :author "Robert Brown"
-  :licence "See file COPYING and the copyright messages in individual files."
-  :defsystem-depends-on (:protobuf)
+  :license "See file COPYING and the copyright messages in individual files."
+  :defsystem-depends-on (#:protobuf)
+  :depends-on (#:hu.dwim.stefil)
   :components
   ((:static-file "golden")
    (:file "message-test" :depends-on ("unittest"))
@@ -71,13 +70,7 @@
     :depends-on ("unittest_import")
     :proto-search-path ("./"))))
 
-
-(defmethod operation-done-p ((operation test-op)
-                             (component (eql (find-system :protobuf-test))))
-  nil)
-
-(defmethod perform ((operation test-op)
-                    (component (eql (find-system :protobuf-test))))
-  (funcall (intern (string '#:test) '#:proto-lisp-test))
-  (funcall (intern (string '#:test) '#:wire-format-test))
-  (funcall (intern (string '#:test) '#:message-test)))
+(defmethod perform ((operation test-op) (component (eql (find-system :protobuf-test))))
+  (funcall (read-from-string "message-test:test-message"))
+  (funcall (read-from-string "proto-lisp-test:test-proto-lisp"))
+  (funcall (read-from-string "wire-format-test:test-wire-format")))
