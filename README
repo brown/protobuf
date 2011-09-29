@@ -105,7 +105,7 @@ Lisp initialization file before protobuf.asd is loaded by ASDF.
 8. Optionally, load and run all the tests:
 
     (asdf:test-system 'varint)
-    (asdf:test-system 'protobuf-test)
+    (asdf:test-system 'protobuf)
 
 
 9. Compile and run the example code, which shows how to incorporate protocol

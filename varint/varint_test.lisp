@@ -34,7 +34,10 @@
 
 (defpackage #:varint-test
   (:documentation "Test code in the VARINT package.")
-  (:use #:common-lisp #:com.google.base #:hu.dwim.stefil #:varint)
+  (:use #:common-lisp
+        #:com.google.base
+        #:hu.dwim.stefil
+        #:varint)
   (:export #:test-varint))
 
 (in-package #:varint-test)
