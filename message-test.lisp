@@ -57,14 +57,14 @@
 (defconst +golden-packed-file-name+
   (merge-pathnames "google/protobuf/testdata/golden_packed_fields_message" +pwd+))
 
-(defparameter *optional-field-info*
+(defconst +optional-field-info+
   ;; field name, default value, value set by tests
   '((optional-int32 0 101) (optional-int64 0 102)
     (optional-uint32 0 103) (optional-uint64 0 104)
     (optional-sint32 0 105) (optional-sint64 0 106)
     (optional-fixed32 0 107) (optional-fixed64 0 108)
     (optional-sfixed32 0 109) (optional-sfixed64 0 110)
-    (optional-float 0s0 111s0) (optional-double 0d0 112d0)
+    (optional-float 0f0 111f0) (optional-double 0d0 112d0)
     (optional-bool nil t)
     (optional-string "" "115") (optional-bytes "" "116")
     (optional-nested-enum #.pb:+testalltypes-nestedenum-foo+ #.pb:+testalltypes-nestedenum-baz+)
@@ -73,14 +73,14 @@
     ;; XXXX: C++ test does not verify these fields.
     (optional-string-piece "" "124") (optional-cord "" "125")))
 
-(defparameter *default-field-info*
+(defconst +default-field-info+
   ;; field name, default value, value set by tests
   '((default-int32 41 401) (default-int64 42 402)
     (default-uint32 43 403) (default-uint64 44 404)
     (default-sint32 -45 405) (default-sint64 46 406)
     (default-fixed32 47 407) (default-fixed64 48 408)
     (default-sfixed32 49 409) (default-sfixed64 -50 410)
-    (default-float 51.5s0 411s0) (default-double 52d3 412d0)
+    (default-float 51.5f0 411f0) (default-double 52d3 412d0)
     (default-bool t nil)
     (default-string "hello" "415") (default-bytes "world" "416")
     (default-nested-enum #.pb:+testalltypes-nestedenum-bar+ #.pb:+testalltypes-nestedenum-foo+)
@@ -89,14 +89,14 @@
     ;; XXXX: C++ test does not verify these fields.
     (default-string-piece "abc" "424") (default-cord "123" "425")))
 
-(defparameter *repeated-field-info*
+(defconst +repeated-field-info+
   ;; field name, default value, value set by tests, modification value
   '((repeated-int32 201 301 501) (repeated-int64 202 302 502)
     (repeated-uint32 203 303 503) (repeated-uint64 204 304 504)
     (repeated-sint32 205 305 505) (repeated-sint64 206 306 506)
     (repeated-fixed32 207 307 507) (repeated-fixed64 208 308 508)
     (repeated-sfixed32 209 309 509) (repeated-sfixed64 210 310 510)
-    (repeated-float 211s0 311s0 511s0) (repeated-double 212d0 312d0 512d0)
+    (repeated-float 211f0 311f0 511f0) (repeated-double 212d0 312d0 512d0)
     (repeated-bool t nil t)
     (repeated-string
      #.(string-to-utf8-octets "215")
@@ -144,7 +144,7 @@
 
 (defun expect-all-fields-set (m)
   ;; optional and default fields
-  (let ((field-info (append *optional-field-info* *default-field-info*)))
+  (let ((field-info (append +optional-field-info+ +default-field-info+)))
     (loop for (field . values) in field-info do
           (let ((has (field-function "HAS-" field))
                 (accessor (field-function "" field))
@@ -169,7 +169,7 @@
   (is (= (pb:d (pb:optional-import-message m)) 120))
 
   ;; repeated fields
-  (let ((field-info *repeated-field-info*))
+  (let ((field-info +repeated-field-info+))
     (loop for (field . values) in field-info do
           (let ((accessor (field-function "" field))
                 (v0 (first values))
@@ -200,7 +200,7 @@
     (packed-sint32 605 705) (packed-sint64 606 706)
     (packed-fixed32 607 707) (packed-fixed64 608 708)
     (packed-sfixed32 609 709) (packed-sfixed64 610 710)
-    (packed-float 611s0 711s0) (packed-double 612d0 712d0)
+    (packed-float 611f0 711f0) (packed-double 612d0 712d0)
     (packed-bool t nil)
     (packed-enum #.pb:+foreignenum-foreign-bar+ #.pb:+foreignenum-foreign-baz+)))
 
@@ -233,7 +233,7 @@
 
 (defun set-all-fields (m)
   ;; optional and default fields
-  (let ((field-info (append *optional-field-info* *default-field-info*)))
+  (let ((field-info (append +optional-field-info+ +default-field-info+)))
     (loop for (field . values) in field-info do
           (let ((setter (field-setter field))
                 (value (second values)))
@@ -244,7 +244,7 @@
   (setf (pb:d (pb:optional-import-message m)) 120)
 
   ;; repeated fields
-  (let ((field-info *repeated-field-info*))
+  (let ((field-info +repeated-field-info+))
     (loop for (field . values) in field-info do
           (let ((accessor (field-function "" field))
                 (v0 (first values))
@@ -289,7 +289,7 @@
 
 (defun expect-clear (m)
   ;; optional and default fields
-  (let ((field-info (append *optional-field-info* *default-field-info*)))
+  (let ((field-info (append +optional-field-info+ +default-field-info+)))
     (loop for (field . values) in field-info do
           (let ((has (field-function "HAS-" field))
                 (accessor (field-function "" field))
@@ -314,13 +314,13 @@
   (is (= (pb:d (pb:optional-import-message m)) 0))
 
   ;; repeated fields
-  (let ((field-info *repeated-field-info*))
+  (let ((field-info +repeated-field-info+))
     (loop for (field . nil) in field-info do
           (let ((accessor (field-function "" field)))
             (is (zerop (length (funcall accessor m))))))))
 
 (defun modify-repeated-fields (m)
-  (let ((field-info *repeated-field-info*))
+  (let ((field-info +repeated-field-info+))
     (loop for (field . values) in field-info do
           (let ((accessor (field-function "" field))
                 (v (third values)))
@@ -331,7 +331,7 @@
   (setf (pb::d (aref (pb:repeated-import-message m) 1)) 520))
 
 (defun expect-repeated-fields-modified (m)
-  (let ((field-info *repeated-field-info*))
+  (let ((field-info +repeated-field-info+))
     (loop for (field . values) in field-info do
           (let ((accessor (field-function "" field))
                 (v0 (first values))

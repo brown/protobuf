@@ -11,16 +11,15 @@ structure.
 
 Remove all references to the BASE package in generated code.  Make generated
 files independently loadable.
+Use base::vector-index or eliminate it in protobuf Lisp files?
 
-Add more tests for merging from a protobuf instance.  Use Stefil??
+Add more tests for merging from a protobuf instance.
 
 Implement extensions
   Add tests
 
 Look at all XXXX comments in the compiler source and remove them.
   involves filing some bugs against C++ code
-
-Use base::vector-index or eliminate it in protobuf Lisp files?
 
 
 General stuff

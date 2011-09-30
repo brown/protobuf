@@ -160,11 +160,11 @@ string LispSimpleFtoa(float value) {
 
   string::size_type pos = c_result.find("e", 0);
   if (pos != string::npos) {
-    c_result.replace(pos, 1, "s");
+    c_result.replace(pos, 1, "f");
     return c_result;
   }
 
-  return c_result + "s0";
+  return c_result + "f0";
 }
 
 string LispSimpleDtoa(double value) {

@@ -1,14 +1,11 @@
+;;;; Portable floating point encoding and decoding.
 
-;;;;    portable-float.lisp
-
-
-;; This software was extracted from the SBCL Common Lisp implementation,
-;; which was derived from the CMU Common Lisp system, which was written at
-;; Carnegie Mellon University and released into the public domain. The
-;; software in this file is in the public domain.
-
+;;;; This software was extracted from the SBCL Common Lisp implementation, which was derived from
+;;;; the CMU Common Lisp system, which was written at Carnegie Mellon University and released into
+;;;; the public domain.  The software in this file is in the public domain.
 
 (in-package #:portable-float)
+(declaim #.*optimize-default*)
 
 (declaim (ftype (function (single-float) (values (signed-byte 32) &optional)) single-float-bits))
 

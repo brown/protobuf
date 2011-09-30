@@ -1,35 +1,34 @@
+;;;; Copyright 2011 Google Inc.  All Rights Reserved
 
-;;;;    wire-format.lisp
+;;;; Redistribution and use in source and binary forms, with or without
+;;;; modification, are permitted provided that the following conditions are
+;;;; met:
 
+;;;;     * Redistributions of source code must retain the above copyright
+;;;; notice, this list of conditions and the following disclaimer.
+;;;;     * Redistributions in binary form must reproduce the above
+;;;; copyright notice, this list of conditions and the following disclaimer
+;;;; in the documentation and/or other materials provided with the
+;;;; distribution.
+;;;;     * Neither the name of Google Inc. nor the names of its
+;;;; contributors may be used to endorse or promote products derived from
+;;;; this software without specific prior written permission.
 
-;; Copyright 2010, Google Inc. All rights reserved.
+;;;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+;;;; "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+;;;; LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+;;;; A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+;;;; OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+;;;; SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+;;;; LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+;;;; DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+;;;; THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+;;;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+;;;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-;; Redistribution and use in source and binary forms, with or without
-;; modification, are permitted provided that the following conditions are
-;; met:
+;;;; Author: brown@google.com (Robert Brown)
 
-;;     * Redistributions of source code must retain the above copyright
-;; notice, this list of conditions and the following disclaimer.
-;;     * Redistributions in binary form must reproduce the above
-;; copyright notice, this list of conditions and the following disclaimer
-;; in the documentation and/or other materials provided with the
-;; distribution.
-;;     * Neither the name of Google Inc. nor the names of its
-;; contributors may be used to endorse or promote products derived from
-;; this software without specific prior written permission.
-
-;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-;; "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-;; LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-;; A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-;; OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-;; SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-;; LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-;; DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-;; THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+;;;; Wire format used when reading and writing protobuf data.
 
 (in-package #:wire-format)
 (declaim #.*optimize-default*)
@@ -374,15 +373,14 @@ LIMIT, then signal ENCODE-OVERFLOW."
            (type single-float float))
   (when (> (+ index 4) limit)
     (error 'buffer-overflow))
-  (let ((bits #-(or abcl allegro cmu sbcl)
-              (portable-float:single-float-bits float)
+  (let ((bits #-(or abcl allegro cmu lispworks sbcl) (portable-float:single-float-bits float)
               #+abcl (system:single-float-bits float)
-              #+allegro
-              (multiple-value-bind (high low)
-                  (excl:single-float-to-shorts float)
-                (declare (type (unsigned-byte 16) high low))
-                (logior (ash high 16) low))
+              #+allegro (multiple-value-bind (high low)
+                            (excl:single-float-to-shorts float)
+                          (declare (type (unsigned-byte 16) high low))
+                          (logior (ash high 16) low))
               #+cmu (kernel:single-float-bits float)
+              #+lispworks (lispworks-float:single-float-bits float)
               #+sbcl (sb-kernel:single-float-bits float)))
     (declare (type #-allegro int32 #+allegro uint32 bits))
     (setf (aref buffer index) (ldb (byte 8 0) bits))
@@ -417,7 +415,7 @@ LIMIT, then signal ENCODE-OVERFLOW."
         (high 0))
     (declare (type uint32 low)
              (type #-allegro int32 #+allegro uint32 high))
-    #-(or abcl allegro cmu sbcl)
+    #-(or abcl allegro cmu lispworks sbcl)
     (let ((bits (portable-float:double-float-bits float)))
       (setf low (logand #xffffffff bits))
       (setf high (ash bits -32)))
@@ -433,6 +431,10 @@ LIMIT, then signal ENCODE-OVERFLOW."
     #+cmu
     (progn (setf low (kernel:double-float-low-bits float))
            (setf high (kernel:double-float-high-bits float)))
+    #+lispworks
+    (let ((bits (lispworks-float:double-float-bits float)))
+      (setf low (logand #xffffffff bits))
+      (setf high (ash bits -32)))
     #+sbcl
     (progn (setf low (sb-kernel:double-float-low-bits float))
            (setf high (sb-kernel:double-float-high-bits float)))
@@ -482,7 +484,7 @@ PARSE-OVERFLOW."
     ;; BITS must have the correct sign.
     (when (= (ldb (byte 1 31) bits) 1)    ; sign bit set, so negative value
       (decf bits (ash 1 32)))
-    #-(or abcl allegro cmu sbcl)
+    #-(or abcl allegro cmu lispworks sbcl)
     (values (portable-float:make-single-float bits) index)
     #+abcl
     (values (system:make-single-float bits) index)
@@ -492,6 +494,8 @@ PARSE-OVERFLOW."
             index)
     #+cmu
     (values (kernel:make-single-float bits) index)
+    #+lispworks
+    (values (lispworks-float:make-single-float bits) index)
     #+sbcl
     (values (sb-kernel:make-single-float bits) index)))
 
@@ -531,7 +535,7 @@ PARSE-OVERFLOW."
       ;; High bits are signed, but low bits are unsigned.
       (when (= (ldb (byte 1 31) high) 1)    ; sign bit set, so negative value
         (decf high (ash 1 32)))
-      #-(or abcl allegro cmu sbcl)
+      #-(or abcl allegro cmu lispworks sbcl)
       (values (portable-float:make-double-float high low) index)
       #+abcl
       (values (system:make-double-float (logior (ash high 32) low)) index)
@@ -543,6 +547,8 @@ PARSE-OVERFLOW."
               index)
       #+cmu
       (values (kernel:make-double-float high low) index)
+      #+lispworks
+      (values (lispworks-float:make-double-float high low) index)
       #+sbcl
       (values (sb-kernel:make-double-float high low) index))))
 
