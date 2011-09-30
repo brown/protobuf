@@ -37,14 +37,17 @@
 
 (defun single-float-bits (x)
   (declare (type single-float x))
-  ;; TODO(brown): Implement using Lispworks FLI functions.
-  (portable-float:single-float-bits x))
+  (fli:with-dynamic-foreign-objects ((bits :int32))
+    (fli:with-coerced-pointer (pointer :type :lisp-single-float) bits
+      (setf (fli:dereference pointer) x))
+    (fli:dereference bits)))
 
 (declaim (ftype (function (double-float) (values (signed-byte 64) &optional)) double-float-bits))
 
 (defun double-float-bits (x)
   (declare (type double-float x))
-  ;; TODO(brown): Implement using Lispworks FLI functions.
+  ;; TODO(brown): Implement using Lispworks FLI functions.  Right now, an implementation like the
+  ;; one above for single floats sometimes loses precision.
   (portable-float:double-float-bits x))
 
 (declaim (ftype (function ((signed-byte 32)) (values single-float &optional)) make-single-float))
