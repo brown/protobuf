@@ -42,4 +42,4 @@
   ((:file "varint_test")))
 
 (defmethod perform ((operation test-op) (component (eql (find-system :varint-test))))
-  (funcall (intern (string '#:test-varint) '#:varint-test)))
+  (funcall (read-from-string "varint-test:test-varint")))

@@ -36,7 +36,8 @@
   (:documentation "Tests for protocol buffer messages.")
   (:use #:common-lisp
         #:com.google.base
-        #:hu.dwim.stefil)
+        #:hu.dwim.stefil
+        #:protobuf-test-config)
   (:export #:test-message))
 
 (in-package #:message-test)
@@ -47,15 +48,11 @@
 
 (in-suite test-message)
 
-(defconst +pwd+ #.(make-pathname
-                   :directory (pathname-directory
-                               (or *compile-file-truename* *load-truename*))))
-
 (defconst +golden-file-name+
-  (merge-pathnames "google/protobuf/testdata/golden_message" +pwd+))
+  (merge-pathnames "google/protobuf/testdata/golden_message" *base-directory*))
 
 (defconst +golden-packed-file-name+
-  (merge-pathnames "google/protobuf/testdata/golden_packed_fields_message" +pwd+))
+  (merge-pathnames "google/protobuf/testdata/golden_packed_fields_message" *base-directory*))
 
 (defconst +optional-field-info+
   ;; field name, default value, value set by tests

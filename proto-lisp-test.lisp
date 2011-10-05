@@ -37,7 +37,8 @@
   (:documentation "Test the Lisp implementation of protocol buffers.")
   (:use #:common-lisp
         #:com.google.base
-        #:hu.dwim.stefil)
+        #:hu.dwim.stefil
+        #:protobuf-test-config)
   (:export #:test-proto-lisp))
 
 (in-package #:proto-lisp-test)
@@ -48,14 +49,10 @@
 
 (in-suite test-proto-lisp)
 
-(defconst +pwd+ #.(make-pathname
-                   :directory (pathname-directory
-                               (or *compile-file-truename* *load-truename*))))
-
-(defconst +golden-file-name+ (merge-pathnames "golden" +pwd+)
+(defconst +golden-file-name+ (merge-pathnames "golden" *base-directory*)
   "Pathname of a file containing correct protocol buffer data.")
 
-(defconst +test-file-name+ (merge-pathnames "test-output-file" +pwd+)
+(defconst +test-file-name+ (merge-pathnames "test-output-file" *base-directory*)
   "Pathname of file to which we write protocol buffer data.")
 
 (defmacro assert-string-equal ((field protobuf) string)

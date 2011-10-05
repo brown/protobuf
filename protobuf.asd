@@ -28,26 +28,37 @@
 
 ;;;; Author: brown@google.com (Robert Brown)
 
-(cl:in-package #:asdf)
+;;;; Protobuf configuration
 
-;; Pathname of Google's protocol buffer compiler.  You must replace this
-;; pathname with the appropriate one for your system.
+(in-package #:common-lisp-user)
+
+(defpackage #:protobuf-config
+  (:documentation "Configuration information for PROTOBUF.")
+  (:use #:common-lisp)
+  (:export *protoc*
+           *protoc-gen-lisp*
+           *protoc-relative-path*))
+
+(in-package #:protobuf-config)
+
+;; Pathname of Google's protocol buffer compiler.  You must replace this pathname with the
+;; appropriate one for your system or set its value before this file is loaded.
 
 (defvar *protoc* #p"/local/software/package/google-protobuf/bin/protoc"
   "Pathname of Google's protocol buffer compiler.")
-(export '*protoc*)
 
-;; Pathname of the Lisp protocol buffer compiler backend.  You must replace
-;; this pathname with the appropriate one for your system.
+;; Pathname of the Lisp protocol buffer compiler backend.  You must replace this pathname with the
+;; appropriate one for your system or set its value before this file is loaded.
 
 (defvar *protoc-gen-lisp* #p"/local/software/package/protoc-gen-lisp/bin/protoc-gen-lisp"
   "Pathname of the Lisp protocol buffer compiler backend, protoc-gen-lisp.")
-(export '*protoc-gen-lisp*)
 
 (defvar *protoc-relative-path* nil
   "Proto file arguments to the protobuf compiler are relative paths?")
-(export '*protoc-relative-path*)
 
+;;;; ASDF package changes
+
+(in-package #:asdf)
 
 (defclass protobuf-source-file (cl-source-file)
   ((relative-proto-pathname
@@ -59,40 +70,41 @@
     :initform ()
     :initarg :proto-search-path
     :reader search-path
-    :documentation "List containing directories where the protocol buffer
-compiler should search for imported protobuf files.  Non-absolute pathnames
-are treated as relative to the directory containing the DEFSYSTEM form in
-which they appear."))
+    :documentation "List containing directories where the protocol buffer compiler should search
+for imported protobuf files.  Non-absolute pathnames are treated as relative to the directory
+containing the DEFSYSTEM form in which they appear."))
   (:documentation "A protocol buffer definition file."))
 
 (export '(protobuf-source-file proto-pathname search-path))
 
+;;;; ASDF system definition
 
 (in-package #:common-lisp-user)
 
 (defpackage #:protobuf-system
   (:documentation "System definitions for protocol buffer code.")
-  (:use #:common-lisp #:asdf))
+  (:use #:common-lisp
+        #:asdf
+        #:protobuf-config))
 
 (in-package #:protobuf-system)
 
-
 (defclass proto-to-lisp (operation)
   ()
-  (:documentation "An ASDF operation that compiles a .proto file containing
-protocol buffer definitions into a Lisp source file."))
+  (:documentation "An ASDF operation that compiles a .proto file containing protocol buffer
+definitions into a Lisp source file."))
 
 (defmethod component-depends-on ((operation compile-op) (component protobuf-source-file))
-  "Compiling a protocol buffer file depends on generating Lisp source code
-for the protobuf, but also on loading package definitions and in-line
-function definitions that the machine-generated protobuf Lisp code uses."
+  "Compiling a protocol buffer file depends on generating Lisp source code for the protobuf, but
+also on loading package definitions and in-line function definitions that the machine-generated
+protobuf Lisp code uses."
   `((proto-to-lisp ,(component-name component))
     ,@(call-next-method)))
 
 (defmethod component-depends-on ((operation load-op) (component protobuf-source-file))
-  "Loading a protocol buffer file depends on generating Lisp source code
-for the protobuf, but also on loading package definitions and in-line
-function definitions that the machine-generated protobuf Lisp code uses."
+  "Loading a protocol buffer file depends on generating Lisp source code for the protobuf, but also
+on loading package definitions and in-line function definitions that the machine-generated protobuf
+Lisp code uses."
   `((proto-to-lisp ,(component-name component))
     ,@(call-next-method)))
 
@@ -114,14 +126,13 @@ translated into Lisp source code for this PROTO-FILE component."
   (list *protoc* *protoc-gen-lisp* (proto-input component)))
 
 (defmethod output-files ((operation proto-to-lisp) (component protobuf-source-file))
-  "Arrange for the Lisp output file of PROTO-TO-LISP operations to be stored
-where fasl files are located."
+  "Arrange for the Lisp output file of PROTO-TO-LISP operations to be stored where fasl files are
+located."
   (values (list (component-pathname component))
           nil))                     ; allow around methods to translate
 
 (defun resolve-relative-pathname (path parent-path)
-  "When PATH doesn't have an absolute directory component, treat it as
-relative to PARENT-PATH."
+  "When PATH doesn't have an absolute directory component, treat it as relative to PARENT-PATH."
   (let* ((pathname (pathname path))
          (directory (pathname-directory pathname)))
     (if (and (list directory) (eq (car directory) :absolute))
@@ -139,8 +150,8 @@ relative to PARENT-PATH."
                 (resolve-relative-pathname path parent-path))
               search-path))))
 
-;; XXXX: This before method would not be needed if PROTO-TO-LISP were a
-;; subclass of COMPILE-OP.  Should we make that change?
+;; TODO(brown): This before method would not be needed if PROTO-TO-LISP were a subclass of
+;; COMPILE-OP.  Should we make that change?
 
 (defmethod perform :before ((operation proto-to-lisp) (component protobuf-source-file))
   (map nil #'ensure-directories-exist (output-files operation component)))
@@ -150,9 +161,8 @@ relative to PARENT-PATH."
          (source-file-argument (if *protoc-relative-path*
                                    (file-namestring source-file)
                                    (namestring source-file)))
-         ;; Around methods on output-file may globally redirect output
-         ;; products, so we must call that method instead of executing
-         ;; (component-pathname component).
+         ;; Around methods on output-file may globally redirect output products, so we must call
+         ;; that method instead of executing (component-pathname component).
          (output-file (first (output-files operation component)))
          (search-path (cons (directory-namestring source-file) (resolve-search-path component)))
          (status (run-shell-command "~A --plugin=~A --proto_path=~{~A~^:~} --lisp_out=~A ~A"
@@ -165,18 +175,17 @@ relative to PARENT-PATH."
       (error 'compile-failed :component component :operation operation))))
 
 (defmethod asdf::component-self-dependencies :around ((op load-op) (c protobuf-source-file))
-  "Remove PROTO-TO-LISP operations from self dependencies.  Otherwise, the
-Lisp output files of PROTO-TO-LISP are considered to be input files for
-LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
+  "Remove PROTO-TO-LISP operations from self dependencies.  Otherwise, the Lisp output files of
+PROTO-TO-LISP are considered to be input files for LOAD-OP, which means ASDF loads both the .lisp
+file and the .fasl file."
   (remove-if (lambda (x)
                (eq (car x) 'proto-to-lisp))
              (call-next-method)))
 
-;; The following code was copied from asdf.lisp and modified slightly to set
-;; SOURCE-FILE to a pathname in the directory where fasl files are stored.
-;; The PERFORM method defined in asdf.lisp for instances of CL-SOURCE-FILE
-;; computes SOURCE-FILE by calling COMPONENT-PATHNAME instead of by calling
-;; the INPUT-FILES generic function.  I think this is a misfeature of ASDF.
+;; The following code was copied from asdf.lisp and modified slightly to set SOURCE-FILE to a
+;; pathname in the directory where fasl files are stored.  The PERFORM method defined in asdf.lisp
+;; for instances of CL-SOURCE-FILE computes SOURCE-FILE by calling COMPONENT-PATHNAME instead of by
+;; calling the INPUT-FILES generic function.  I think this is a misfeature of ASDF.
 
 (defmethod perform ((operation compile-op) (c protobuf-source-file))
   (let ((source-file (make-pathname :name (pathname-name (component-pathname c))
@@ -190,30 +199,22 @@ LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
                (asdf::compile-op-flags operation))
       (when warnings-p
         (case (operation-on-warnings operation)
-          (:warn (warn
-                  "~@<COMPILE-FILE warned while performing ~A on ~A.~@:>"
-                  operation c))
+          (:warn (warn "~@<COMPILE-FILE warned while performing ~A on ~A.~@:>" operation c))
           (:error (error 'compile-warned :component c :operation operation))
           (:ignore nil)))
       (when failure-p
         (case (operation-on-failure operation)
-          (:warn (warn
-                  "~@<COMPILE-FILE failed while performing ~A on ~A.~@:>"
-                  operation c))
+          (:warn (warn "~@<COMPILE-FILE failed while performing ~A on ~A.~@:>" operation c))
           (:error (error 'compile-failed :component c :operation operation))
           (:ignore nil)))
       (unless output
         (error 'compile-error :component c :operation operation)))))
 
-
-;;; Protocol buffer support code.
-
-
 (defsystem protobuf
   :name "Protocol Buffer"
   :description "Protocol buffer code"
   :long-description "A Common Lisp implementation of Google's protocol buffer support libraries."
-  :version "0.7.2"
+  :version "0.7.3"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
   ;; After loading the system, announce its availability.
@@ -231,6 +232,10 @@ LOAD-OP, which means ASDF loads both the .lisp file and the .fasl file."
    (:file "package")
    (:file "protocol-buffer" :depends-on ("package"))
    #-(or abcl allegro cmu sbcl) (:file "portable-float" :depends-on ("package"))
+   ;; TODO(brown): The file lispworks-float.lisp implementations the same interface as
+   ;; portable-float.lisp.  Currently, some functions have a Lispworks-specific implementation,
+   ;; while others invoke the portable functions.  All implemented using portable functions should
+   ;; be rewritten.
    #+lispworks (:file "lispworks-float" :depends-on ("package"))
    (:file "wire-format"
     :depends-on ("package"
