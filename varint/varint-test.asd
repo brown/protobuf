@@ -37,9 +37,9 @@
 (in-package #:varint-test-system)
 
 (defsystem varint-test
-  :depends-on (:varint #:hu.dwim.stefil)
+  :depends-on (varint hu.dwim.stefil)
   :components
   ((:file "varint_test")))
 
-(defmethod perform ((operation test-op) (component (eql (find-system :varint-test))))
+(defmethod perform ((operation test-op) (component (eql (find-system 'varint-test))))
   (funcall (read-from-string "varint-test:test-varint")))

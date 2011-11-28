@@ -221,10 +221,10 @@ file and the .fasl file."
   :perform (load-op :after (operation component)
              (pushnew :protobuf cl:*features*)
              (provide 'protobuf))
-  :depends-on (#:com.google.base
-               #:varint
-               #-(or allegro clisp sbcl) #:trivial-utf-8)
-  :in-order-to ((test-op (test-op :protobuf-test)))
+  :depends-on (com.google.base
+               varint
+               #-(or allegro clisp sbcl) trivial-utf-8)
+  :in-order-to ((test-op (test-op protobuf-test)))
   :components
   ((:static-file "COPYING")
    (:static-file "README")

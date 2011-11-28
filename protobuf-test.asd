@@ -43,8 +43,8 @@
   :version "0.5.2"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
-  :defsystem-depends-on (#:protobuf)
-  :depends-on (#:hu.dwim.stefil)
+  :defsystem-depends-on (protobuf)
+  :depends-on (hu.dwim.stefil)
   :components
   ((:static-file "golden")
    (:file "message-test" :depends-on ("unittest"))
@@ -64,7 +64,7 @@
     :depends-on ("unittest_import")
     :proto-search-path ("./"))))
 
-(defmethod perform ((operation test-op) (component (eql (find-system :protobuf-test))))
+(defmethod perform ((operation test-op) (component (eql (find-system 'protobuf-test))))
   (funcall (read-from-string "message-test:test-message"))
   (funcall (read-from-string "proto-lisp-test:test-proto-lisp"))
   (funcall (read-from-string "wire-format-test:test-wire-format")))

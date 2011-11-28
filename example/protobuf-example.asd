@@ -1,7 +1,6 @@
 
 ;;;;    protobuf-example.asd
 
-
 (cl:in-package #:common-lisp-user)
 
 (defpackage #:protobuf-example-system
@@ -9,7 +8,6 @@
   (:use #:common-lisp #:asdf))
 
 (in-package #:protobuf-example-system)
-
 
 (defsystem protobuf-example
   :name "Protocol Buffer Example"
@@ -19,7 +17,7 @@ buffer definitions."
   :version "0.4"
   :author "Robert Brown"
   :licence "See file COPYING and the copyright messages in individual files."
-  :defsystem-depends-on (:protobuf)
+  :defsystem-depends-on (protobuf)
   :components ((:static-file "Makefile")
                (:static-file "README")
                (:cl-source-file "package")
