@@ -143,11 +143,11 @@
   ;; optional and default fields
   (let ((field-info (append +optional-field-info+ +default-field-info+)))
     (loop for (field . values) in field-info do
-          (let ((has (field-function "HAS-" field))
-                (accessor (field-function "" field))
-                (value (second values)))
-            (is (funcall has m))
-            (is (field-equal (funcall accessor m) value)))))
+      (let ((has (field-function "HAS-" field))
+            (accessor (field-function "" field))
+            (value (second values)))
+        (is (funcall has m))
+        (is (field-equal (funcall accessor m) value)))))
 
   (is (pb:has-optionalgroup m))
   (is (pb:has-a (pb:optionalgroup m)))
@@ -168,12 +168,12 @@
   ;; repeated fields
   (let ((field-info +repeated-field-info+))
     (loop for (field . values) in field-info do
-          (let ((accessor (field-function "" field))
-                (v0 (first values))
-                (v1 (second values)))
-            (is (= (length (funcall accessor m)) 2))
-            (is (field-equal (aref (funcall accessor m) 0) v0))
-            (is (field-equal (aref (funcall accessor m) 1) v1)))))
+      (let ((accessor (field-function "" field))
+            (v0 (first values))
+            (v1 (second values)))
+        (is (= (length (funcall accessor m)) 2))
+        (is (field-equal (aref (funcall accessor m) 0) v0))
+        (is (field-equal (aref (funcall accessor m) 1) v1)))))
   (let ((v (pb:repeatedgroup m)))
     (is (= (length v) 2))
     (is (= (pb:a (aref v 0)) 217))
@@ -203,17 +203,17 @@
 
 (defun expect-packed-fields-set (m)
   (loop for (field . values) in +packed-field-info+ do
-        (let ((accessor (field-function "" field))
-              (v0 (first values))
-              (v1 (second values)))
-          (is (= (length (funcall accessor m)) 2))
-          (is (field-equal (aref (funcall accessor m) 0) v0))
-          (is (field-equal (aref (funcall accessor m) 1) v1)))))
+    (let ((accessor (field-function "" field))
+          (v0 (first values))
+          (v1 (second values)))
+      (is (= (length (funcall accessor m)) 2))
+      (is (field-equal (aref (funcall accessor m) 0) v0))
+      (is (field-equal (aref (funcall accessor m) 1) v1)))))
 
 (defun read-message (class-name file-name)
   (let ((message (make-instance class-name)))
     (with-open-file (input file-name
-                     :direction :input :element-type 'unsigned-byte)
+                           :direction :input :element-type 'unsigned-byte)
       (let* ((size (file-length input))
              (buffer (make-array size :element-type '(unsigned-byte 8))))
         (read-sequence buffer input)
@@ -232,9 +232,9 @@
   ;; optional and default fields
   (let ((field-info (append +optional-field-info+ +default-field-info+)))
     (loop for (field . values) in field-info do
-          (let ((setter (field-setter field))
-                (value (second values)))
-            (funcall setter value m))))
+      (let ((setter (field-setter field))
+            (value (second values)))
+        (funcall setter value m))))
   (setf (pb:a (pb:optionalgroup m)) 117)
   (setf (pb:bb (pb:optional-nested-message m)) 118)
   (setf (pb:c (pb:optional-foreign-message m)) 119)
@@ -243,11 +243,11 @@
   ;; repeated fields
   (let ((field-info +repeated-field-info+))
     (loop for (field . values) in field-info do
-          (let ((accessor (field-function "" field))
-                (v0 (first values))
-                (v1 (second values)))
-            (vector-push-extend v0 (funcall accessor m))
-            (vector-push-extend v1 (funcall accessor m)))))
+      (let ((accessor (field-function "" field))
+            (v0 (first values))
+            (v1 (second values)))
+        (vector-push-extend v0 (funcall accessor m))
+        (vector-push-extend v1 (funcall accessor m)))))
   (let ((v0 (make-instance 'pb:testalltypes-repeatedgroup))
         (v1 (make-instance 'pb:testalltypes-repeatedgroup)))
     (setf (pb:a v0) 217)
@@ -288,11 +288,11 @@
   ;; optional and default fields
   (let ((field-info (append +optional-field-info+ +default-field-info+)))
     (loop for (field . values) in field-info do
-          (let ((has (field-function "HAS-" field))
-                (accessor (field-function "" field))
-                (default-value (first values)))
-            (is (not (funcall has m)))
-            (is (field-equal (funcall accessor m) default-value)))))
+      (let ((has (field-function "HAS-" field))
+            (accessor (field-function "" field))
+            (default-value (first values)))
+        (is (not (funcall has m)))
+        (is (field-equal (funcall accessor m) default-value)))))
 
   (is (not (pb:has-optionalgroup m)))
   (is (not (pb:has-a (pb:optionalgroup m))))
@@ -313,15 +313,15 @@
   ;; repeated fields
   (let ((field-info +repeated-field-info+))
     (loop for (field . nil) in field-info do
-          (let ((accessor (field-function "" field)))
-            (is (zerop (length (funcall accessor m))))))))
+      (let ((accessor (field-function "" field)))
+        (is (zerop (length (funcall accessor m))))))))
 
 (defun modify-repeated-fields (m)
   (let ((field-info +repeated-field-info+))
     (loop for (field . values) in field-info do
-          (let ((accessor (field-function "" field))
-                (v (third values)))
-            (setf (aref (funcall accessor m) 1) v))))
+      (let ((accessor (field-function "" field))
+            (v (third values)))
+        (setf (aref (funcall accessor m) 1) v))))
   (setf (pb:a (aref (pb:repeatedgroup m) 1)) 517)
   (setf (pb::bb (aref (pb:repeated-nested-message m) 1)) 518)
   (setf (pb::c (aref (pb:repeated-foreign-message m) 1)) 519)
@@ -330,12 +330,12 @@
 (defun expect-repeated-fields-modified (m)
   (let ((field-info +repeated-field-info+))
     (loop for (field . values) in field-info do
-          (let ((accessor (field-function "" field))
-                (v0 (first values))
-                (v1 (third values)))
-            (is (= (length (funcall accessor m)) 2))
-            (is (field-equal (aref (funcall accessor m) 0) v0))
-            (is (field-equal (aref (funcall accessor m) 1) v1)))))
+      (let ((accessor (field-function "" field))
+            (v0 (first values))
+            (v1 (third values)))
+        (is (= (length (funcall accessor m)) 2))
+        (is (field-equal (aref (funcall accessor m) 0) v0))
+        (is (field-equal (aref (funcall accessor m) 1) v1)))))
   (let ((v (pb:repeatedgroup m)))
     (is (= (length v) 2))
     (is (= (pb:a (aref v 0)) 217))

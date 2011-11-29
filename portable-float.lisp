@@ -22,41 +22,41 @@
 	(let* ((significand lisp-significand)
 	       (exponent (+ lisp-exponent 23 127))
 	       (unsigned-result
-		(if (plusp exponent)	; if not obviously denormalized
-		    (do ()
-			(nil)
-		      (cond (;; special termination case, denormalized
-			     ;; float number
-			     (zerop exponent)
-			     ;; Denormalized numbers have exponent one
-			     ;; greater than the exponent field.
-			     (return (ash significand -1)))
-			    (;; ordinary termination case
-			     (>= significand (expt 2 23))
-			     (assert (< 0 significand (expt 2 24)))
-			     ;; Exponent 0 is reserved for
-			     ;; denormalized numbers, and 255 is
-			     ;; reserved for specials like NaN.
-			     (assert (< 0 exponent 255))
-			     (return (logior (ash exponent 23)
-					     (logand significand
-						     (1- (ash 1 23))))))
+                 (if (plusp exponent)	; if not obviously denormalized
+                     (do ()
+                         (nil)
+                       (cond (;; special termination case, denormalized
+                              ;; float number
+                              (zerop exponent)
+                              ;; Denormalized numbers have exponent one
+                              ;; greater than the exponent field.
+                              (return (ash significand -1)))
+                             (;; ordinary termination case
+                              (>= significand (expt 2 23))
+                              (assert (< 0 significand (expt 2 24)))
+                              ;; Exponent 0 is reserved for
+                              ;; denormalized numbers, and 255 is
+                              ;; reserved for specials like NaN.
+                              (assert (< 0 exponent 255))
+                              (return (logior (ash exponent 23)
+                                              (logand significand
+                                                      (1- (ash 1 23))))))
 
-			    (t
-			     ;; Shift as necessary to set bit 24 of
-			     ;; significand.
-			     (setf significand (ash significand 1)
-				   exponent (1- exponent)))))
-		    (do ()
-			((zerop exponent)
-			 ;; Denormalized numbers have exponent one
-			 ;; greater than the exponent field.
-			 (ash significand -1))
-		      (unless (zerop (logand significand 1))
-			(warn "denormalized SINGLE-FLOAT-BITS ~S losing bits"
-                              x))
-		      (setf significand (ash significand -1)
-			    exponent (1+ exponent))))))
+                             (t
+                              ;; Shift as necessary to set bit 24 of
+                              ;; significand.
+                              (setf significand (ash significand 1)
+                                    exponent (1- exponent)))))
+                     (do ()
+                         ((zerop exponent)
+                          ;; Denormalized numbers have exponent one
+                          ;; greater than the exponent field.
+                          (ash significand -1))
+                       (unless (zerop (logand significand 1))
+                         (warn "denormalized SINGLE-FLOAT-BITS ~S losing bits"
+                               x))
+                       (setf significand (ash significand -1)
+                             exponent (1+ exponent))))))
 	  (ecase lisp-sign
 	    (1 unsigned-result)
 	    (-1 (logior unsigned-result (- (expt 2 31)))))))))
@@ -76,40 +76,40 @@
 	(let* ((significand lisp-significand)
 	       (exponent (+ lisp-exponent 52 1023))
 	       (unsigned-result
-		(if (plusp exponent)	; if not obviously denormalized
-		    (do ()
-			(nil)
-		      (cond (;; special termination case, denormalized
-			     ;; float number
-			     (zerop exponent)
-			     ;; Denormalized numbers have exponent one
-			     ;; greater than the exponent field.
-			     (return (ash significand -1)))
-			    (;; ordinary termination case
-			     (>= significand (expt 2 52))
-			     (assert (< 0 significand (expt 2 53)))
-			     ;; Exponent 0 is reserved for
-			     ;; denormalized numbers, and 2047 is
-			     ;; reserved for specials like NaN.
-			     (assert (< 0 exponent 2047))
-			     (return (logior (ash exponent 52)
-					     (logand significand
-						     (1- (ash 1 52))))))
-			    (t
-			     ;; Shift as necessary to set bit 53 of
-			     ;; significand.
-			     (setf significand (ash significand 1)
-				   exponent (1- exponent)))))
-		    (do ()
-			((zerop exponent)
-			 ;; Denormalized numbers have exponent one
-			 ;; greater than the exponent field.
-			 (ash significand -1))
-		      (unless (zerop (logand significand 1))
-			(warn "denormalized DOUBLE-FLOAT-BITS ~S losing bits"
-			      x))
-		      (setf significand (ash significand -1)
-			    exponent (1+ exponent))))))
+                 (if (plusp exponent)	; if not obviously denormalized
+                     (do ()
+                         (nil)
+                       (cond (;; special termination case, denormalized
+                              ;; float number
+                              (zerop exponent)
+                              ;; Denormalized numbers have exponent one
+                              ;; greater than the exponent field.
+                              (return (ash significand -1)))
+                             (;; ordinary termination case
+                              (>= significand (expt 2 52))
+                              (assert (< 0 significand (expt 2 53)))
+                              ;; Exponent 0 is reserved for
+                              ;; denormalized numbers, and 2047 is
+                              ;; reserved for specials like NaN.
+                              (assert (< 0 exponent 2047))
+                              (return (logior (ash exponent 52)
+                                              (logand significand
+                                                      (1- (ash 1 52))))))
+                             (t
+                              ;; Shift as necessary to set bit 53 of
+                              ;; significand.
+                              (setf significand (ash significand 1)
+                                    exponent (1- exponent)))))
+                     (do ()
+                         ((zerop exponent)
+                          ;; Denormalized numbers have exponent one
+                          ;; greater than the exponent field.
+                          (ash significand -1))
+                       (unless (zerop (logand significand 1))
+                         (warn "denormalized DOUBLE-FLOAT-BITS ~S losing bits"
+                               x))
+                       (setf significand (ash significand -1)
+                             exponent (1+ exponent))))))
 	  (ecase lisp-sign
 	    (1 unsigned-result)
 	    (-1 (logior unsigned-result (- (expt 2 63)))))))))
