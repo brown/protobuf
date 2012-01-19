@@ -34,8 +34,8 @@ available here:
     git clone git://github.com/brown/protobuf.git
 
 
-3.  Compile protoc-gen-lisp, the Common Lisp protocol buffer plugin.
-Currently, this step only works for Linux and is accomplished as follows:
+3.  Compile protoc-gen-lisp, the Common Lisp protocol buffer plugin.  The steps
+required for Linux and OS X are:
 
     cd protobuf/protoc/lisp
     Manually edit INSTALL_ROOT and PROTOC_ROOT in Makefile.
