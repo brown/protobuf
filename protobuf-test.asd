@@ -48,7 +48,7 @@
   :components
   ((:static-file "golden")
    (:file "message-test" :depends-on ("unittest"))
-   (:file "wire-format-test")
+   (:file "wire-format_test")
    ;; Old protocol buffer tests.
    ;; TODO(brown): Delete when the new proto2 tests cover all the functionality.
    (:file "proto-lisp-test" :depends-on ("testproto1" "testproto2"))

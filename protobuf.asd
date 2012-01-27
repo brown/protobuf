@@ -70,9 +70,10 @@
     :initform ()
     :initarg :proto-search-path
     :reader search-path
-    :documentation "List containing directories where the protocol buffer compiler should search
-for imported protobuf files.  Non-absolute pathnames are treated as relative to the directory
-containing the DEFSYSTEM form in which they appear."))
+    :documentation
+"List containing directories where the protocol buffer compiler should search
+for imported protobuf files.  Non-absolute pathnames are treated as relative to
+the directory containing the DEFSYSTEM form in which they appear."))
   (:documentation "A protocol buffer definition file."))
 
 (export '(protobuf-source-file proto-pathname search-path))
@@ -91,25 +92,26 @@ containing the DEFSYSTEM form in which they appear."))
 
 (defclass proto-to-lisp (operation)
   ()
-  (:documentation "An ASDF operation that compiles a .proto file containing protocol buffer
+  (:documentation
+"An ASDF operation that compiles a .proto file containing protocol buffer
 definitions into a Lisp source file."))
 
 (defmethod component-depends-on ((operation compile-op) (component protobuf-source-file))
-  "Compiling a protocol buffer file depends on generating Lisp source code for the protobuf, but
-also on loading package definitions and in-line function definitions that the machine-generated
-protobuf Lisp code uses."
+  "Compiling a protocol buffer file depends on generating Lisp source code for
+the protobuf, but also on loading package definitions and in-line function
+definitions that the machine-generated protobuf Lisp code uses."
   `((proto-to-lisp ,(component-name component))
     ,@(call-next-method)))
 
 (defmethod component-depends-on ((operation load-op) (component protobuf-source-file))
-  "Loading a protocol buffer file depends on generating Lisp source code for the protobuf, but also
-on loading package definitions and in-line function definitions that the machine-generated protobuf
-Lisp code uses."
+  "Loading a protocol buffer file depends on generating Lisp source code for the
+protobuf, but also on loading package definitions and in-line function
+definitions that the machine-generated protobuf Lisp code uses."
   `((proto-to-lisp ,(component-name component))
     ,@(call-next-method)))
 
 (defun proto-input (protobuf-source-file)
-  "Return the pathname of the protocol buffer definition file that must be
+  "Returns the pathname of the protocol buffer definition file that must be
 translated into Lisp source code for this PROTO-FILE component."
   (if (proto-pathname protobuf-source-file)
       ;; Path of the protobuf file was specified with :PROTO-PATHNAME.
@@ -126,13 +128,14 @@ translated into Lisp source code for this PROTO-FILE component."
   (list *protoc* *protoc-gen-lisp* (proto-input component)))
 
 (defmethod output-files ((operation proto-to-lisp) (component protobuf-source-file))
-  "Arrange for the Lisp output file of PROTO-TO-LISP operations to be stored where fasl files are
-located."
+  "Arranges for the Lisp output file of PROTO-TO-LISP operations to be stored
+where fasl files are located."
   (values (list (component-pathname component))
           nil))                     ; allow around methods to translate
 
 (defun resolve-relative-pathname (path parent-path)
-  "When PATH doesn't have an absolute directory component, treat it as relative to PARENT-PATH."
+  "When PATH doesn't have an absolute directory component, treat it as relative
+to PARENT-PATH."
   (let* ((pathname (pathname path))
          (directory (pathname-directory pathname)))
     (if (and (list directory) (eq (car directory) :absolute))
@@ -175,9 +178,9 @@ located."
       (error 'compile-failed :component component :operation operation))))
 
 (defmethod asdf::component-self-dependencies :around ((op load-op) (c protobuf-source-file))
-  "Remove PROTO-TO-LISP operations from self dependencies.  Otherwise, the Lisp output files of
-PROTO-TO-LISP are considered to be input files for LOAD-OP, which means ASDF loads both the .lisp
-file and the .fasl file."
+  "Removes PROTO-TO-LISP operations from self dependencies.  Otherwise, the Lisp
+output files of PROTO-TO-LISP are considered to be input files for LOAD-OP,
+which means ASDF loads both the .lisp file and the .fasl file."
   (remove-if (lambda (x)
                (eq (car x) 'proto-to-lisp))
              (call-next-method)))
@@ -214,13 +217,9 @@ file and the .fasl file."
   :name "Protocol Buffer"
   :description "Protocol buffer code"
   :long-description "A Common Lisp implementation of Google's protocol buffer support libraries."
-  :version "0.7.3"
+  :version "0.7.4"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
-  ;; After loading the system, announce its availability.
-  :perform (load-op :after (operation component)
-             (pushnew :protobuf cl:*features*)
-             (provide 'protobuf))
   :depends-on (com.google.base
                varint
                #-(or allegro clisp sbcl) trivial-utf-8)
