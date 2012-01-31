@@ -85,35 +85,6 @@ int FixedSize(FieldDescriptor::Type type) {
   return -1;
 }
 
-string DefaultValue(const FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT32:
-      return SimpleItoa(field->default_value_int32());
-    case FieldDescriptor::CPPTYPE_UINT32:
-      return SimpleItoa(field->default_value_uint32());
-    case FieldDescriptor::CPPTYPE_INT64:
-      return SimpleItoa(field->default_value_int64());
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return SimpleItoa(field->default_value_uint64());
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-      return LispSimpleDtoa(field->default_value_double());
-    case FieldDescriptor::CPPTYPE_FLOAT:
-      return LispSimpleFtoa(field->default_value_float());
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return field->default_value_bool() ? "cl:t" : "cl:nil";
-
-    case FieldDescriptor::CPPTYPE_ENUM:
-    case FieldDescriptor::CPPTYPE_STRING:
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      GOOGLE_LOG(FATAL) << "Shouldn't get here.";
-      return "";
-  }
-  // Can't actually get here; make compiler happy.  We could add a default
-  // case above but then we wouldn't get the nice compiler warning when a
-  // new type is added.
-  return "";
-}
-
 string Serialize(const FieldDescriptor* field) {
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32:

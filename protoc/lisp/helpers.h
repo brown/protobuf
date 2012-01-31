@@ -77,6 +77,7 @@ string FieldName(const FieldDescriptor* field);
 string StringOctets(const string string_default);
 string LispSimpleFtoa(float value);
 string LispSimpleDtoa(double value);
+string DefaultValue(const FieldDescriptor* field);
 string OctetSize(FieldDescriptor::Type type, string reference);
 
 // Returns the scope where the field was defined (for extensions, this is

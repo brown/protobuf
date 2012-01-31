@@ -47,11 +47,10 @@ namespace {
 //   repeat code between this and the other field types.
 void SetEnumVariables(const FieldDescriptor* descriptor,
                       map<string, string>* variables) {
-  const EnumValueDescriptor* default_value = descriptor->default_value_enum();
-
   (*variables)["name"] = FieldName(descriptor);
   (*variables)["type"] = ClassName(descriptor->enum_type(), true);
-  (*variables)["default"] = SimpleItoa(default_value->number());
+  (*variables)["default"] = DefaultValue(descriptor);
+
   (*variables)["index"] = SimpleItoa(descriptor->index());
   (*variables)["number"] = SimpleItoa(descriptor->number());
 //  (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
