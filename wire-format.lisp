@@ -463,6 +463,7 @@ LIMIT, then signal ENCODE-OVERFLOW."
                 read-single-float-carefully)
          #+opt (inline read-single-float-carefully))
 
+#-lispworks
 (defun read-single-float-carefully (buffer index limit)
   "Read a SINGLE-FLOAT from BUFFER starting at INDEX.  The float is stored
 in BUFFER as a 4-octet little-endian IEEE single precision value.  Both the
@@ -499,6 +500,20 @@ PARSE-OVERFLOW."
     #+sbcl
     (values (sb-kernel:make-single-float bits) index)))
 
+#+lispworks
+(defun read-single-float-carefully (buffer index limit)
+  (fli:with-dynamic-foreign-objects ((value :lisp-single-float))
+    (fli:with-coerced-pointer (bytes :type '(:unsigned :char)) value
+      (dotimes (byte-index 4)
+        (when (>= index limit)
+          (error 'parse-overflow))
+        (let ((endian-byte-index #+LITTLE-ENDIAN byte-index
+                                 #-LITTLE-ENDIAN (- 3 byte-index)))
+          (setf (fli:dereference bytes :index endian-byte-index)
+                (aref buffer index)))
+        (incf index))
+      (values (fli:dereference value) index))))
+
 (declaim (ftype (function (octet-vector
                            vector-index
                            vector-index)
@@ -506,6 +521,7 @@ PARSE-OVERFLOW."
                 read-double-float-carefully)
          #+opt (inline read-double-float-carefully))
 
+#-lispworks
 (defun read-double-float-carefully (buffer index limit)
   "Read a DOUBLE-FLOAT from BUFFER starting at INDEX.  The float is stored
 in BUFFER as an 8-octet little-endian IEEE double precision value.  Both the
@@ -551,6 +567,20 @@ PARSE-OVERFLOW."
       (values (lispworks-float:make-double-float high low) index)
       #+sbcl
       (values (sb-kernel:make-double-float high low) index))))
+
+#+lispworks
+(defun read-double-float-carefully (buffer index limit)
+  (fli:with-dynamic-foreign-objects ((value :lisp-double-float))
+    (fli:with-coerced-pointer (bytes :type '(:unsigned :char)) value
+      (dotimes (byte-index 8)
+        (when (>= index limit)
+          (error 'parse-overflow))
+        (let ((endian-byte-index #+LITTLE-ENDIAN byte-index
+                                 #-LITTLE-ENDIAN (- 7 byte-index)))
+          (setf (fli:dereference bytes :index endian-byte-index)
+                (aref buffer index)))
+        (incf index))
+      (values (fli:dereference value) index))))
 
 (declaim (ftype (function (octet-vector
                            vector-index
