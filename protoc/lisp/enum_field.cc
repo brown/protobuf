@@ -48,12 +48,12 @@ namespace {
 void SetEnumVariables(const FieldDescriptor* descriptor,
                       map<string, string>* variables) {
   (*variables)["name"] = FieldName(descriptor);
-  (*variables)["type"] = ClassName(descriptor->enum_type(), true);
+  (*variables)["type"] = ClassName(descriptor->enum_type());
   (*variables)["default"] = DefaultValue(descriptor);
-
+  (*variables)["package"] = FileLispPackage(descriptor->enum_type()->file());
   (*variables)["index"] = SimpleItoa(descriptor->index());
   (*variables)["number"] = SimpleItoa(descriptor->number());
-//  (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
+//  (*variables)["classname"] = ClassName(FieldScope(descriptor));
   (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"] =
       SimpleItoa(WireFormat::TagSize(
@@ -74,14 +74,14 @@ void EnumFieldGenerator::GenerateSlot(io::Printer* printer) const {
       variables_,
       "($name$\n"
       " :accessor $name$\n"
-      " :initform $default$\n"
-      " :type $type$)\n");
+      " :initform $package$::$default$\n"
+      " :type $package$::$type$)\n");
 }
 
 void EnumFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "(cl:setf (cl:slot-value self '$name$) $default$)");
+      "(cl:setf (cl:slot-value self '$name$) $package$::$default$)");
 }
 
 void EnumFieldGenerator::GenerateOctetSize(io::Printer* printer) const {
@@ -143,9 +143,9 @@ void RepeatedEnumFieldGenerator::GenerateSlot(io::Printer* printer) const {
       " :accessor $name$\n"
       " :initform (cl:make-array\n"
       "            0\n"
-      "            :element-type '$type$\n"
+      "            :element-type '$package$::$type$\n"
       "            :fill-pointer 0 :adjustable cl:t)\n"
-      " :type (cl:vector $type$))\n");
+      " :type (cl:vector $package$::$type$))\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateClearingCode(io::Printer* printer)
@@ -155,7 +155,7 @@ void RepeatedEnumFieldGenerator::GenerateClearingCode(io::Printer* printer)
       "(cl:setf (cl:slot-value self '$name$)\n"
       "         (cl:make-array\n"
       "          0\n"
-      "          :element-type '$type$\n"
+      "          :element-type '$package$::$type$\n"
       "          :fill-pointer 0 :adjustable cl:t))");
 }
 

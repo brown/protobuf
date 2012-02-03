@@ -66,6 +66,9 @@ class MessageGenerator {
   // Generate all the methods of the class.
   void GenerateClassMethods(io::Printer* printer);
 
+  // Generate the package export list.
+//  void GeneratePackageExports(io::Printer* printer);
+
  private:
   // Generate standard Message methods.
   void GeneratePrintObject(io::Printer* printer);

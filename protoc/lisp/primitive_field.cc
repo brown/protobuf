@@ -188,11 +188,11 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            map<string, string>* variables,
                            bool repeated) {
   (*variables)["name"] = FieldName(descriptor);
-  (*variables)["type"] = PrimitiveTypeName(descriptor->cpp_type());
+  (*variables)["type"] = PrimitiveTypeName(descriptor);
   (*variables)["default"] = DefaultValue(descriptor);
   (*variables)["index"] = SimpleItoa(descriptor->index());
 //  (*variables)["number"] = SimpleItoa(descriptor->number());
-//  (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
+//  (*variables)["classname"] = ClassName(FieldScope(descriptor));
   (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"] =
       SimpleItoa(WireFormat::TagSize(

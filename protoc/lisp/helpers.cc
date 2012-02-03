@@ -28,12 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <stdio.h>
 #include <vector>
 #include "hash.h"
 
 #include "helpers.h"
 #include <google/protobuf/stubs/common.h>
 #include "strutil.h"
+#include <google/protobuf/descriptor.pb.h>
 
 namespace google {
 namespace protobuf {
@@ -65,29 +67,88 @@ string StripProto(const string& filename) {
   }
 }
 
+string FileLispPackage(const FileDescriptor* file) {
+  if (file->options().has_java_package()) {
+    return LispifyName(file->options().java_package());
+  } else if (file->options().has_java_outer_classname()) {
+    return LispifyName(file->options().java_outer_classname());
+  } else {
+    return "protocol-buffer";
+  }
+}
+
+const int unknown = 0;
+const int lower = 1;
+const int upper = 2;
+
+string HyphenateStudlyCaps(const string& name) {
+  int state = unknown;
+  string result;
+
+  for (int i = 0; i < name.size(); ++i) {
+    result.append(1, name[i]);
+    switch (state) {
+      case unknown:
+        if (isalpha(name[i])) {
+          if (isupper(name[i])) {
+            state = upper;
+          } else if (islower(name[i])) {
+            state = lower;
+          }
+        }
+        break;
+      case lower:
+        if (i < name.size() - 1) {
+          // We can look ahead one character.
+          if (! isalpha(name[i + 1])) {
+            state = unknown;
+          } else if (isupper(name[i + 1])) {
+            result.append(1, '-');
+            state = upper;
+          }
+        }
+        break;
+      case upper:
+        if (i < name.size() - 2) {
+          // We can look two characters ahead.
+          if (! isalpha(name[i + 1])) {
+            state = unknown;
+          } else if (islower(name[i + 1])) {
+            state = lower;
+          } else if (isalpha(name[i + 2]) && islower(name[i + 2])) {
+            // Next character is upper, following character is lower.
+            result.append(1, '-');
+            result.append(1, name[++i]);
+            state = lower;
+          }
+        }
+        break;
+    }
+  }
+  return result;
+}
+
 string LispifyName(const string& proto_name) {
   string result = UnderscoresToHyphens(proto_name);
+  result = HyphenateStudlyCaps(result);
   LowerString(&result);
   return result;
 }
 
-string ClassName(const EnumDescriptor* enum_descriptor, bool qualified) {
-  // qualified must be FALSE  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
+string ClassName(const EnumDescriptor* enum_descriptor) {
   if (enum_descriptor->containing_type() == NULL) {
+    // The enum type is defined at top-level in the file.
     return LispifyName(enum_descriptor->name());
   } else {
-    string result = ClassName(enum_descriptor->containing_type(), qualified);
+    // The enum type is embedded in a message filed definition.
+    string result = ClassName(enum_descriptor->containing_type());
     result += '-';
-    result += enum_descriptor->name();
-    return LispifyName(result);
+    result += LispifyName(enum_descriptor->name());
+    return result;
   }
 }
 
-string ClassName(const Descriptor* descriptor, bool qualified) {
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX qualified must be false
-
-
+string ClassName(const Descriptor* descriptor) {
   // Find "outer", the descriptor of the top-level message in which
   // "descriptor" is embedded.
   const Descriptor* outer = descriptor;
@@ -99,8 +160,8 @@ string ClassName(const Descriptor* descriptor, bool qualified) {
   return LispifyName(outer->name() + DotsToUnderscores(inner_name));
 }
 
-const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
-  switch (type) {
+const char* PrimitiveTypeName(const FieldDescriptor* field) {
+  switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
       return "(cl:signed-byte 32)";
     case FieldDescriptor::CPPTYPE_INT64:
@@ -118,7 +179,11 @@ const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
     case FieldDescriptor::CPPTYPE_ENUM:
       return "(cl:unsigned-byte 32)";
     case FieldDescriptor::CPPTYPE_STRING:
-      return "(cl:simple-array (cl:unsigned-byte 8) (cl:*))";
+      if (field->type() == FieldDescriptor::TYPE_BYTES) {
+        return "(cl:simple-array (cl:unsigned-byte 8) (cl:*))";
+      } else {
+        return "pb::%string-field%";
+      }
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return NULL;
 
@@ -131,17 +196,24 @@ const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
 }
 
 string FieldName(const FieldDescriptor* field) {
-  return LispifyName(UnderscoresToHyphens(field->name()));
+  // Groups are hacky:  The name of the field is just the lower-cased name
+  // of the group type.  In Java, though, we would like to retain the original
+  // capitalization of the type name.
+  if (field->type() == FieldDescriptor::TYPE_GROUP) {
+    return LispifyName(field->message_type()->name());
+  } else {
+    return LispifyName(field->name());
+  }
 }
 
-string StringOctets(const string string_default) {
+string StringOctets(const string str) {
   string octets;
-  int default_length = string_default.size();
+  int str_length = str.size();
 
-  for (int i = 0; i < default_length; ++i) {
-    int octet = string_default[i] & 0xff;
+  for (int i = 0; i < str_length; ++i) {
+    int octet = str[i] & 0xff;
     octets += SimpleItoa(octet);
-    if (i != default_length - 1) {
+    if (i != str_length - 1) {
       octets += " ";
     }
   }
@@ -186,6 +258,22 @@ string LispSimpleDtoa(double value) {
   return c_result + "d0";
 }
 
+string LispEscapeString(string str) {
+  string lisp;
+
+  lisp.append(1, '"');
+  for (int i = 0; i < str.size(); i++) {
+    if (str[i] == '"') {
+      lisp.append(1, '\\');
+      lisp.append(1, '"');
+    } else {
+      lisp.append(1, str[i]);
+    }
+  }
+  lisp.append(1, '"');
+  return lisp;
+}
+
 string DefaultValue(const FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
@@ -196,28 +284,48 @@ string DefaultValue(const FieldDescriptor* field) {
       return SimpleItoa(field->default_value_int64());
     case FieldDescriptor::CPPTYPE_UINT64:
       return SimpleItoa(field->default_value_uint64());
+
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return LispSimpleDtoa(field->default_value_double());
     case FieldDescriptor::CPPTYPE_FLOAT:
       return LispSimpleFtoa(field->default_value_float());
+
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() ? "cl:t" : "cl:nil";
 
+    case FieldDescriptor::CPPTYPE_STRING:
+      if (field->type() == FieldDescriptor::TYPE_BYTES) {
+        if (field->has_default_value()) {
+          return ("(cl:make-array "
+                  + SimpleItoa(field->default_value_string().size())
+                  + " :element-type '(cl:unsigned-byte 8) :initial-contents '("
+                  + StringOctets(field->default_value_string())
+                  + "))");
+        } else {
+          return "(cl:make-array 0 :element-type '(cl:unsigned-byte 8))";
+        }
+      } else {
+        if (field->has_default_value()) {
+          return "(pb:string-field " + LispEscapeString(field->default_value_string()) + ")";
+        } else {
+          return "(pb:string-field \"\")";
+        }
+      }
+
     case FieldDescriptor::CPPTYPE_ENUM:
-      return ("#.+"
-              + ClassName(field->enum_type(), false)
+      return ("+"
+              + ClassName(field->enum_type())
               + "-"
               + LispifyName(field->default_value_enum()->name())
               + "+");
 
-    case FieldDescriptor::CPPTYPE_STRING:
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      GOOGLE_LOG(FATAL) << "Shouldn't get here.";
-      return "";
+      return StringOctets(field->default_value_string());
+    // No default because we want the compiler to complain if any new types are
+    // added.
   }
-  // Can't actually get here; make compiler happy.  We could add a default
-  // case above but then we wouldn't get the nice compiler warning when a
-  // new type is added.
+
+  GOOGLE_LOG(FATAL) << "Shouldn't get here.";
   return "";
 }
 
@@ -256,14 +364,16 @@ string OctetSize(FieldDescriptor::Type type, string reference) {
       return "1";
 
     case FieldDescriptor::TYPE_STRING:
+      return ("(cl:let ((s (pb::%utf8-string-length% " + reference + ")))\n"
+              "  (cl:+ s (varint:length32 s)))");
     case FieldDescriptor::TYPE_BYTES:
       return ("(cl:let ((s (cl:length " + reference + ")))\n"
               "  (cl:+ s (varint:length32 s)))");
 
     case FieldDescriptor::TYPE_GROUP:
-      return "(octet-size " + reference + ")";
+      return "(pb:octet-size " + reference + ")";
     case FieldDescriptor::TYPE_MESSAGE:
-      return ("(cl:let ((s (octet-size " + reference + ")))\n"
+      return ("(cl:let ((s (pb:octet-size " + reference + ")))\n"
               "  (cl:+ s (varint:length32 s)))");
 
     // No default because we want the compiler to complain if any new

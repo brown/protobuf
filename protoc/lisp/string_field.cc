@@ -49,17 +49,18 @@ namespace {
 void SetStringVariables(const FieldDescriptor* descriptor,
                         map<string, string>* variables) {
   (*variables)["name"] = FieldName(descriptor);
-  (*variables)["type"] = PrimitiveTypeName(descriptor->cpp_type());
+  (*variables)["type"] = PrimitiveTypeName(descriptor);
   (*variables)["defaultlength"]
       = SimpleItoa(descriptor->default_value_string().size());
-  (*variables)["default"] = StringOctets(descriptor->default_value_string());
+  (*variables)["default"] = DefaultValue(descriptor);
   (*variables)["index"] = SimpleItoa(descriptor->index());
   (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
   (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"]
       = SimpleItoa(WireFormat::TagSize(
                        descriptor->number(), descriptor->type()));
+  (*variables)["element_size"]
+      = OctetSize(descriptor->type(), "(cl:aref x i)");
 }
 
 }  // namespace
@@ -77,21 +78,15 @@ void StringFieldGenerator::GenerateSlot(io::Printer* printer) const {
   printer->Print(
       variables_,
       "($name$\n"
-//      " :accessor $name$\n"           XXXX: custom accessors
-      " :initform (cl:make-array\n"
-      "            $defaultlength$\n"
-      "            :element-type '(cl:unsigned-byte 8)\n"
-      "            :initial-contents '($default$))\n"
+      " :accessor $name$\n"
+      " :initform $default$\n"
       " :type $type$)\n");
 }
 
 void StringFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "(cl:setf (cl:slot-value self '$name$)\n"
-      "         (cl:make-array $defaultlength$"
-      " :element-type '(cl:unsigned-byte 8)\n"
-      "          :initial-contents '($default$)))");
+      "(cl:setf (cl:slot-value self '$name$) $default$)");
 }
 
 void StringFieldGenerator::GenerateOctetSize(io::Printer* printer) const {
@@ -103,36 +98,7 @@ void StringFieldGenerator::GenerateOctetSize(io::Printer* printer) const {
 }
 
 void StringFieldGenerator::GenerateAccessor(io::Printer* printer) const {
-  // XXXXXXXXXXXXXXX: the C++ code looks at
-  // if (descriptor_->type() == FieldDescriptor::TYPE_BYTES)
-  // and does some special things.
-
-  // The string accessors convert octets to and from strings.
-  printer->Print(
-      variables_,
-      "(cl:unless (cl:fboundp '$name$)\n"
-      "  (cl:defgeneric $name$ (proto)))\n"
-      "(cl:defmethod $name$ ((self $classname$))\n"
-      "  (com.google.base:utf8-octets-to-string (cl:slot-value self '$name$)))\n"
-      "\n"
-      "(cl:export '$name$-octets)\n"
-      "(cl:unless (cl:fboundp '$name$-octets)\n"
-      "  (cl:defgeneric $name$-octets (proto)))\n"
-      "(cl:defmethod $name$-octets ((self $classname$))\n"
-      "  (cl:slot-value self '$name$))\n"
-      "\n"
-      "(cl:unless (cl:fboundp '(cl:setf $name$))\n"
-      "  (cl:defgeneric (cl:setf $name$) (new-value proto)))\n"
-      "(cl:defmethod (cl:setf $name$) (new-value (self $classname$))\n"
-      "  (cl:etypecase new-value\n"
-      "    ((cl:string)\n"
-      "     (cl:setf (cl:slot-value self '$name$)\n"
-      "              (com.google.base:string-to-utf8-octets new-value)))\n"
-      "    ((com.google.base:octet-vector)\n"
-      "     (cl:setf (cl:slot-value self '$name$) new-value)))\n"
-      "  (cl:setf (cl:ldb (cl:byte 1 $index$)"
-      " (cl:slot-value self '%has-bits%)) 1)\n"
-      "  new-value)\n");
+  // The default accessor works fine for string fields.
 }
 
 void StringFieldGenerator::GenerateSerializeWithCachedSizes(
@@ -140,22 +106,43 @@ void StringFieldGenerator::GenerateSerializeWithCachedSizes(
   printer->Print(
       variables_,
       "(cl:setf index"
-      " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
-      "(cl:setf index"
-      " (wire-format:write-octets-carefully"
-      " buffer index limit (cl:slot-value self '$name$)))");
+      " (varint:encode-uint32-carefully buffer index limit $tag$))\n");
+  if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
+    printer->Print(
+        variables_,
+        "(cl:setf index"
+        " (wire-format:write-octets-carefully"
+        " buffer index limit (cl:slot-value self '$name$)))");
+  } else {
+    printer->Print(
+        variables_,
+        "(cl:setf index"
+        " (wire-format:write-octets-carefully"
+        " buffer index limit (cl:slot-value (cl:slot-value self '$name$) 'pb::%octets%)))");
+  }
 }
 
 void StringFieldGenerator::GenerateMergeFromArray(
     io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "(cl:multiple-value-bind (value new-index)\n"
-      "    (wire-format:read-octets-carefully buffer index limit)\n"
-      "  (cl:setf (cl:slot-value self '$name$) value)\n"
-      "  (cl:setf (cl:ldb (cl:byte 1 $index$)"
-      " (cl:slot-value self '%has-bits%)) 1)\n"
-      "  (cl:setf index new-index))");
+  if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
+    printer->Print(
+        variables_,
+        "(cl:multiple-value-bind (value new-index)\n"
+        "    (wire-format:read-octets-carefully buffer index limit)\n"
+        "  (cl:setf (cl:slot-value self '$name$) value)\n"
+        "  (cl:setf (cl:ldb (cl:byte 1 $index$)"
+        " (cl:slot-value self '%has-bits%)) 1)\n"
+        "  (cl:setf index new-index))");
+  } else {
+    printer->Print(
+        variables_,
+        "(cl:multiple-value-bind (value new-index)\n"
+        "    (wire-format:read-octets-carefully buffer index limit)\n"
+        "  (cl:setf (cl:slot-value self '$name$) (pb:string-field value))\n"
+        "  (cl:setf (cl:ldb (cl:byte 1 $index$)"
+        " (cl:slot-value self '%has-bits%)) 1)\n"
+        "  (cl:setf index new-index))");
+  }
 }
 
 void StringFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
@@ -175,8 +162,6 @@ RepeatedStringFieldGenerator::RepeatedStringFieldGenerator(
 RepeatedStringFieldGenerator::~RepeatedStringFieldGenerator() {}
 
 void RepeatedStringFieldGenerator::GenerateSlot(io::Printer* printer) const {
-  // XXXX: C++ code generator creates a _default_$name$_ member.
-  // What is it used for?  Should we do the same?
   printer->Print(
       variables_,
       "($name$\n"
@@ -207,9 +192,7 @@ void RepeatedStringFieldGenerator::GenerateOctetSize(io::Printer* printer)
       "          (length (cl:length x)))\n"
       "  (cl:incf size (cl:* $tag_size$ length))\n"
       "  (cl:dotimes (i length)\n"
-      "    (cl:incf size\n"
-      "     (cl:let ((s (cl:length (cl:aref x i))))\n"
-      "       (cl:+ s (varint:length32 s))))))");
+      "    (cl:incf size $element_size$)))");
 }
 
 void RepeatedStringFieldGenerator::GenerateAccessor(io::Printer* printer)
@@ -219,36 +202,57 @@ void RepeatedStringFieldGenerator::GenerateAccessor(io::Printer* printer)
 
 void RepeatedStringFieldGenerator::GenerateSerializeWithCachedSizes(
     io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "(cl:let* ((v (cl:slot-value self '$name$))\n"
-      "          (length (cl:length v)))\n"
-      "  (cl:loop for i from 0 below length do\n"
-      "    (cl:setf index"
-      " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
-      "    (cl:setf index"
-      " (wire-format:write-octets-carefully"
-      " buffer index limit (cl:aref v i)))))");
+  if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
+    printer->Print(
+        variables_,
+        "(cl:let* ((v (cl:slot-value self '$name$))\n"
+        "          (length (cl:length v)))\n"
+        "  (cl:dotimes (i length)\n"
+        "    (cl:setf index"
+        " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
+        "    (cl:setf index"
+        " (wire-format:write-octets-carefully"
+        " buffer index limit (cl:aref v i)))))");
+  } else {
+    printer->Print(
+        variables_,
+        "(cl:let* ((v (cl:slot-value self '$name$))\n"
+        "          (length (cl:length v)))\n"
+        "  (cl:dotimes (i length)\n"
+        "    (cl:setf index"
+        " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
+        "    (cl:setf index"
+        " (wire-format:write-octets-carefully"
+        " buffer index limit (cl:slot-value (cl:aref v i) 'pb::%octets%)))))");
+  }
 }
 
 void RepeatedStringFieldGenerator::GenerateMergeFromArray(
     io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "(cl:multiple-value-bind (value new-index)\n"
-      "    (wire-format:read-octets-carefully buffer index limit)\n"
-      "  (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
-      "  (cl:setf index new-index))");
+  if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
+    printer->Print(
+        variables_,
+        "(cl:multiple-value-bind (value new-index)\n"
+        "    (wire-format:read-octets-carefully buffer index limit)\n"
+        "  (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
+        "  (cl:setf index new-index))");
+  } else {
+    printer->Print(
+        variables_,
+        "(cl:multiple-value-bind (value new-index)\n"
+        "    (wire-format:read-octets-carefully buffer index limit)\n"
+        "  (cl:vector-push-extend (pb:string-field value) (cl:slot-value self '$name$))\n"
+        "  (cl:setf index new-index))");
+  }
 }
 
 void RepeatedStringFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   printer->Print(
       variables_,
-      "(cl:let* ((v (cl:slot-value self '$name$))\n"
-      "          (vf (cl:slot-value from '$name$))\n"
-      "          (length (cl:length vf)))\n"
-      "  (cl:loop for i from 0 below length do\n"
+      "(cl:let ((v (cl:slot-value self '$name$))\n"
+      "         (vf (cl:slot-value from '$name$)))\n"
+      "  (cl:dotimes (i (cl:length vf))\n"
       "    (cl:vector-push-extend (cl:aref vf i) v)))");
 }
 

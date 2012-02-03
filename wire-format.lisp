@@ -33,7 +33,6 @@
 (in-package #:wire-format)
 (declaim #.*optimize-default*)
 
-
 ;; Tags used to delimit values in protocol buffers.
 
 (deftype protocol-tag () '(integer 0 5))
@@ -45,26 +44,21 @@
 (defconst +end-group+   4   "tag marks end of embedded protocol buffer")
 (defconst +float+       5   "tag for 4-byte single precision floats")
 
-
 (define-condition protocol-error (error)
   ()
-  (:documentation "Superclass of all PROTOCOL conditions."))
-
+  (:documentation "Superclass of all PROTOCOL-BUFFER conditions."))
 
 (define-condition encoding-error (protocol-error)
   ()
-  (:documentation "Superclass of all PROTOCOL conditions signalled while
-encoding values into a buffer."))
+  (:documentation "Superclass of conditions signalled while encoding values."))
 
 (define-condition buffer-overflow (encoding-error)
   ()
   (:documentation "Buffer space exhausted while encoding a value."))
 
-
 (define-condition parsing-error (protocol-error)
   ()
-  (:documentation "Superclass of all PROTCOL conditions signalled while
-decoding values from a buffer."))
+  (:documentation "Superclass of conditions signalled while decoding values."))
 
 (define-condition data-exhausted (parsing-error)
   ()
@@ -76,9 +70,7 @@ decoding values from a buffer."))
 
 (define-condition alignment (parsing-error)
   ()
-  (:documentation "Data buffer does not contain the type of value we have
-been asked to skip over of parse backwards."))
-
+  (:documentation "Bad data type encountered while skipping over or parsing backwards."))
 
 (declaim (ftype (function (octet-vector vector-index fixnum)
                           (values vector-index &optional))
@@ -105,10 +97,7 @@ been asked to skip over of parse backwards."))
           ((= tag +float+) (+ index 4))
           (t (error 'alignment)))))
 
-(declaim (ftype (function (octet-vector
-                           vector-index
-                           vector-index
-                           boolean)
+(declaim (ftype (function (octet-vector vector-index vector-index boolean)
                           (values vector-index &optional))
                 write-boolean-carefully)
          #+opt (inline write-boolean-carefully))
@@ -136,10 +125,7 @@ been asked to skip over of parse backwards."))
       (error 'value-out-of-range))
     (values (if (zerop bool) nil t) (1+ index))))
 
-(declaim (ftype (function (octet-vector
-                           vector-index
-                           vector-index
-                           int32)
+(declaim (ftype (function (octet-vector vector-index vector-index int32)
                           (values vector-index &optional))
                 write-int32-carefully)
          #+opt (inline write-int32-carefully))
@@ -160,10 +146,7 @@ been asked to skip over of parse backwards."))
   (incf index)
   index)
 
-(declaim (ftype (function (octet-vector
-                           vector-index
-                           vector-index
-                           uint32)
+(declaim (ftype (function (octet-vector vector-index vector-index uint32)
                           (values vector-index &optional))
                 write-uint32-carefully)
          #+opt (inline write-uint32-carefully))
@@ -201,10 +184,7 @@ been asked to skip over of parse backwards."))
   (setf (aref buffer index) (ldb (byte 8 24) value))
   (values))
 
-(declaim (ftype (function (octet-vector
-                           vector-index
-                           vector-index
-                           int64)
+(declaim (ftype (function (octet-vector vector-index vector-index int64)
                           (values vector-index &optional))
                 write-int64-carefully)
          #+opt (inline write-int64-carefully))
@@ -233,10 +213,7 @@ been asked to skip over of parse backwards."))
   (incf index)
   index)
 
-(declaim (ftype (function (octet-vector
-                           vector-index
-                           vector-index
-                           uint64)
+(declaim (ftype (function (octet-vector vector-index vector-index uint64)
                           (values vector-index &optional))
                 write-uint64-carefully)
          #+opt (inline write-uint64-carefully))
@@ -364,10 +341,10 @@ been asked to skip over of parse backwards."))
          #+opt (inline write-single-float-carefully))
 
 (defun write-single-float-carefully (buffer index limit float)
-  "Write the little-endian IEEE binary representation of double precision
-FLOAT to BUFFER starting at INDEX.  Return the index value of the first
-octet following FLOAT.  If encoding FLOAT requires space in BUFFER past
-LIMIT, then signal ENCODE-OVERFLOW."
+  "Write the little-endian IEEE binary representation of double precision FLOAT
+to BUFFER starting at INDEX.  Return the index value of the first octet
+following FLOAT.  If encoding FLOAT requires space in BUFFER past LIMIT, then
+signal ENCODE-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit)
            (type single-float float))
@@ -402,10 +379,10 @@ LIMIT, then signal ENCODE-OVERFLOW."
          #+opt (inline write-double-float-carefully))
 
 (defun write-double-float-carefully (buffer index limit float)
-  "Write the little-endian IEEE binary representation of single precision
-FLOAT to BUFFER starting at INDEX.  Return the index value of the first
-octet following FLOAT.  If encoding FLOAT requires space in BUFFER past
-LIMIT, then signal ENCODE-OVERFLOW."
+  "Write the little-endian IEEE binary representation of single precision FLOAT
+to BUFFER starting at INDEX.  Return the index value of the first octet
+following FLOAT.  If encoding FLOAT requires space in BUFFER past LIMIT, then
+signal ENCODE-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit)
            (type double-float float))
@@ -464,11 +441,10 @@ LIMIT, then signal ENCODE-OVERFLOW."
          #+opt (inline read-single-float-carefully))
 
 (defun read-single-float-carefully (buffer index limit)
-  "Read a SINGLE-FLOAT from BUFFER starting at INDEX.  The float is stored
-in BUFFER as a 4-octet little-endian IEEE single precision value.  Both the
-float and the index of the first octet following it are returned.  If
-reading the float would require octets beyond LIMIT, then signal
-PARSE-OVERFLOW."
+  "Read a SINGLE-FLOAT from BUFFER starting at INDEX.  The float is stored in
+BUFFER as a 4-octet little-endian IEEE single precision value.  Both the float
+and the index of the first octet following it are returned.  If reading the
+float would require octets beyond LIMIT, then signal PARSE-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit))
   (when (> (+ index 4) limit)
@@ -507,11 +483,10 @@ PARSE-OVERFLOW."
          #+opt (inline read-double-float-carefully))
 
 (defun read-double-float-carefully (buffer index limit)
-  "Read a DOUBLE-FLOAT from BUFFER starting at INDEX.  The float is stored
-in BUFFER as an 8-octet little-endian IEEE double precision value.  Both the
-float and the index of the first octet following it are returned.  If
-reading the float would require octets beyond LIMIT, then signal
-PARSE-OVERFLOW."
+  "Read a DOUBLE-FLOAT from BUFFER starting at INDEX.  The float is stored in
+BUFFER as an 8-octet little-endian IEEE double precision value.  Both the float
+and the index of the first octet following it are returned.  If reading the
+float would require octets beyond LIMIT, then signal PARSE-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index))
   (when (> (+ index 8) limit)
@@ -552,10 +527,7 @@ PARSE-OVERFLOW."
       #+sbcl
       (values (sb-kernel:make-double-float high low) index))))
 
-(declaim (ftype (function (octet-vector
-                           vector-index
-                           vector-index
-                           octet-vector)
+(declaim (ftype (function (octet-vector vector-index vector-index octet-vector)
                           (values vector-index &optional))
                 write-octets-carefully)
          #+opt (inline write-octets-carefully))
@@ -571,9 +543,7 @@ PARSE-OVERFLOW."
     (replace buffer octets :start1 index)
     (+ index size)))
 
-(declaim (ftype (function (octet-vector
-                           vector-index
-                           vector-index)
+(declaim (ftype (function (octet-vector vector-index vector-index)
                           (values octet-vector vector-index &optional))
                 read-octets-carefully)
          #+opt (inline read-octets-carefully))

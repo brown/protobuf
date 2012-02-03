@@ -58,6 +58,9 @@ class EnumGenerator {
   // values.
   void GenerateDefType(io::Printer* printer);
 
+  // Generate the package export list.
+//  void GeneratePackageExports(io::Printer* printer);
+
  private:
   const EnumDescriptor* descriptor_;
   string classname_;

@@ -140,8 +140,8 @@ void ServiceGenerator::GenerateMethodSignatures(
     const MethodDescriptor* method = descriptor_->method(i);
     map<string, string> sub_vars;
     sub_vars["name"] = method->name();
-    sub_vars["input_type"] = ClassName(method->input_type(), true);
-    sub_vars["output_type"] = ClassName(method->output_type(), true);
+    sub_vars["input_type"] = ClassName(method->input_type());
+    sub_vars["output_type"] = ClassName(method->output_type());
     sub_vars["virtual"] = virtual_or_non == VIRTUAL ? "virtual " : "";
 
     printer->Print(sub_vars,
@@ -195,8 +195,8 @@ void ServiceGenerator::GenerateNotImplementedMethods(io::Printer* printer) {
     sub_vars["classname"] = descriptor_->name();
     sub_vars["name"] = method->name();
     sub_vars["index"] = SimpleItoa(i);
-    sub_vars["input_type"] = ClassName(method->input_type(), true);
-    sub_vars["output_type"] = ClassName(method->output_type(), true);
+    sub_vars["input_type"] = ClassName(method->input_type());
+    sub_vars["output_type"] = ClassName(method->output_type());
 
     printer->Print(sub_vars,
       "void $classname$::$name$(::google::protobuf::RpcController* controller,\n"
@@ -225,8 +225,8 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
     map<string, string> sub_vars;
     sub_vars["name"] = method->name();
     sub_vars["index"] = SimpleItoa(i);
-    sub_vars["input_type"] = ClassName(method->input_type(), true);
-    sub_vars["output_type"] = ClassName(method->output_type(), true);
+    sub_vars["input_type"] = ClassName(method->input_type());
+    sub_vars["output_type"] = ClassName(method->output_type());
 
     // Note:  ::google::protobuf::down_cast does not work here because it only works on pointers,
     //   not references.
@@ -270,7 +270,7 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 
     map<string, string> sub_vars;
     sub_vars["index"] = SimpleItoa(i);
-    sub_vars["type"] = ClassName(type, true);
+    sub_vars["type"] = ClassName(type);
 
     printer->Print(sub_vars,
       "    case $index$:\n"
@@ -293,8 +293,8 @@ void ServiceGenerator::GenerateStubMethods(io::Printer* printer) {
     sub_vars["classname"] = descriptor_->name();
     sub_vars["name"] = method->name();
     sub_vars["index"] = SimpleItoa(i);
-    sub_vars["input_type"] = ClassName(method->input_type(), true);
-    sub_vars["output_type"] = ClassName(method->output_type(), true);
+    sub_vars["input_type"] = ClassName(method->input_type());
+    sub_vars["output_type"] = ClassName(method->output_type());
 
     printer->Print(sub_vars,
       "void $classname$_Stub::$name$(::google::protobuf::RpcController* controller,\n"

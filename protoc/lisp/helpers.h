@@ -42,29 +42,16 @@ namespace lisp {
 // Strips ".proto" or ".protodevel" from the end of a filename.
 string StripProto(const string& filename);
 
+// Returns the file's Lisp package name.
+string FileLispPackage(const FileDescriptor* file);
+
 // Converts underscores to hyphens and characters to lower case.
 string LispifyName(const string& proto_name);
 
-// Returns the non-nested type name for the given type.  If "qualified" is
-// true, prefix the type with the full namespace.  For example, if you had:
-//   package foo.bar;
-//   message Baz { message Qux {} }
-// Then the qualified ClassName for Qux would be:
-//   ::foo::bar::Baz_Qux
-// While the non-qualified version would be:
-//   Baz_Qux
-string ClassName(const Descriptor* descriptor, bool qualified);
-string ClassName(const EnumDescriptor* enum_descriptor, bool qualified);
+string ClassName(const Descriptor* descriptor);
+string ClassName(const EnumDescriptor* enum_descriptor);
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX fix comments
-
-// Get the C++ type name for a primitive type (e.g. "double",
-// "::google::protobuf::int32", etc.).
-// Note:  non-built-in type names will be qualified, meaning they will start
-// with a ::.  If you are using the type as a template parameter, you will
-// need to insure there is a space between the < and the ::, because the
-// ridiculous C++ standard defines "<:" to be a synonym for "[".
-const char* PrimitiveTypeName(FieldDescriptor::CppType type);
 
 // Get the (unqualified) name that should be used for this field.  People
 // should be using lowercase-with-underscores style for proto field names
@@ -74,6 +61,7 @@ string FieldName(const FieldDescriptor* field);
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX comment these
 
+const char* PrimitiveTypeName(const FieldDescriptor* field);
 string StringOctets(const string string_default);
 string LispSimpleFtoa(float value);
 string LispSimpleDtoa(double value);

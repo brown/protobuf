@@ -43,7 +43,7 @@ namespace lisp {
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
     : descriptor_(descriptor),
-      classname_(ClassName(descriptor, false)) {
+      classname_(ClassName(descriptor)) {
 }
 
 EnumGenerator::~EnumGenerator() {}
@@ -106,6 +106,40 @@ void EnumGenerator::GenerateDefType(io::Printer* printer) {
   printer->Print("))\n");
   printer->Print("(cl:export '$classname$)\n\n", "classname", classname_);
 }
+
+// void EnumGenerator::GeneratePackageExports(io::Printer* printer) {
+//   map<string, string> vars;
+//   vars["classname"] = classname_;
+
+//   const EnumValueDescriptor* min_value = descriptor_->value(0);
+//   const EnumValueDescriptor* max_value = descriptor_->value(0);
+
+//   printer->Print(vars, "(:export #:$classname$\n");
+//   printer->Indent();
+
+//   for (int i = 0; i < descriptor_->value_count(); i++) {
+//     vars["name"] = LispifyName(descriptor_->value(i)->name());
+//     vars["number"] = SimpleItoa(descriptor_->value(i)->number());
+
+//     printer->Print(vars, "#:+$classname$-$name$+\n");
+
+//     if (descriptor_->value(i)->number() < min_value->number()) {
+//       min_value = descriptor_->value(i);
+//     }
+//     if (descriptor_->value(i)->number() > max_value->number()) {
+//       max_value = descriptor_->value(i);
+//     }
+//   }
+
+//   vars["min_name"] = LispifyName(min_value->name());
+//   vars["max_name"] = LispifyName(max_value->name());
+//   printer->Print(
+//       vars,
+//       "#:+minimum-$classname$+\n"
+//       "#:+maximum-$classname$+)");
+
+//   printer->Outdent();
+// }
 
 }  // namespace lisp
 }  // namespace compiler

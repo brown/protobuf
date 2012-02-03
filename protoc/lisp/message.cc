@@ -135,7 +135,7 @@ static bool HasRequiredFields(const Descriptor* type) {
 
 MessageGenerator::MessageGenerator(const Descriptor* descriptor)
   : descriptor_(descriptor),
-    classname_(ClassName(descriptor, false)),
+    classname_(ClassName(descriptor)),
 //    dllexport_decl_(dllexport_decl),
     field_generators_(descriptor),
     nested_generators_(new scoped_ptr<MessageGenerator>[
@@ -175,6 +175,36 @@ void MessageGenerator::GenerateEnumDefinitions(io::Printer* printer) {
   }
 }
 
+// void MessageGenerator::GeneratePackageExports(io::Printer* printer) {
+//   // Nested classes
+//   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+//     nested_generators_[i]->GeneratePackageExports(printer);
+//     printer->Print("\n");
+//   }
+//   // Enums
+//   for (int i = 0; i < descriptor_->enum_type_count(); i++) {
+//     enum_generators_[i]->GeneratePackageExports(printer);
+//     printer->Print("\n");
+//   }
+
+//   map<string, string> vars;
+//   vars["classname"] = classname_;
+
+//   printer->Print(vars, "(:export #:$classname$\n");
+//   printer->Indent();
+
+//   for (int i = 0; i < descriptor_->field_count(); i++) {
+//     const FieldDescriptor* field = descriptor_->field(i);
+//     vars["name"] = FieldName(field);
+
+//     // Export the field accessor symbols
+//     printer->Print(vars, "#:$name$ #:has-$name$ #:clear-$name$\n");
+//   }
+
+//   printer->Print(")");
+//   printer->Outdent();
+// }
+
 void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
 
   // Generate class definitions of all nested classes.
@@ -187,7 +217,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   vars["classname"] = classname_;
   vars["field_count"] = SimpleItoa(descriptor_->field_count());
 
-  printer->Print(vars, "(cl:defclass $classname$ (protocol-buffer)\n");
+  printer->Print(vars, "(cl:defclass $classname$ (pb:protocol-buffer)\n");
   printer->Indent();
   printer->Print("(\n");
 
@@ -206,8 +236,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   }
   printer->Print(
       vars,
-      "(%cached-size%\n"
-      " :accessor %cached-size%\n"
+      "(pb::%cached-size%\n"
       " :initform 0\n"
       " :type (cl:integer 0 #.(cl:1- cl:array-dimension-limit)))\n");
   printer->Print("))\n");
@@ -324,7 +353,10 @@ void MessageGenerator::GeneratePrintObject(io::Printer* printer) {
   printer->Print(
       "(cl:defmethod cl:print-object ((self $classname$) stream)\n"
       "  (cl:print-unreadable-object"
-      " (self stream :type cl:t :identity cl:t)\n",
+      " (self stream :type cl:t :identity cl:t)\n"
+      "    (cl:pprint-logical-block (stream cl:nil)\n"
+,
+//      "      (cl:pprint-indent :block 1 stream)\n",
       "classname", classname_);
   printer->Indent();
   printer->Indent();
@@ -338,8 +370,10 @@ void MessageGenerator::GeneratePrintObject(io::Printer* printer) {
           "index", SimpleItoa(field->index()));
       printer->Indent();
     }
+    // Use the getter so that string protobuf fields are output as Lisp
+    // strings, not as arrays of octets.
     printer->Print(
-        "(cl:format stream \"$name$: ~s \" (cl:slot-value self '$name$))",
+        "  (cl:format stream \"~_$name$: ~s \" ($name$ self))",
         "name", FieldName(field));
     if (!field->is_repeated()) {
       printer->Print(")");
@@ -348,7 +382,7 @@ void MessageGenerator::GeneratePrintObject(io::Printer* printer) {
     printer->Print("\n");
   }
 
-  printer->Print(")\n");
+  printer->Print("))\n");
   printer->Outdent();
   printer->Print("(cl:values))\n");
   printer->Outdent();
@@ -356,7 +390,7 @@ void MessageGenerator::GeneratePrintObject(io::Printer* printer) {
 
 void MessageGenerator::GenerateClear(io::Printer* printer) {
   printer->Print(
-      "(cl:defmethod clear ((self $classname$))\n",
+      "(cl:defmethod pb:clear ((self $classname$))\n",
       "classname", classname_);
   printer->Indent();
 
@@ -414,7 +448,7 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
-  printer->Print("(cl:defmethod is-initialized ((self $classname$))\n",
+  printer->Print("(cl:defmethod pb:is-initialized ((self $classname$))\n",
                  "classname", classname_);
   printer->Indent();
 
@@ -437,7 +471,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
         "(cl:when (cl:/= (cl:logand (cl:slot-value self '%has-bits%)\n"
         "                           #b$mask$)\n"
         "                #b$mask$)\n"
-        "  (cl:return-from is-initialized cl:nil))\n",
+        "  (cl:return-from pb:is-initialized cl:nil))\n",
         "mask", mask);
   }
 
@@ -452,8 +486,8 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
             "(cl:let* ((x (cl:slot-value self '$name$))\n"
             "          (length (cl:length x)))\n"
             "  (cl:dotimes (i length)\n"
-            "    (cl:unless (is-initialized (cl:aref x i))\n"
-            "      (cl:return-from is-initialized cl:nil))))\n",
+            "    (cl:unless (pb:is-initialized (cl:aref x i))\n"
+            "      (cl:return-from pb:is-initialized cl:nil))))\n",
             "name", FieldName(field));
       } else {
         // XXXXXXXXXXXXXXXXXXXX: not sure what's going on here with
@@ -461,8 +495,8 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
         // Maybe the C++ code hardwires has-XXX to true for required fields.
         printer->Print(
             "(cl:when (cl:logbitp $index$ (cl:slot-value self '%has-bits%))\n"
-            "  (cl:unless (is-initialized (cl:slot-value self '$name$))\n"
-            "    (cl:return-from is-initialized cl:nil)))\n",
+            "  (cl:unless (pb:is-initialized (cl:slot-value self '$name$))\n"
+            "    (cl:return-from pb:is-initialized cl:nil)))\n",
           "index", SimpleItoa(field->index()),
           "name", FieldName(field));
       }
@@ -474,12 +508,12 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateOctetSize(io::Printer* printer) {
-  printer->Print("(cl:defmethod octet-size ((self $classname$))\n",
+  printer->Print("(cl:defmethod pb:octet-size ((self $classname$))\n",
                  "classname", classname_);
   printer->Indent();
 
   // XXXXXXXXXXXXXXXXXXXX  previous Lisp code does:
-  // (assert (is-initialized self))
+  // (assert (pb:is-initialized self))
 
   printer->Print("(cl:let ((size 0))\n");
   printer->Indent();
@@ -527,7 +561,7 @@ void MessageGenerator::GenerateOctetSize(io::Printer* printer) {
   // of C++, _cached_size_ should be made into an atomic<int>.
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX: Protect update with lock ???
   printer->Print(
-      "(cl:setf (cl:slot-value self '%cached-size%) size)\n"
+      "(cl:setf (cl:slot-value self 'pb::%cached-size%) size)\n"
       "size))\n");
   printer->Outdent();
   printer->Outdent();
@@ -566,7 +600,7 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
 
 void MessageGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer) {
   printer->Print(
-      "(cl:defmethod serialize ((self $classname$) buffer index limit)\n"
+      "(cl:defmethod pb:serialize ((self $classname$) buffer index limit)\n"
       "  (cl:declare (cl:type com.google.base:octet-vector buffer)\n"
       "              (cl:type com.google.base:vector-index index limit)\n"
       "              (cl:ignorable buffer limit))\n",
@@ -627,7 +661,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer) {
 
 void MessageGenerator::GenerateMergeFromArray(io::Printer* printer) {
   printer->Print(
-      "(cl:defmethod merge-from-array"
+      "(cl:defmethod pb:merge-from-array"
       " ((self $classname$) buffer start limit)\n"
       "  (cl:declare (cl:type com.google.base:octet-vector buffer)\n"
       "              (cl:type com.google.base:vector-index start limit))\n"
@@ -669,7 +703,7 @@ void MessageGenerator::GenerateMergeFromArray(io::Printer* printer) {
   printer->Indent();
   printer->Print(
       "(cl:when (cl:= (cl:logand tag 7) $end_group$)\n"
-      "  (cl:return-from merge-from-array index))\n",
+      "  (cl:return-from pb:merge-from-array index))\n",
       "end_group", SimpleItoa(WireFormatLite::WIRETYPE_END_GROUP));
 
   // XXXXXXXXXXXXXXXXXXXX: the comment is wrong
@@ -689,7 +723,7 @@ void MessageGenerator::GenerateMergeFromArray(io::Printer* printer) {
 
 void MessageGenerator::GenerateMergeFromMessage(io::Printer* printer) {
   printer->Print(
-      "(cl:defmethod merge-from-message"
+      "(cl:defmethod pb:merge-from-message"
       " ((self $classname$) (from $classname$))\n",
       "classname", classname_);
   printer->Indent();

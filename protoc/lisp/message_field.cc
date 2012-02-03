@@ -49,10 +49,12 @@ namespace {
 void SetMessageVariables(const FieldDescriptor* descriptor,
                          map<string, string>* variables) {
   (*variables)["name"] = FieldName(descriptor);
-  (*variables)["type"] = ClassName(descriptor->message_type(), false);
+  (*variables)["type"] = ClassName(descriptor->message_type());
   (*variables)["index"] = SimpleItoa(descriptor->index());
   (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
+  (*variables)["classname"] = ClassName(FieldScope(descriptor));
+  (*variables)["package"] = FileLispPackage(descriptor->message_type()->file());
+
   // For groups, the tag size includes the size of the group end tag.
   (*variables)["tag_size"] =
       SimpleItoa(WireFormat::TagSize(
@@ -74,7 +76,7 @@ void MessageFieldGenerator::GenerateSlot(io::Printer* printer) const {
       "($name$\n"
       " :writer (cl:setf $name$)\n"
       " :initform cl:nil\n"
-      " :type (cl:or cl:null $type$))\n");
+      " :type (cl:or cl:null $package$::$type$))\n");
 }
 
 void MessageFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
@@ -87,13 +89,13 @@ void MessageFieldGenerator::GenerateOctetSize(io::Printer* printer) const {
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     printer->Print(
         variables_,
-        "(cl:let ((s (octet-size (cl:slot-value self '$name$))))\n"
+        "(cl:let ((s (pb:octet-size (cl:slot-value self '$name$))))\n"
         "  (cl:incf size (cl:+ $tag_size$ s (varint:length32 s))))");
   } else if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(
         variables_,
         "(cl:incf size (cl:+ $tag_size$"
-        " (octet-size (cl:slot-value self '$name$))))");
+        " (pb:octet-size (cl:slot-value self '$name$))))");
   } else {
     GOOGLE_LOG(FATAL) << "Invalid message type";
   }
@@ -108,7 +110,7 @@ void MessageFieldGenerator::GenerateAccessor(io::Printer* printer) const {
       "(cl:defmethod $name$ ((self $classname$))\n"
       "  (cl:let ((result (cl:slot-value self '$name$)))\n"
       "    (cl:when (cl:null result)\n"
-      "      (cl:setf result (cl:make-instance '$type$))\n"
+      "      (cl:setf result (cl:make-instance '$package$::$type$))\n"
       "      (cl:setf (cl:slot-value self '$name$) result))\n"
       "      (cl:setf (cl:ldb (cl:byte 1 $index$)"
       " (cl:slot-value self '%has-bits%)) 1)\n"
@@ -133,9 +135,9 @@ void MessageFieldGenerator::GenerateSerializeWithCachedSizes(
         "(cl:setf index"
         " (varint:encode-uint32-carefully"
         " buffer index limit"
-        " (cl:slot-value (cl:slot-value self '$name$) '%cached-size%)))\n"
+        " (cl:slot-value (cl:slot-value self '$name$) 'pb::%cached-size%)))\n"
         "(cl:setf index"
-        " (serialize (cl:slot-value self '$name$) buffer index limit))");
+        " (pb:serialize (cl:slot-value self '$name$) buffer index limit))");
   } else if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     uint32 start_tag =
         WireFormatLite::MakeTag(descriptor_->number(),
@@ -150,7 +152,7 @@ void MessageFieldGenerator::GenerateSerializeWithCachedSizes(
     printer->Print(
         variables_,
         "(cl:setf index"
-        " (serialize (cl:slot-value self '$name$) buffer index limit))\n");
+        " (pb:serialize (cl:slot-value self '$name$) buffer index limit))\n");
     printer->Print(
         "(cl:setf index"
         " (varint:encode-uint32-carefully buffer index limit $end_tag$))",
@@ -171,12 +173,12 @@ void MessageFieldGenerator::GenerateMergeFromArray(
         "    (cl:error \"buffer overflow\"))\n"
         "  (cl:let ((message (cl:slot-value self '$name$)))\n"
         "    (cl:when (cl:null message)\n"
-        "      (cl:setf message (cl:make-instance '$type$))\n"
+        "      (cl:setf message (cl:make-instance '$package$::$type$))\n"
         "      (cl:setf (cl:slot-value self '$name$) message)\n"
         "      (cl:setf (cl:ldb (cl:byte 1 $index$)"
         " (cl:slot-value self '%has-bits%)) 1))\n"
         "    (cl:setf index"
-        " (merge-from-array message buffer new-index"
+        " (pb:merge-from-array message buffer new-index"
         " (cl:+ new-index length)))\n"
         "    (cl:when (cl:not (cl:= index (cl:+ new-index length)))\n"
         "      (cl:error \"buffer overflow\"))))");
@@ -185,11 +187,11 @@ void MessageFieldGenerator::GenerateMergeFromArray(
         variables_,
         "(cl:let ((message (cl:slot-value self '$name$)))\n"
         "  (cl:when (cl:null message)\n"
-        "    (cl:setf message (cl:make-instance '$type$))\n"
+        "    (cl:setf message (cl:make-instance '$package$::$type$))\n"
         "    (cl:setf (cl:slot-value self '$name$) message)\n"
         "    (cl:setf (cl:ldb (cl:byte 1 $index$)"
         " (cl:slot-value self '%has-bits%)) 1))\n"
-        "  (cl:setf index (merge-from-array message buffer index limit))\n");
+        "  (cl:setf index (pb:merge-from-array message buffer index limit))\n");
 
     // XXXXXXXXXX: The end tag can be more than one byte, so the (1- index)
     // is wrong.  We need to compare several bytes.
@@ -211,11 +213,11 @@ void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
       variables_,
       "(cl:let ((message (cl:slot-value self '$name$)))\n"
       "  (cl:when (cl:null message)\n"
-      "    (cl:setf message (cl:make-instance '$type$))\n"
+      "    (cl:setf message (cl:make-instance '$package$::$type$))\n"
       "    (cl:setf (cl:slot-value self '$name$) message)\n"
       "    (cl:setf (cl:ldb (cl:byte 1 $index$)"
       " (cl:slot-value self '%has-bits%)) 1))\n"
-      " (merge-from-message message (cl:slot-value from '$name$)))");
+      " (pb:merge-from-message message (cl:slot-value from '$name$)))");
 }
 
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
@@ -233,9 +235,9 @@ void RepeatedMessageFieldGenerator::GenerateSlot(io::Printer* printer) const {
       " :accessor $name$\n"
       " :initform (cl:make-array\n"
       "            0\n"
-      "            :element-type '$type$\n"
+      "            :element-type '$package$::$type$\n"
       "            :fill-pointer 0 :adjustable cl:t)\n"
-      " :type (cl:vector $type$))\n");
+      " :type (cl:vector $package$::$type$))\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateClearingCode(io::Printer* printer)
@@ -243,7 +245,7 @@ void RepeatedMessageFieldGenerator::GenerateClearingCode(io::Printer* printer)
   printer->Print(
       variables_,
       "(cl:setf (cl:slot-value self '$name$)\n"
-      "         (cl:make-array 0 :element-type '$type$\n"
+      "         (cl:make-array 0 :element-type '$package$::$type$\n"
       "          :fill-pointer 0 :adjustable cl:t))");
 }
 
@@ -257,11 +259,11 @@ void RepeatedMessageFieldGenerator::GenerateOctetSize(io::Printer* printer)
       "  (cl:dotimes (i length)\n");
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     printer->Print(
-        "    (cl:let ((s (octet-size (cl:aref v i))))\n"
+        "    (cl:let ((s (pb:octet-size (cl:aref v i))))\n"
         "      (cl:incf size (cl:+ s (varint:length32 s))))))");
   } else if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(
-        "    (cl:incf size (octet-size (cl:aref v i)))))");
+        "    (cl:incf size (pb:octet-size (cl:aref v i)))))");
   }
 }
 
@@ -285,8 +287,8 @@ void RepeatedMessageFieldGenerator::GenerateSerializeWithCachedSizes(
         "     (cl:setf index"
         " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
         "     (cl:setf index (varint:encode-uint32-carefully"
-        " buffer index limit (cl:slot-value (cl:aref v i) '%cached-size%)))\n"
-        "     (cl:setf index (serialize (cl:aref v i) buffer index limit))))",
+        " buffer index limit (cl:slot-value (cl:aref v i) 'pb::%cached-size%)))\n"
+        "     (cl:setf index (pb:serialize (cl:aref v i) buffer index limit))))",
         "tag", SimpleItoa(tag));
   } else if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     uint32 start_tag =
@@ -298,7 +300,7 @@ void RepeatedMessageFieldGenerator::GenerateSerializeWithCachedSizes(
     printer->Print(
         "     (cl:setf index"
         " (varint:encode-uint32-carefully buffer index limit $start_tag$))\n"
-        "     (cl:setf index (serialize (cl:aref v i) buffer index limit))\n"
+        "     (cl:setf index (pb:serialize (cl:aref v i) buffer index limit))\n"
         "     (cl:setf index"
         " (varint:encode-uint32-carefully buffer index limit $end_tag$))))",
         "start_tag", SimpleItoa(start_tag),
@@ -317,9 +319,9 @@ void RepeatedMessageFieldGenerator::GenerateMergeFromArray(
         "    (varint:parse-uint31-carefully buffer index limit)\n"
         "  (cl:when (cl:> (cl:+ new-index length) limit)\n"
         "    (cl:error \"buffer overflow\"))\n"
-        "  (cl:let ((message (cl:make-instance '$type$)))\n"
+        "  (cl:let ((message (cl:make-instance '$package$::$type$)))\n"
         "    (cl:setf index"
-        " (merge-from-array message buffer new-index"
+        " (pb:merge-from-array message buffer new-index"
         " (cl:+ new-index length)))\n"
         "    (cl:when (cl:not (cl:= index (cl:+ new-index length)))\n"
         "      (cl:error \"buffer overflow\"))\n"
@@ -328,8 +330,8 @@ void RepeatedMessageFieldGenerator::GenerateMergeFromArray(
     // XXXXXXXXXXXXXXXXXXXX this is probably wrong, but allows old test to pass
     printer->Print(
         variables_,
-        "(cl:let ((message (cl:make-instance '$type$)))\n"
-        "  (cl:setf index (merge-from-array message buffer index limit))\n"
+        "(cl:let ((message (cl:make-instance '$package$::$type$)))\n"
+        "  (cl:setf index (pb:merge-from-array message buffer index limit))\n"
         "  (cl:vector-push-extend message (cl:slot-value self '$name$)))\n");
     // XXXXXXXXXX: The end tag can be more than one byte, so the (1- index)
     // is wrong.  We need to compare several bytes.

@@ -33,20 +33,26 @@
 (defpackage #:protocol-buffer
   (:documentation "Machine generated protocol buffers.")
   (:nicknames #:pb)
-  ;; We use no packages, not even COMMON-LISP, so machine-generated protocol buffer code must
-  ;; explicitly qualify references to symbols outside the PROTOCOL-BUFFER package.  The benefit of
-  ;; this approach is that protocol buffers can use field names such as SECOND or DEBUG, which live
-  ;; in the COMMON-LISP package, without causing symbol conflicts.
+  ;; Packages containing machine-generated protocol buffer code, including this one, use no other
+  ;; packages, not even COMMON-LISP, so protocol buffer code must explicitly qualify references to
+  ;; symbols outside the PROTOCOL-BUFFER package.  The benefit of this approach is that protocol
+  ;; buffers can use field names such as "second" or "debug", which when translated into Lisp would
+  ;; ordinarily conflict with symbols in the COMMON-LISP package.
   (:use)
   ;; Machine-generated protocol buffer code exports additional symbols for each enum tag, protocol
   ;; buffer constructor, field accessor, etc.
   (:export #:protocol-buffer
+           ;; Operations on protocol buffers
            #:clear
            #:is-initialized
            #:octet-size
            #:merge-from-array
            #:merge-from-message
-           #:serialize))
+           #:serialize
+           ;; String fields
+           #:string-field
+           #:string-value
+           #:utf8-string-value))
 
 (defpackage #:portable-float
   (:documentation "Portably access the bits of IEEE floating point numbers.")
