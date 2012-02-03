@@ -7,7 +7,7 @@
 (defparameter *address-file-name* #p"ADDRESS_BOOK_FILE")
 
 (defun read-address-book ()
-  (let ((address-book (make-instance 'pb:addressbook)))
+  (let ((address-book (make-instance 'address-book)))
     (when (probe-file *address-file-name*)
       (with-open-file (input *address-file-name*
                        :direction :input :element-type 'unsigned-byte)
@@ -29,37 +29,37 @@
 
 (defun add-person (&key id name email-address phone-numbers)
   (let ((address-book (read-address-book))
-        (person (make-instance 'pb:person)))
-    (setf (pb:id person) id)
-    (setf (pb:name person) name)
+        (person (make-instance 'person)))
+    (setf (id person) id)
+    (setf (name person) (pb:string-field name))
     (when email-address
-      (setf (pb:email person) email-address))
+      (setf (email person) (pb:string-field email-address)))
     (loop for (type . number) in phone-numbers do
-          (let ((phone-number (make-instance 'pb:person-phonenumber))
-                (type (ecase type
-                        (mobile pb:+person-phonetype-mobile+)
-                        (home pb:+person-phonetype-home+)
-                        (work pb:+person-phonetype-work+))))
-            (setf (pb:number phone-number) number)
-            (setf (pb:type phone-number) type)
-            (vector-push-extend phone-number (pb:phone person))))
-    (vector-push-extend person (pb:person address-book))
+      (let ((phone-number (make-instance 'person-phone-number))
+            (type (ecase type
+                    (mobile +person-phone-type-mobile+)
+                    (home +person-phone-type-home+)
+                    (work +person-phone-type-work+))))
+        (setf (number phone-number) (pb:string-field number))
+        (setf (type phone-number) type)
+        (vector-push-extend phone-number (phone person))))
+    (vector-push-extend person (person address-book))
     (write-address-book address-book))
   (values))
 
 (defun list-people ()
   (let ((address-book (read-address-book)))
-    (loop for person across (pb:person address-book) do
-          (format t "Person ID: ~A~%" (pb:id person))
-          (format t "  Name: ~A~%" (pb:name person))
-          (when (pb:has-email person)
-            (format t "  E-mail address: ~A~%" (pb:email person)))
-          (loop for phone-number across (pb:phone person) do
-                (let ((location
-                       (ecase (pb:type phone-number)
-                         (#.pb:+person-phonetype-mobile+ "Mobile")
-                         (#.pb:+person-phonetype-home+ "Home")
-                         (#.pb:+person-phonetype-work+ "Work"))))
-                  (format t "  ~A phone #: ~A~%"
-                          location (pb:number phone-number))))))
+    (loop for person across (person address-book) do
+      (format t "Person ID: ~A~%" (id person))
+      (format t "  Name: ~A~%" (pb:string-value (name person)))
+      (when (has-email person)
+        (format t "  E-mail address: ~A~%" (pb:string-value (email person))))
+      (loop for phone-number across (phone person) do
+        (let ((location
+                (ecase (type phone-number)
+                  (#.+person-phone-type-mobile+ "Mobile")
+                  (#.+person-phone-type-home+ "Home")
+                  (#.+person-phone-type-work+ "Work"))))
+          (format t "  ~A phone #: ~A~%"
+                  location (pb:string-value (number phone-number)))))))
   (values))
