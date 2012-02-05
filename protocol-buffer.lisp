@@ -109,7 +109,7 @@ beyond LIMIT, then signals PROTOCOL-BUFFER-READ-ERROR."))
 
 ;;;; Protocol buffer string fields
 
-(cl:defclass %string-field% ()
+(cl:defclass %sf% ()
   ((%octets% :accessor %octets%
              :initarg :octets
              :initform (cl:make-array 0 :element-type '(cl:unsigned-byte 8))
@@ -117,49 +117,43 @@ beyond LIMIT, then signals PROTOCOL-BUFFER-READ-ERROR."))
              :documentation "Octet vector that holds the string field's value."))
   (:documentation "A protocol buffer string field."))
 
-(cl:defmethod cl:print-object ((string-field %string-field%) stream)
+(cl:defmethod cl:print-object ((string-field %sf%) stream)
   (cl:print-unreadable-object (string-field stream :type cl:t :identity cl:nil)
     (cl:format stream "~S" (string-value string-field))))
 
-(cl:declaim (cl:ftype (cl:function ((cl:or
-                                     cl:string
-                                     com.google.base:octet-vector
-                                     %string-field%))
-                                   (cl:values %string-field% cl:&optional))
+(cl:declaim (cl:ftype (cl:function ((cl:or cl:string com.google.base:octet-vector %sf%))
+                                   (cl:values %sf% cl:&optional))
                       string-field))
 
 (cl:defun string-field (value)
-  "Returns a new %STRING-FIELD% instance initialized to hold VALUE, which much
-be either a Lisp string or a vector of UTF-8 encoded octets."
+  "Returns a new %SF% instance initialized to hold VALUE, which much be either a Lisp
+string or a vector of UTF-8 encoded octets."
   (cl:let ((octets
              (cl:etypecase value
                (cl:string (com.google.base:string-to-utf8-octets value))
                (com.google.base:octet-vector value)
-               (%string-field% (utf8-string-value value)))))
-    (cl:make-instance '%string-field% :octets octets)))
+               (%sf% (utf8-string-value value)))))
+    (cl:make-instance '%sf% :octets octets)))
 
-(cl:declaim (cl:ftype (cl:function (%string-field%) (cl:values cl:string cl:&optional))
-                      string-value))
+(cl:declaim (cl:ftype (cl:function (%sf%) (cl:values cl:string cl:&optional)) string-value))
 
 (cl:defun string-value (string-field)
   "Returns STRING-FIELD's value as a Lisp string."
-  (cl:declare (cl:type %string-field% string-field))
+  (cl:declare (cl:type %sf% string-field))
   (com.google.base:utf8-octets-to-string (%octets% string-field)))
 
-(cl:declaim (cl:ftype (cl:function (%string-field%)
-                                   (cl:values com.google.base:octet-vector cl:&optional))
+(cl:declaim (cl:ftype (cl:function (%sf%) (cl:values com.google.base:octet-vector cl:&optional))
                       utf8-string-value))
 
 (cl:defun utf8-string-value (string-field)
   "Returns STRING-FIELD's value as a UTF-8 encoded vector of octets."
-  (cl:declare (cl:type %string-field% string-field))
+  (cl:declare (cl:type %sf% string-field))
   (cl:copy-seq (cl:slot-value string-field '%octets%)))
 
-(cl:declaim (cl:ftype (cl:function (%string-field%)
-                                   (cl:values com.google.base:vector-index cl:&optional))
+(cl:declaim (cl:ftype (cl:function (%sf%) (cl:values com.google.base:vector-index cl:&optional))
                       %utf8-string-length%))
 
 (cl:defun %utf8-string-length% (string-field)
   "Returns the length in octets of STRING-FIELD's value."
-  (cl:declare (cl:type %string-field% string-field))
+  (cl:declare (cl:type %sf% string-field))
   (cl:length (cl:slot-value string-field '%octets%)))

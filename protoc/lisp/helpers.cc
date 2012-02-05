@@ -181,7 +181,7 @@ const char* PrimitiveTypeName(const FieldDescriptor* field) {
       if (field->type() == FieldDescriptor::TYPE_BYTES) {
         return "(cl:simple-array (cl:unsigned-byte 8) (cl:*))";
       } else {
-        return "pb::%string-field%";
+        return "pb::%sf%";
       }
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return NULL;

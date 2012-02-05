@@ -128,7 +128,7 @@
     (repeated-cord ,(sf "225") ,(sf "325") ,(sf "525"))))
 
 (defun field-equal (value expected)
-  (cond ((eq (type-of expected) 'pb::%string-field%)
+  (cond ((eq (type-of expected) 'pb::%sf%)
          (is (string= (pb:string-value value) (pb:string-value expected))))
         ((vectorp value) (is (equalp value expected)))
         (t (is (eql value expected)))))
