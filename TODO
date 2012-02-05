@@ -68,9 +68,6 @@ Figure out a strategy for specifying Common Lisp optimization levels and
 apply it uniformally.  There's some support for this in optimize.lisp, and
 there are some #+opt conditionalizations sprinkled around the code.
 
-Currently, all classes that implement protocol buffers are placed in the
-Lisp package PROTOCOL-BUFFER.  Is this the right approach?
-
 
 google-protobuf
 ===============
