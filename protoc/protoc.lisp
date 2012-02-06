@@ -56,38 +56,10 @@
       file-descriptor-set)))
 
 (defun hyphenate-studly-caps (string)
-  (let ((state 'unknown)
-        (result '()))
-    (dotimes (i (length string))
-      (let ((char (aref string i)))
-        (push char result)
-        (ecase state
-          (unknown
-           (when (alpha-char-p char)
-             (setf state (if (upper-case-p char) 'upper 'lower))))
-          (lower
-           (when (< i (1- (length string)))
-             ;; We can look ahead one character.
-             (let ((next (aref string (1+ i))))
-               (cond ((not (alpha-char-p next)) (setf state 'unknown))
-                     ((upper-case-p next)
-                      (push #\- result)
-                      (setf state 'upper))))))
-          (upper
-           (when (< i (- (length string) 2))
-             ;; We can look two characters ahead.
-             (let ((next (aref string (1+ i))))
-               (cond ((not (alpha-char-p next)) (setf state 'unknown))
-                     ((lower-case-p next) (setf state 'lower))
-                     (t (let ((following (aref string (+ i 2))))
-                          (when (and (alpha-char-p following) (lower-case-p following))
-                            (push #\- result)
-                            (push next result)
-                            (incf i)
-                            (setf state 'lower)))))))))))
-    (make-array (length result)
-                :element-type 'character
-                :initial-contents (reverse result))))
+  (setf string (cl-ppcre:regex-replace "([A-Z]+)([A-Z][a-z])" string "\\1-\\2"))
+  (setf string (cl-ppcre:regex-replace "([a-z0-9])([A-Z])" string "\\1-\\2"))
+  (setf string (cl-ppcre:regex-replace "([A-Za-z])([0-9])" string "\\1-\\2"))
+  string)
 
 (defun lispify-name (name)
   (let ((hyphenated (hyphenate-studly-caps name)))

@@ -43,7 +43,8 @@
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
   :defsystem-depends-on (protobuf)
-  :depends-on (com.google.base)
+  :depends-on (cl-ppcre
+               com.google.base)
   :in-order-to ((test-op (test-op protoc-test)))
   :components
   ((:protobuf-source-file "descriptor" :proto-pathname "../google/protobuf/descriptor")
