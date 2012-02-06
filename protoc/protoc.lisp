@@ -33,6 +33,17 @@
 (in-package #:protoc)
 (declaim #.*optimize-default*)
 
+(defparameter *plugin-input* "unittest-plugin-input")
+
+(defun read-plugin-input ()
+  (with-open-file (input *plugin-input* :direction :input :element-type 'octet)
+    (let* ((size (file-length input))
+           (buffer (make-octet-vector size))
+           (code-generator-request (make-instance 'code-generator-request)))
+      (read-sequence buffer input)
+      (pb:merge-from-array code-generator-request buffer 0 size)
+      code-generator-request)))
+
 (defparameter *parsed-proto* "unittest_import.pb")
 
 (defun read-file-descriptor-set ()
@@ -43,7 +54,6 @@
       (read-sequence buffer input)
       (pb:merge-from-array file-descriptor-set buffer 0 size)
       file-descriptor-set)))
-
 
 (defun hyphenate-studly-caps (string)
   (let ((state 'unknown)
@@ -96,7 +106,7 @@
         (slot-definitions (loop for field across (field descriptor)
                                 collect (slot-definition field))))
     `((defclass ,class-symbol (pb:protocol-buffer)
-        (,slot-definitions
+        (,@slot-definitions
          (%has-bits% :accessor %has-bits% :initform 0 :type (unsigned-byte ,field-count))
          (pb::%cached-size% :initform 0 :type vector-index)))
       (export ',class-symbol))))

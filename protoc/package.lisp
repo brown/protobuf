@@ -34,6 +34,33 @@
   (:documentation "Protocol buffer Common Lisp plugin.")
   (:use #:common-lisp
         #:com.google.base)
+  (:import-from #:google.protobuf.compiler
+                ;; Classes
+                #:code-generator-request
+                #:code-generator-response
+                #:code-generator-response-file
+                ;; Functions
+                #:clear-content
+                #:clear-error
+                ;;#:clear-file
+                #:clear-file-to-generate
+                #:clear-insertion-point
+                ;;#:clear-name
+                #:clear-parameter
+                #:clear-proto-file
+                #:content
+                ;;#:error
+                ;;#:file
+                #:file-to-generate
+                #:has-content
+                #:has-error
+                #:has-insertion-point
+                ;;#:has-name
+                #:has-parameter
+                #:insertion-point
+                ;;#:name
+                #:parameter
+                #:proto-file)
   (:import-from #:com.google.protobuf
                 ;; Constants
                 #:+field-descriptor-proto-label-label-optional+
