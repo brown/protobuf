@@ -353,8 +353,10 @@ void MessageGenerator::GeneratePrintObject(io::Printer* printer) {
   printer->Print(
       "(cl:defmethod cl:print-object ((self $classname$) stream)\n"
       "  (cl:print-unreadable-object"
-      " (self stream :type cl:t :identity cl:t)\n",
+      " (self stream :type cl:t :identity cl:t)\n"
+      "    (cl:pprint-logical-block (stream cl:nil)\n",
       "classname", classname_);
+  printer->Indent();
   printer->Indent();
   printer->Indent();
 
@@ -370,7 +372,7 @@ void MessageGenerator::GeneratePrintObject(io::Printer* printer) {
     // Use the getter so that string protobuf fields are output as Lisp
     // strings, not as arrays of octets.
     printer->Print(
-        "  (cl:format stream \"$name$: ~s ~_\" ($name$ self))",
+        "(cl:format stream \"$name$: ~s ~_\" ($name$ self))",
         "name", FieldName(field));
     if (!field->is_repeated()) {
       printer->Print(")");
@@ -379,7 +381,8 @@ void MessageGenerator::GeneratePrintObject(io::Printer* printer) {
     printer->Print("\n");
   }
 
-  printer->Print(")\n");
+  printer->Print("))\n");
+  printer->Outdent();
   printer->Outdent();
   printer->Print("(cl:values))\n");
   printer->Outdent();
