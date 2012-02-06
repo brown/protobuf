@@ -39,7 +39,7 @@
         #:com.google.protobuf.test
         #:hu.dwim.stefil
         #:protobuf-test-config
-        #:unittest-proto)
+        #:protobuf-unittest)
   (:export #:test-message))
 
 (in-package #:message-test)
@@ -134,12 +134,12 @@
         (t (is (eql value expected)))))
 
 (defun field-function (prefix field)
-  (let ((package (find-package 'unittest-proto))
+  (let ((package (find-package 'protobuf-unittest))
         (symbol-name (concatenate 'string prefix (symbol-name field))))
     (symbol-function (find-symbol symbol-name package))))
 
 (defun field-setter (field)
-  (let ((package (find-package 'unittest-proto)))
+  (let ((package (find-package 'protobuf-unittest)))
     (fdefinition `(setf ,(find-symbol (symbol-name field) package)))))
 
 (defun expect-all-fields-set (m)
