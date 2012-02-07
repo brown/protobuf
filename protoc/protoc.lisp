@@ -57,7 +57,8 @@
 
 (defun hyphenate-studly-caps (string)
   (setf string (cl-ppcre:regex-replace "([A-Z]+)([A-Z][a-z])" string "\\1-\\2"))
-  (setf string (cl-ppcre:regex-replace "([a-z0-9])([A-Z])" string "\\1-\\2"))
+  (setf string (cl-ppcre:regex-replace "([a-z])([A-Z])" string "\\1-\\2"))
+  (setf string (cl-ppcre:regex-replace "([0-9])([A-Za-z])" string "\\1-\\2"))
   (setf string (cl-ppcre:regex-replace "([A-Za-z])([0-9])" string "\\1-\\2"))
   string)
 

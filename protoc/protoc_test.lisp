@@ -61,5 +61,7 @@
     (verify "SpaceX" "space-x")
     (verify "RFC1234" "rfc-1234")
     (verify "Rfc1234" "rfc-1234")
+    (verify "12am" "12-am")
+    (verify "9PM" "9-pm")
     (verify "Html5Manual" "html-5-manual")
     (verify "X15Airplane" "x-15-airplane")))
