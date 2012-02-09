@@ -61,7 +61,7 @@
                 ;;#:name
                 #:parameter
                 #:proto-file)
-  (:import-from #:com.google.protobuf
+  (:import-from #:google.protobuf
                 ;; Constants
                 #:+field-descriptor-proto-label-label-optional+
                 #:+field-descriptor-proto-label-label-repeated+
@@ -257,7 +257,7 @@
                 #:uninterpreted-option
                 #:value)
   ;; Descriptor symbols that conflict with standard Common Lisp symbols.
-  (:shadowing-import-from #:com.google.protobuf
+  (:shadowing-import-from #:google.protobuf
                           #:method
                           #:number
                           #:package

@@ -67,12 +67,10 @@ string StripProto(const string& filename) {
 }
 
 string FileLispPackage(const FileDescriptor* file) {
-  if (file->options().has_java_package()) {
-    return LispifyName(file->options().java_package());
-//  } else if (file->options().has_java_outer_classname()) {
-//    return LispifyName(file->options().java_outer_classname());
-  } else if (file->package().size() != 0) {
+  if (file->package().size() != 0) {
     return LispifyName(file->package());
+  } else if (file->options().has_java_package()) {
+    return LispifyName(file->options().java_package());
   } else {
     return "protocol-buffer";
   }

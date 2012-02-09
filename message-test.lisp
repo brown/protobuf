@@ -36,7 +36,7 @@
   (:documentation "Tests for protocol buffer messages.")
   (:use #:common-lisp
         #:com.google.base
-        #:com.google.protobuf.test
+        #:protobuf-unittest-import
         #:hu.dwim.stefil
         #:protobuf-test-config
         #:protobuf-unittest)
