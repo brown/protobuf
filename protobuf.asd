@@ -153,6 +153,15 @@ to PARENT-PATH."
                 (resolve-relative-pathname path parent-path))
               search-path))))
 
+(define-condition protobuf-compile-failed (compile-failed)
+  ((shell-command :reader shell-command
+                  :initarg :shell-command))
+  (:report (lambda (condition stream)
+             (format stream "~@<Error while invoking ~A on ~A.  Failed shell command: ~S~@:>"
+                     (error-operation condition) (error-component condition)
+                     (shell-command condition))))
+  (:documentation "Condition signalled when translating a .proto file into Lisp code fails."))
+
 ;; TODO(brown): This before method would not be needed if PROTO-TO-LISP were a subclass of
 ;; COMPILE-OP.  Should we make that change?
 
@@ -168,14 +177,16 @@ to PARENT-PATH."
          ;; that method instead of executing (component-pathname component).
          (output-file (first (output-files operation component)))
          (search-path (cons (directory-namestring source-file) (resolve-search-path component)))
-         (status (run-shell-command "~A --plugin=~A --proto_path=~{~A~^:~} --lisp_out=~A ~A"
-                                    (namestring *protoc*)
-                                    (namestring *protoc-gen-lisp*)
-                                    search-path
-                                    (directory-namestring output-file)
-                                    source-file-argument)))
+         (command (format nil "~A --plugin=~A --proto_path=~{~A~^:~} --lisp_out=~A ~A"
+                          (namestring *protoc*)
+                          (namestring *protoc-gen-lisp*)
+                          search-path
+                          (directory-namestring output-file)
+                          source-file-argument))
+         (status (run-shell-command command)))
     (unless (zerop status)
-      (error 'compile-failed :component component :operation operation))))
+      (error 'protobuf-compile-failed
+             :component component :operation operation :shell-command command))))
 
 (defmethod asdf::component-self-dependencies :around ((op load-op) (c protobuf-source-file))
   "Removes PROTO-TO-LISP operations from self dependencies.  Otherwise, the Lisp
