@@ -61,16 +61,15 @@
 (in-package #:asdf)
 
 (defclass protobuf-source-file (cl-source-file)
-  ((relative-proto-pathname
-    :initarg :proto-pathname
-    :initform nil
-    :reader proto-pathname
-    :documentation "Relative pathname that specifies the location of a .proto file.")
-   (search-path
-    :initform ()
-    :initarg :proto-search-path
-    :reader search-path
-    :documentation
+  ((relative-proto-pathname :initarg :proto-pathname
+                            :initform nil
+                            :reader proto-pathname
+                            :documentation
+                            "Relative pathname that specifies the location of a .proto file.")
+   (search-path :initform ()
+                :initarg :proto-search-path
+                :reader search-path
+                :documentation
 "List containing directories where the protocol buffer compiler should search
 for imported protobuf files.  Non-absolute pathnames are treated as relative to
 the directory containing the DEFSYSTEM form in which they appear."))
