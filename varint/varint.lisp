@@ -222,22 +222,22 @@ encode V, then raise ENCODE-OVERFLOW."
            (type vector-index index))
   (prog* ((byte (prog1 (aref buffer index) (incf index)))
           (result (ldb (byte 7 0) byte)))
-    (when (< byte 128) (go done))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 7) result) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 14) result) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 21) result) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 4 28) result) (ldb (byte 4 0) byte))
-    (when (< byte 128) (go done))
-    (error 'value-out-of-range)
-    DONE
-    (return (values result index))))
+     (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 7) result) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 14) result) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 21) result) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 4 28) result) (ldb (byte 4 0) byte))
+     (when (< byte 128) (go done))
+     (error 'value-out-of-range)
+   DONE
+     (return (values result index))))
 
 (declaim (ftype (function (octet-vector vector-index vector-index)
                           (values uint32 vector-index &optional))
@@ -272,9 +272,9 @@ encode V, then raise ENCODE-OVERFLOW."
            (setf (ldb (byte 4 28) result) (ldb (byte 4 0) byte))
            (when (< byte 128) (go done))
            (error 'value-out-of-range)
-           BAD
+         BAD
            (error 'data-exhausted)
-           DONE
+         DONE
            (return (values result index))))))
 
 (declaim (ftype (function (octet-vector vector-index vector-index)
@@ -300,41 +300,41 @@ encode V, then raise ENCODE-OVERFLOW."
           (result1 (ldb (byte 7 0) byte))
           (result2 0)
           (result3 0))
-    (when (< byte 128) (go done))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 7) result1) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 14) result1) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 21) result1) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
+     (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 7) result1) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 14) result1) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 21) result1) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
 
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf result2 (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 7) result2) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 14) result2) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 21) result2) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf result2 (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 7) result2) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 14) result2) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 21) result2) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
 
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf result3 (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 1 7) result3) (ldb (byte 1 0) byte))
-    (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf result3 (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 1 7) result3) (ldb (byte 1 0) byte))
+     (when (< byte 128) (go done))
 
-    (error 'value-out-of-range)
-    DONE
-    (return (values (logior result1 (ash result2 28) (ash result3 56))
-                    index))))
+     (error 'value-out-of-range)
+   DONE
+     (return (values (logior result1 (ash result2 28) (ash result3 56))
+                     index))))
 
 (declaim (ftype (function (octet-vector vector-index vector-index)
                           (values uint64 vector-index &optional))
@@ -349,52 +349,52 @@ encode V, then raise ENCODE-OVERFLOW."
           (result1 (ldb (byte 7 0) byte))
           (result2 0)
           (result3 0))
-    (when (< byte 128) (go done))
-    (when (>= index limit) (go bad))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 7) result1) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (when (>= index limit) (go bad))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 14) result1) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (when (>= index limit) (go bad))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 21) result1) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
+     (when (< byte 128) (go done))
+     (when (>= index limit) (go bad))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 7) result1) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (when (>= index limit) (go bad))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 14) result1) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (when (>= index limit) (go bad))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 21) result1) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
 
-    (when (>= index limit) (go bad))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf result2 (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (when (>= index limit) (go bad))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 7) result2) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (when (>= index limit) (go bad))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 14) result2) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (when (>= index limit) (go bad))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 7 21) result2) (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
+     (when (>= index limit) (go bad))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf result2 (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (when (>= index limit) (go bad))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 7) result2) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (when (>= index limit) (go bad))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 14) result2) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (when (>= index limit) (go bad))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 7 21) result2) (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
 
-    (when (>= index limit) (go bad))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf result3 (ldb (byte 7 0) byte))
-    (when (< byte 128) (go done))
-    (when (>= index limit) (go bad))
-    (setf byte (prog1 (aref buffer index) (incf index)))
-    (setf (ldb (byte 1 7) result3) (ldb (byte 1 0) byte))
-    (when (< byte 128) (go done))
-    (error 'value-out-of-range)
+     (when (>= index limit) (go bad))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf result3 (ldb (byte 7 0) byte))
+     (when (< byte 128) (go done))
+     (when (>= index limit) (go bad))
+     (setf byte (prog1 (aref buffer index) (incf index)))
+     (setf (ldb (byte 1 7) result3) (ldb (byte 1 0) byte))
+     (when (< byte 128) (go done))
+     (error 'value-out-of-range)
 
-    BAD
-    (error 'data-exhausted)
-    DONE
-    (return (values (logior result1 (ash result2 28) (ash result3 56))
-                    index))))
+   BAD
+     (error 'data-exhausted)
+   DONE
+     (return (values (logior result1 (ash result2 28) (ash result3 56))
+                     index))))
 
 (declaim (ftype (function (octet-vector vector-index vector-index)
                           (values int64 vector-index &optional))
@@ -422,14 +422,15 @@ encode V, then raise ENCODE-OVERFLOW."
       (error 'value-out-of-range))
     (values result new-index)))
 
-(declaim (ftype (function (octet-vector vector-index) (values vector-index &optional))
-                skip32))
+(declaim (ftype (function (octet-vector vector-index vector-index) (values vector-index &optional))
+                skip32-carefully))
 
-; Well optimized.
-(defun skip32 (buffer index)
+(defun skip32-carefully (buffer index limit)
   (declare (type octet-vector buffer)
-           (type vector-index index))
+           (type vector-index index limit))
   (prog ()
+     (when (>= (+ index 4) limit) (go carefully))
+
      (when (< (aref buffer index) 128) (go done))
      (incf index)
      (when (< (aref buffer index) 128) (go done))
@@ -439,18 +440,40 @@ encode V, then raise ENCODE-OVERFLOW."
      (when (< (aref buffer index) 128) (go done))
      (incf index)
      (when (< (aref buffer index) 128) (go done))
+   value-out-of-range
      (error 'value-out-of-range)
-     DONE
+
+   carefully
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (go value-out-of-range)
+
+   data-exhausted
+     (error 'data-exhausted)
+   done
      (return (1+ index))))
 
-(declaim (ftype (function (octet-vector vector-index) (values vector-index &optional))
-                skip64))
+(declaim (ftype (function (octet-vector vector-index vector-index) (values vector-index &optional))
+                skip64-carefully))
 
-; Well optimized.
-(defun skip64 (buffer index)
+(defun skip64-carefully (buffer index limit)
   (declare (type octet-vector buffer)
-           (type vector-index index))
+           (type vector-index index limit))
   (prog ()
+     (when (>= (+ index 9) limit) (go carefully))
+
      (when (< (aref buffer index) 128) (go done))
      (incf index)
      (when (< (aref buffer index) 128) (go done))
@@ -470,8 +493,44 @@ encode V, then raise ENCODE-OVERFLOW."
      (when (< (aref buffer index) 128) (go done))
      (incf index)
      (when (< (aref buffer index) 128) (go done))
+   value-out-of-range
      (error 'value-out-of-range)
-     DONE
+
+   carefully
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (incf index)
+     (when (>= index limit) (go data-exhausted))
+     (when (< (aref buffer index) 128) (go done))
+     (go value-out-of-range)
+
+   data-exhausted
+     (error 'data-exhausted)
+   done
      (return (1+ index))))
 
 (declaim (ftype (function (octet-vector vector-index vector-index) (values vector-index &optional))
@@ -523,9 +582,9 @@ encode V, then raise ENCODE-OVERFLOW."
          (when (< (aref buffer (decf index)) 128) (go done))
          (when (< (aref buffer (decf index)) 128) (go done))
          (when (< (aref buffer (decf index)) 128) (go done))
-         BAD
+       BAD
          (error 'value-out-of-range)
-         DONE
+       DONE
          (return (1+ index)))))
 
 (declaim (ftype (function (octet-vector vector-index vector-index) (values vector-index &optional))
@@ -548,9 +607,9 @@ encode V, then raise ENCODE-OVERFLOW."
          (when (< (aref buffer (decf index)) 128) (go done))
          (when (< (aref buffer (decf index)) 128) (go done))
          (when (< (aref buffer (decf index)) 128) (go done))
-         BAD
+       BAD
          (error 'value-out-of-range)
-         DONE
+       DONE
          (return (1+ index)))))
 
 (declaim (ftype (function (octet-vector vector-index vector-index)
@@ -603,7 +662,7 @@ encode V, then raise ENCODE-OVERFLOW."
          (when (< byte 128) (go done))
          (error 'value-out-of-range)
 
-         DONE
+       DONE
          (return (values result (1+ index))))))
 
 (declaim (ftype (function (octet-vector vector-index vector-index)
@@ -651,7 +710,7 @@ encode V, then raise ENCODE-OVERFLOW."
          (when (< byte 128) (go done))
          (error 'value-out-of-range)
 
-         DONE
+       DONE
          (return (values result (1+ index))))))
 
 (declaim (ftype (function (uint32) (values (integer 1 5) &optional)) length32))
@@ -668,29 +727,29 @@ encode V, then raise ENCODE-OVERFLOW."
   (when (zerop v) (return-from length32 4))
   5)
 
-; This version is more compact.  Seems slower for small numbers, same
-; or faster for big numbers.
+;; This version is more compact.  Seems slower for small numbers, same
+;; or faster for big numbers.
 
-; (declaim (ftype (function (uint32) (integer 1 5)) length32-x)
-;          #+opt (inline length32-x))
+;; (declaim (ftype (function (uint32) (integer 1 5)) length32-x)
+;;          #+opt (inline length32-x))
 
-; (defun length32-x (v)
-;   (declare (type uint32 v))
-;   (prog ((result 1))
-;      (setf v (ash v -7))
-;      (when (zerop v) (go done))
-;      (incf result)
-;      (setf v (ash v -7))
-;      (when (zerop v) (go done))
-;      (incf result)
-;      (setf v (ash v -7))
-;      (when (zerop v) (go done))
-;      (incf result)
-;      (setf v (ash v -7))
-;      (when (zerop v) (go done))
-;      (incf result)
-;      done
-;      (return result)))
+;; (defun length32-x (v)
+;;   (declare (type uint32 v))
+;;   (prog ((result 1))
+;;      (setf v (ash v -7))
+;;      (when (zerop v) (go done))
+;;      (incf result)
+;;      (setf v (ash v -7))
+;;      (when (zerop v) (go done))
+;;      (incf result)
+;;      (setf v (ash v -7))
+;;      (when (zerop v) (go done))
+;;      (incf result)
+;;      (setf v (ash v -7))
+;;      (when (zerop v) (go done))
+;;      (incf result)
+;;      done
+;;      (return result)))
 
 (declaim (ftype (function (uint64) (values (integer 1 10) &optional)) length64))
 

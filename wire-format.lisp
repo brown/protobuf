@@ -33,16 +33,17 @@
 (in-package #:wire-format)
 (declaim #.*optimize-default*)
 
-;; Tags used to delimit values in protocol buffers.
+(deftype wire-type ()
+  "Integer determining how a value is serialized."
+  '(integer 0 5))
 
-(deftype protocol-tag () '(integer 0 5))
-
-(defconst +numeric+     0   "tag for varint integers")
-(defconst +double+      1   "tag for 8-byte double precision floats")
-(defconst +string+      2   "tag for character strings")
-(defconst +start-group+ 3   "tag marks start of embedded protocol buffer")
-(defconst +end-group+   4   "tag marks end of embedded protocol buffer")
-(defconst +float+       5   "tag for 4-byte single precision floats")
+(defconst +varint+ 0 "Wire type used for variable length integers.")
+(defconst +fixed64+ 1 "Wire type used for 8-byte integers or double precision floats.")
+(defconst +length-delimited+ 2
+  "Wire type used for length delimited values, such as character strings.")
+(defconst +start-group+ 3 "Wire type marking the start of a group.")
+(defconst +end-group+ 4 "Wire type marking the end of a group.")
+(defconst +fixed32+ 5 "Wire type used for 4-byte integers or single precision floats.")
 
 (define-condition protocol-error (error)
   ()
@@ -70,32 +71,39 @@
 
 (define-condition alignment (parsing-error)
   ()
-  (:documentation "Bad data type encountered while skipping over or parsing backwards."))
+  (:documentation "Bad data encountered while skipping a field."))
 
-(declaim (ftype (function (octet-vector vector-index fixnum)
+(declaim (ftype (function (octet-vector vector-index vector-index fixnum)
                           (values vector-index &optional))
-                skip-element))
+                skip-field))
 
-(defun skip-element (buffer index start-code)
-  (declare (type vector-index index))
-  (let ((tag (ldb (byte 3 0) start-code)))
-    (cond ((= tag +numeric+) (varint:skip64 buffer index))
-          ((= tag +double+) (+ index 8))
-          ((= tag +string+)
-           (multiple-value-bind (size new-index)
-               (varint:parse-uint32 buffer index)
-             (+ new-index size)))
-          ((= tag +start-group+)
-           (loop (multiple-value-bind (code new-index)
-                     (varint:parse-uint32 buffer index)
-                   (if (/= (ldb (byte 3 0) code) +end-group+)
-                       (setf index (skip-element buffer new-index code))
-                       (progn (when (/= (- start-code +start-group+)
-                                        (- code +end-group+))
-                                (error 'alignment))
-                              (return-from skip-element new-index))))))
-          ((= tag +float+) (+ index 4))
-          (t (error 'alignment)))))
+(defun skip-field (buffer index limit start-tag)
+  (declare (type octet-vector buffer)
+           (type vector-index index limit)
+           (type fixnum start-tag))     ; TODO(brown): Use better type here and above.
+  (case (ldb (byte 3 0) start-tag)
+    (#.+varint+ (varint:skip64-carefully buffer index limit))
+    (#.+fixed64+
+     (let ((new-index (+ index 8)))
+       (when (> new-index index) (error 'data-exhausted))
+       new-index))
+    (#.+length-delimited+
+     (multiple-value-bind (size new-index)
+         (varint:parse-uint32-carefully buffer index limit)
+       (+ new-index size)))
+    (#.+start-group+
+     (loop (multiple-value-bind (tag new-index)
+               (varint:parse-uint32-carefully buffer index limit)
+             (if (/= (ldb (byte 3 0) tag) +end-group+)
+                 (setf index (skip-field buffer new-index limit tag))
+                 (prog1 new-index
+                   (unless (= (- start-tag +start-group+) (- tag +end-group+))
+                     (error 'alignment)))))))
+    (#.+fixed32+
+     (let ((new-index (+ index 4)))
+       (when (> new-index index) (error 'data-exhausted))
+       new-index))
+    (t (error 'alignment))))
 
 (declaim (ftype (function (octet-vector vector-index vector-index boolean)
                           (values vector-index &optional))

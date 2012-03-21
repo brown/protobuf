@@ -696,23 +696,20 @@ void MessageGenerator::GenerateMergeFromArray(io::Printer* printer) {
 
   printer->Print(
       "(cl:t\n");
-  // XXXXXXXXXX: We never verify the field number part of the tag.  The C++
-  // doesn't either.  The old Lisp code creates a case entry for the
-  // returning from a group read.
+  // XXXXXXXXXX: We never verify the field number part of the tag.  The old C++
+  // doesn't either ... more recent C++ code creates switch cases for group end
+  // tags and we should too.
   printer->Indent();
   printer->Print(
       "(cl:when (cl:= (cl:logand tag 7) $end_group$)\n"
       "  (cl:return-from pb:merge-from-array index))\n",
       "end_group", SimpleItoa(WireFormatLite::WIRETYPE_END_GROUP));
 
-  // XXXXXXXXXXXXXXXXXXXX: the comment is wrong
-  // unknown tags are currently not handled, but should be
-  // I don't think a zero tag is special.
+  // Skip over unknown fields.  XXXXXXXXXXXXXXXXXXXX: They should be collected
+  // into a set of unknown fields.
   printer->Print(
-      ";; Tag 0 is special.  It is used to indicate an error,\n"
-      ";; so we return as error code when we see it.\n"
-      "(cl:when (cl:zerop tag)\n"
-      "  (cl:error \"zero tag\")))))))\n");
+      "(cl:setf index (wire-format:skip-field buffer index limit tag))");
+  printer->Print(")))))\n");
   printer->Outdent();
   printer->Outdent();
   printer->Outdent();

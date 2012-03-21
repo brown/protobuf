@@ -101,8 +101,9 @@
                          (length64 n))))
 
 (deftest varint-encode-parse-skip-extensive ()
-  (let ((buffer (make-octet-vector (* 128 +max-bytes-64+)))
-        (index 0))
+  (let* ((limit (* 128 +max-bytes-64+))
+         (buffer (make-octet-vector limit))
+         (index 0))
 
     ;; Encode powers of 2.  Smaller powers are encoded as both 32-bit and
     ;; 64-bit varints.
@@ -141,8 +142,8 @@
     (setf index 0)
     (dotimes (p 64)
       (when (< p 32)
-        (setf index (skip32 buffer index)))
-      (setf index (skip64 buffer index)))
+        (setf index (skip32-carefully buffer index limit)))
+      (setf index (skip64-carefully buffer index limit)))
 
     ;; Skip backwards.
     (loop for p from 63 downto 0 do

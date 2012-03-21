@@ -56,8 +56,8 @@
            #:parse-uint64-carefully
            #:parse-int64-carefully
            #:parse-int32-carefully
-           #:skip32
-           #:skip64
+           #:skip32-carefully
+           #:skip64-carefully
            #:skip32-backward-slow
            #:skip64-backward-slow
            #:skip32-backward

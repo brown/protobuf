@@ -81,10 +81,8 @@
            #:data-exhausted
            #:value-out-of-range
            #:alignment
-           ;; Types
-           #:protocol-tag
            ;; Functions
-           #:skip-element
+           #:skip-field
            #:write-boolean-carefully
            #:read-boolean-carefully
            #:write-int32-carefully
