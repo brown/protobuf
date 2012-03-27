@@ -34,8 +34,8 @@
   (:documentation "Variable-size encoding and decoding of integers and floats")
   (:use #:common-lisp #:com.google.base)
   (:export ;; Constants
-           #:+max-bytes-32+
-           #:+max-bytes-64+
+           #:+max-octets-32+
+           #:+max-octets-64+
            ;; Conditions
            #:varint-error
            #:encoding-error

@@ -84,7 +84,7 @@
   (let ((n #xe499867)
         (golden '(#xe7 #xb0 #xa6 #x72)))
     (varint-encode-parse n
-                         (make-octet-vector +max-bytes-32+)
+                         (make-octet-vector +max-octets-32+)
                          (make-octet-vector (length golden) :initial-contents golden)
                          #'encode-uint32
                          #'parse-uint32
@@ -94,14 +94,14 @@
   (let ((n #xe4998679470d98d)
         (golden '(#x8d #xb3 #xc3 #xa3 #xf9 #x8c #xe6 #xa4 #x0e)))
     (varint-encode-parse n
-                         (make-octet-vector +max-bytes-64+)
+                         (make-octet-vector +max-octets-64+)
                          (make-octet-vector (length golden) :initial-contents golden)
                          #'encode-uint64
                          #'parse-uint64
                          (length64 n))))
 
 (deftest varint-encode-parse-skip-extensive ()
-  (let* ((limit (* 128 +max-bytes-64+))
+  (let* ((limit (* 128 +max-octets-64+))
          (buffer (make-octet-vector limit))
          (index 0))
 
@@ -155,8 +155,8 @@
   ;; Encode 1000 random numbers as both 32-bit and 64-bit varints.
 
   (let* ((trial-count 1000)
-         (buffer32 (make-octet-vector (* 1000 +max-bytes-32+)))
-         (buffer64 (make-octet-vector (* 1000 +max-bytes-64+)))
+         (buffer32 (make-octet-vector (* 1000 +max-octets-32+)))
+         (buffer64 (make-octet-vector (* 1000 +max-octets-64+)))
          (values32 (make-array trial-count))
          (values64 (make-array trial-count))
          (index32 0)
@@ -202,7 +202,7 @@
 ;;                  10
 ;;                  :initial-contents
 ;;                  '(#x80 #x81 #x82 #x83 #x84 #x85 #x86 #x87 #x88 0))))
-;;     (should-get-exception?? (parse32-with-limit buffer 0 +max-bytes-32+))))
+;;     (should-get-exception?? (parse32-with-limit buffer 0 +max-octets-32+))))
 
 ;; (deftest varint-skip64-backward ()
 ;;   (let ((buffer (make-octet-array
