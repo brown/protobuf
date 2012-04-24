@@ -94,11 +94,11 @@
     (#.+start-group+
      (loop (multiple-value-bind (tag new-index)
                (varint:parse-uint32-carefully buffer index limit)
-             (if (/= (ldb (byte 3 0) tag) +end-group+)
-                 (setf index (skip-field buffer new-index limit tag))
-                 (prog1 new-index
-                   (unless (= (- start-tag +start-group+) (- tag +end-group+))
-                     (error 'alignment)))))))
+             (cond ((/= (ldb (byte 3 0) tag) +end-group+)
+                    (setf index (skip-field buffer new-index limit tag)))
+                   ((= (- start-tag +start-group+) (- tag +end-group+))
+                    (return new-index))
+                   (t (error 'alignment))))))
     (#.+fixed32+
      (let ((new-index (+ index 4)))
        (when (> new-index index) (error 'data-exhausted))
