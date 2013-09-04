@@ -28,14 +28,6 @@
 
 ;;;; Author: brown@google.com (Robert Brown)
 
-(in-package #:common-lisp-user)
-
-(defpackage #:varint-test-system
-  (:documentation "System definition for testing the VARINT package.")
-  (:use #:common-lisp #:asdf))
-
-(in-package #:varint-test-system)
-
 (defsystem varint-test
   :depends-on (varint hu.dwim.stefil)
   :components

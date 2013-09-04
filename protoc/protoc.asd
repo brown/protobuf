@@ -28,14 +28,6 @@
 
 ;;;; Author: brown@google.com (Robert Brown)
 
-(in-package #:common-lisp-user)
-
-(defpackage #:protoc-system
-  (:documentation "System definition for package PROTOC.")
-  (:use #:common-lisp #:asdf))
-
-(in-package #:protoc-system)
-
 (defsystem protoc
   :name "Lisp Protoc"
   :description "Protocol buffer compiler Common Lisp plugin"

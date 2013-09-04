@@ -28,14 +28,6 @@
 
 ;;;; Author: brown@google.com (Robert Brown)
 
-(in-package #:common-lisp-user)
-
-(defpackage #:varint-system
-  (:documentation "System definition for the VARINT package.")
-  (:use #:common-lisp #:asdf))
-
-(in-package #:varint-system)
-
 (defsystem varint
   :depends-on (com.google.base)
   :in-order-to ((test-op (test-op varint-test)))

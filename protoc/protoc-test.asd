@@ -28,14 +28,6 @@
 
 ;;;; Author: brown@google.com (Robert Brown)
 
-(in-package #:common-lisp-user)
-
-(defpackage #:protoc-test-system
-  (:documentation "System definition for testing the PROTOC package.")
-  (:use #:common-lisp #:asdf))
-
-(in-package #:protoc-test-system)
-
 (defsystem protoc-test
   :depends-on (protoc hu.dwim.stefil)
   :components
