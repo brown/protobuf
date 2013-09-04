@@ -195,11 +195,16 @@ which means ASDF loads both the .lisp file and the .fasl file."
                (eq (car x) 'proto-to-lisp))
              (call-next-method)))
 
+#+asdf3
+(defmethod input-files ((operation compile-op) (c protobuf-source-file))
+  (output-files 'proto-to-lisp c))
+
 ;; The following code was copied from asdf.lisp and modified slightly to set SOURCE-FILE to a
 ;; pathname in the directory where fasl files are stored.  The PERFORM method defined in asdf.lisp
 ;; for instances of CL-SOURCE-FILE computes SOURCE-FILE by calling COMPONENT-PATHNAME instead of by
-;; calling the INPUT-FILES generic function.  I think this is a misfeature of ASDF.
+;; calling the INPUT-FILES generic function.  The problem is fixed in ASDF 3.
 
+#+asdf2
 (defmethod perform ((operation compile-op) (c protobuf-source-file))
   (let ((source-file (make-pathname :name (pathname-name (component-pathname c))
                                     :type "lisp"
