@@ -232,7 +232,7 @@ which means ASDF loads both the .lisp file and the .fasl file."
   :name "Protocol Buffer"
   :description "Protocol buffer code"
   :long-description "A Common Lisp implementation of Google's protocol buffer support libraries."
-  :version "0.8.0"
+  :version "0.8.1"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
   :depends-on (com.google.base
