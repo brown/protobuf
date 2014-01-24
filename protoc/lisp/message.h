@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_LISP_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_LISP_MESSAGE_H__
 
+#include <memory>
 #include <string>
 #include <google/protobuf/stubs/common.h>
 #include "field.h"
@@ -86,8 +87,8 @@ class MessageGenerator {
   const Descriptor* descriptor_;
   string classname_;
   FieldGeneratorMap field_generators_;
-  scoped_array<scoped_ptr<MessageGenerator> > nested_generators_;
-  scoped_array<scoped_ptr<EnumGenerator> > enum_generators_;
+  std::unique_ptr<std::unique_ptr<MessageGenerator> []> nested_generators_;
+  std::unique_ptr<std::unique_ptr<EnumGenerator> []> enum_generators_;
 
 // XXXXXXXXXXXXXXXXXXXX extension fields
 //  scoped_array<scoped_ptr<ExtensionGenerator> > extension_generators_;

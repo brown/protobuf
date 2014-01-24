@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "file.h"
+#include <memory>
 #include "enum.h"
 #include "service.h"
 //#include <google/protobuf/compiler/lisp/lisp_extension.h>
@@ -48,11 +49,11 @@ namespace lisp {
 FileGenerator::FileGenerator(const FileDescriptor* file)
     : file_(file),
       message_generators_(
-          new scoped_ptr<MessageGenerator>[file->message_type_count()]),
+          new std::unique_ptr<MessageGenerator>[file->message_type_count()]),
       enum_generators_(
-          new scoped_ptr<EnumGenerator>[file->enum_type_count()]),
+          new std::unique_ptr<EnumGenerator>[file->enum_type_count()]),
       service_generators_(
-          new scoped_ptr<ServiceGenerator>[file->service_count()]) {
+          new std::unique_ptr<ServiceGenerator>[file->service_count()]) {
 
 //      extension_generators_(
 //          new scoped_ptr<ExtensionGenerator>[file->extension_count()])

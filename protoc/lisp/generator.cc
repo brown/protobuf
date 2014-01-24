@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "generator.h"
+#include <memory>
 #include "file.h"
 #include "helpers.h"
 #include <google/protobuf/io/printer.h>
@@ -49,7 +50,7 @@ bool LispGenerator::Generate(const FileDescriptor* file,
                              OutputDirectory* output_directory,
                              string* error) const {
   string basename = StripProto(file->name());
-  scoped_ptr<io::ZeroCopyOutputStream> output(
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
       output_directory->Open(basename + ".lisp"));
   io::Printer printer(output.get(), '$');
 

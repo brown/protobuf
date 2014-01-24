@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include "hash.h"
+#include <memory>
 #include "message.h"
 #include "enum.h"
 //#include <google/protobuf/compiler/lisp/lisp_extension.h>
@@ -134,16 +135,16 @@ static bool HasRequiredFields(const Descriptor* type) {
 // ===================================================================
 
 MessageGenerator::MessageGenerator(const Descriptor* descriptor)
-  : descriptor_(descriptor),
-    classname_(ClassName(descriptor)),
-//    dllexport_decl_(dllexport_decl),
-    field_generators_(descriptor),
-    nested_generators_(new scoped_ptr<MessageGenerator>[
-      descriptor->nested_type_count()]),
-    enum_generators_(new scoped_ptr<EnumGenerator>[
-      descriptor->enum_type_count()])
-//  ,  extension_generators_(new scoped_ptr<ExtensionGenerator>[
-//      descriptor->extension_count()])
+    : descriptor_(descriptor),
+      classname_(ClassName(descriptor)),
+      //    dllexport_decl_(dllexport_decl),
+      field_generators_(descriptor),
+      nested_generators_(new std::unique_ptr<
+          MessageGenerator>[descriptor->nested_type_count()]),
+      enum_generators_(
+          new std::unique_ptr<EnumGenerator>[descriptor->enum_type_count()])
+      //  ,  extension_generators_(new scoped_ptr<ExtensionGenerator>[
+      //      descriptor->extension_count()])
 {
 
   for (int i = 0; i < descriptor->nested_type_count(); i++) {
@@ -606,7 +607,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer) {
       "classname", classname_);
   printer->Indent();
 
-  scoped_array<const FieldDescriptor*> ordered_fields(
+  std::unique_ptr<const FieldDescriptor * []> ordered_fields(
       SortFieldsByNumber(descriptor_));
 
   vector<const Descriptor::ExtensionRange*> sorted_extensions;
@@ -677,7 +678,7 @@ void MessageGenerator::GenerateMergeFromArray(io::Printer* printer) {
   printer->Indent();
   printer->Indent();
 
-  scoped_array<const FieldDescriptor*> ordered_fields(
+  std::unique_ptr<const FieldDescriptor * []> ordered_fields(
       SortFieldsByNumber(descriptor_));
 
   for (int i = 0; i < descriptor_->field_count(); i++) {

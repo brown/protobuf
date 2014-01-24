@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "field.h"
+#include <memory>
 #include "primitive_field.h"
 #include "string_field.h"
 #include "enum_field.h"
@@ -44,9 +45,9 @@ namespace lisp {
 FieldGenerator::~FieldGenerator() {}
 
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor)
-  : descriptor_(descriptor),
-    field_generators_(
-      new scoped_ptr<FieldGenerator>[descriptor->field_count()]) {
+    : descriptor_(descriptor),
+      field_generators_(
+          new std::unique_ptr<FieldGenerator>[descriptor->field_count()]) {
   // Construct all the FieldGenerators.
   for (int i = 0; i < descriptor->field_count(); i++) {
     field_generators_[i].reset(MakeGenerator(descriptor->field(i)));
