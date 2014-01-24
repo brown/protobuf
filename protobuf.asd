@@ -195,44 +195,14 @@ which means ASDF loads both the .lisp file and the .fasl file."
                (eq (car x) 'proto-to-lisp))
              (call-next-method)))
 
-#+asdf3
 (defmethod input-files ((operation compile-op) (c protobuf-source-file))
   (output-files 'proto-to-lisp c))
-
-;; The following code was copied from asdf.lisp and modified slightly to set SOURCE-FILE to a
-;; pathname in the directory where fasl files are stored.  The PERFORM method defined in asdf.lisp
-;; for instances of CL-SOURCE-FILE computes SOURCE-FILE by calling COMPONENT-PATHNAME instead of by
-;; calling the INPUT-FILES generic function.  The problem is fixed in ASDF 3.
-
-#+asdf2
-(defmethod perform ((operation compile-op) (c protobuf-source-file))
-  (let ((source-file (make-pathname :name (pathname-name (component-pathname c))
-                                    :type "lisp"
-                                    :defaults (first (output-files operation c))))
-        (output-file (first (output-files operation c)))
-        (*compile-file-warnings-behaviour* (operation-on-warnings operation))
-        (*compile-file-failure-behaviour* (operation-on-failure operation)))
-    (multiple-value-bind (output warnings-p failure-p)
-        (apply #'compile-file* source-file :output-file output-file
-               (asdf::compile-op-flags operation))
-      (when warnings-p
-        (case (operation-on-warnings operation)
-          (:warn (warn "~@<COMPILE-FILE warned while performing ~A on ~A.~@:>" operation c))
-          (:error (error 'compile-warned :component c :operation operation))
-          (:ignore nil)))
-      (when failure-p
-        (case (operation-on-failure operation)
-          (:warn (warn "~@<COMPILE-FILE failed while performing ~A on ~A.~@:>" operation c))
-          (:error (error 'compile-failed :component c :operation operation))
-          (:ignore nil)))
-      (unless output
-        (error 'compile-error :component c :operation operation)))))
 
 (defsystem protobuf
   :name "Protocol Buffer"
   :description "Protocol buffer code"
   :long-description "A Common Lisp implementation of Google's protocol buffer support libraries."
-  :version "0.8.2"
+  :version "0.8.3"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
   :depends-on (com.google.base
