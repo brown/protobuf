@@ -87,12 +87,10 @@
            #:read-boolean-carefully
            #:write-int32-carefully
            #:write-uint32-carefully
-           #:write-uint32
            #:write-int64-carefully
            #:write-uint64-carefully
            #:read-uint32-carefully
            #:read-int32-carefully
-           #:read-uint32
            #:read-uint64-carefully
            #:read-int64-carefully
            #:write-single-float-carefully
