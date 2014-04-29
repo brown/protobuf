@@ -31,7 +31,6 @@
 ;;;; Wire format used when reading and writing protobuf data.
 
 (in-package #:wire-format)
-(declaim #.*optimize-default*)
 
 (deftype wire-type ()
   "Integer determining how a value is serialized."

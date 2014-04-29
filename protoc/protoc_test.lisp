@@ -41,7 +41,6 @@
   (:export #:test-protoc))
 
 (in-package #:protoc-test)
-(declaim #.*optimize-default*)
 
 (defsuite (test-protoc :in root-suite) ()
   (run-child-tests))

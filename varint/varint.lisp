@@ -31,7 +31,6 @@
 ;;;; Variable length encoding for integers and floating point numbers.
 
 (in-package #:varint)
-(declaim #.*optimize-fast-unsafe*)
 
 (defconst +max-octets-32+ 5 "Maximum number of octets needed to encode a 32-bit integer.")
 (defconst +max-octets-64+ 10 "Maximum number of octets needed to encode a 64-bit integer.")

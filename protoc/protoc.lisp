@@ -31,7 +31,6 @@
 ;;;; Protocol buffer compiler Common Lisp plugin.
 
 (in-package #:protoc)
-(declaim #.*optimize-default*)
 
 (defparameter *plugin-input* "unittest-plugin-input")
 

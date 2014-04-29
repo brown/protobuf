@@ -43,7 +43,6 @@
   (:export #:test-message))
 
 (in-package #:message-test)
-(declaim #.*optimize-default*)
 
 (defsuite (test-message :in root-suite) ()
   (run-child-tests))

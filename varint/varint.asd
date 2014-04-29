@@ -29,9 +29,10 @@
 ;;;; Author: brown@google.com (Robert Brown)
 
 (defsystem varint
+  :defsystem-depends-on (com.google.base)
   :depends-on (com.google.base
                nibbles)
   :in-order-to ((test-op (test-op varint-test)))
   :components
   ((:file "package")
-   (:file "varint" :depends-on ("package"))))
+   (:fast-unsafe-source-file "varint" :depends-on ("package"))))

@@ -41,7 +41,6 @@
   (:export #:test-varint))
 
 (in-package #:varint-test)
-(declaim #.*optimize-default*)
 
 (defsuite (test-varint :in root-suite) ()
   (run-child-tests))

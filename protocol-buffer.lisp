@@ -34,7 +34,6 @@
 ;;;; the PROTOCOL-BUFFER package does not use the COMMON-LISP package, or any others.
 
 (in-package #:protocol-buffer)
-(cl:declaim #.com.google.base:*optimize-default*)
 
 (cl:defclass protocol-buffer ()
   ()

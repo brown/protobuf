@@ -41,7 +41,6 @@
   (:export #:test-wire-format))
 
 (in-package #:wire-format-test)
-(declaim #.*optimize-default*)
 
 (defsuite (test-wire-format :in root-suite) ()
   (run-child-tests))

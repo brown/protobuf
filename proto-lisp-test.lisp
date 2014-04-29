@@ -41,7 +41,6 @@
   (:export #:test-proto-lisp))
 
 (in-package #:proto-lisp-test)
-(declaim #.*optimize-default*)
 
 (defsuite (test-proto-lisp :in root-suite) ()
   (run-child-tests))

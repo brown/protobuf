@@ -40,7 +40,6 @@
   :name "Protocol Buffer Test"
   :description "Protocol buffer test code"
   :long-description "Code to test the protocol buffer compiler and support libraries."
-  :version "0.8.0"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
   :defsystem-depends-on (protobuf)

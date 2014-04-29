@@ -198,13 +198,16 @@ which means ASDF loads both the .lisp file and the .fasl file."
 (defmethod input-files ((operation compile-op) (c protobuf-source-file))
   (output-files 'proto-to-lisp c))
 
+(in-package #:asdf/user)
+
 (defsystem protobuf
   :name "Protocol Buffer"
   :description "Protocol buffer code"
   :long-description "A Common Lisp implementation of Google's protocol buffer support libraries."
-  :version "0.8.3"
+  :version "0.9"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
+  :defsystem-depends-on (com.google.base)
   :depends-on (com.google.base
                varint
                #-(or allegro clisp sbcl) trivial-utf-8)
@@ -221,7 +224,7 @@ which means ASDF loads both the .lisp file and the .fasl file."
    ;; while others invoke the portable functions.  All implemented using portable functions should
    ;; be rewritten.
    #+lispworks (:file "lispworks-float" :depends-on ("package"))
-   (:file "wire-format"
+   (:fast-unsafe-source-file "wire-format"
     :depends-on ("package"
                  #-(or abcl allegro cmu sbcl) "portable-float"
                  #+lispworks "lispworks-float"))))

@@ -5,7 +5,6 @@
 ;;;; the public domain.  The software in this file is in the public domain.
 
 (in-package #:portable-float)
-(declaim #.*optimize-default*)
 
 (declaim (ftype (function (single-float) (values (signed-byte 32) &optional)) single-float-bits))
 

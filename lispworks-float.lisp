@@ -31,7 +31,6 @@
 ;;;; Floating point encoding and decoding for Lispworks.
 
 (in-package #:lispworks-float)
-(declaim #.*optimize-default*)
 
 (declaim (ftype (function (single-float) (values (signed-byte 32) &optional)) single-float-bits))
 
