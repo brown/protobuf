@@ -31,7 +31,7 @@
 (defsystem protoc
   :name "Lisp Protoc"
   :description "Protocol buffer compiler Common Lisp plugin"
-  :version "0.2"
+  :version "0.3"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
   :defsystem-depends-on (protobuf)
