@@ -173,10 +173,9 @@ encode V, then raise ENCODE-OVERFLOW."
            (type uint64 v))
   (loop do (let ((bits (ldb (byte 8 0) v)))
              (setf v (ash v -7))
-             (setf (aref buffer index)
-                   (logior bits (if (not (zerop v)) 128 0)))
+             (setf (aref buffer index) (logior bits (if (not (zerop v)) 128 0)))
              (incf index))
-        while (not (zerop v)))
+        until (zerop v))
   index)
 
 (declaim (ftype (function (octet-vector vector-index vector-index uint64)
@@ -186,18 +185,16 @@ encode V, then raise ENCODE-OVERFLOW."
 (defun encode-uint64-carefully (buffer index limit v)
   "Encode V, an unsigned 64-bit integer, into BUFFER at INDEX, taking care
 to never write past position LIMIT.  If writing past LIMIT is required to
-encode V, then raise ENCODE-OVERFLOW."
+encode V, then raise BUFFER-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit)
            (type uint64 v))
   (loop do (let ((bits (ldb (byte 8 0) v)))
              (setf v (ash v -7))
-             (when (>= index limit)
-               (error 'buffer-overflow))
-             (setf (aref buffer index)
-                   (logior bits (if (not (zerop v)) 128 0)))
+             (when (>= index limit) (error 'buffer-overflow))
+             (setf (aref buffer index) (logior bits (if (not (zerop v)) 128 0)))
              (incf index))
-        while (not (zerop v)))
+        until (zerop v))
   index)
 
 (declaim (ftype (function (octet-vector vector-index) (values uint32 vector-index &optional))
@@ -272,8 +269,8 @@ encode V, then raise ENCODE-OVERFLOW."
            (type vector-index index limit))
   (multiple-value-bind (result new-index)
       (parse-uint32-carefully buffer index limit)
-    (when (= (ldb (byte 1 31) result) 1) ; sign bit set, so value is negative
-      (error 'value-out-of-range))
+    ;; Ensure result fits in 31 bits.
+    (when (logbitp 31 result) (error 'value-out-of-range))
     (values result new-index)))
 
 (declaim (ftype (function (octet-vector vector-index) (values uint64 vector-index &optional))
@@ -391,7 +388,7 @@ encode V, then raise ENCODE-OVERFLOW."
            (type vector-index index limit))
   (multiple-value-bind (result new-index)
       (parse-uint64-carefully buffer index limit)
-    (when (= (ldb (byte 1 63) result) 1) ; sign bit set, so value is negative
+    (when (logbitp 63 result)           ; sign bit set, so value is negative
       (decf result (ash 1 64)))
     (values result new-index)))
 
@@ -403,6 +400,7 @@ encode V, then raise ENCODE-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit))
   (multiple-value-bind (result new-index)
+      ;; XXXX: Call parse-uint32-carefully instead?
       (parse-int64-carefully buffer index limit)
     (when (or (>= result (ash 1 31)) (< result (- (ash 1 31))))
       (error 'value-out-of-range))
