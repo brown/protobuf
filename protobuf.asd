@@ -203,7 +203,8 @@ which means ASDF loads both the .lisp file and the .fasl file."
 (defsystem protobuf
   :name "Protocol Buffer"
   :description "Protocol buffer code"
-  :long-description "A Common Lisp implementation of Google's protocol buffer support libraries."
+  :long-description
+  "A Common Lisp implementation of Google's protocol buffer serialization libraries."
   :version "0.9"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
@@ -218,13 +219,4 @@ which means ASDF loads both the .lisp file and the .fasl file."
    (:static-file "TODO")
    (:file "package")
    (:file "protocol-buffer" :depends-on ("package"))
-   #-(or abcl allegro cmu sbcl) (:file "portable-float" :depends-on ("package"))
-   ;; TODO(brown): The file lispworks-float.lisp implementations the same interface as
-   ;; portable-float.lisp.  Currently, some functions have a Lispworks-specific implementation,
-   ;; while others invoke the portable functions.  All implemented using portable functions should
-   ;; be rewritten.
-   #+lispworks (:file "lispworks-float" :depends-on ("package"))
-   (:fast-unsafe-source-file "wire-format"
-    :depends-on ("package"
-                 #-(or abcl allegro cmu sbcl) "portable-float"
-                 #+lispworks "lispworks-float"))))
+   (:fast-unsafe-source-file "wire-format" :depends-on ("package"))))

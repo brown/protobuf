@@ -254,20 +254,10 @@ signal ENCODE-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit)
            (type single-float float))
-  (when (> (+ index 4) limit) (error 'buffer-overflow))
-  (let ((bits #-(or abcl allegro cmu lispworks sbcl) (portable-float:single-float-bits float)
-              #+abcl (system:single-float-bits float)
-              #+allegro (multiple-value-bind (high low)
-                            (excl:single-float-to-shorts float)
-                          (declare (type (unsigned-byte 16) high low))
-                          (logior (ash high 16) low))
-              #+cmu (kernel:single-float-bits float)
-              #+lispworks (lispworks-float:single-float-bits float)
-              #+sbcl (sb-kernel:single-float-bits float)))
-    (declare (type #-allegro int32 #+allegro uint32 bits))
-    #-allegro (setf (nibbles:sb32ref/le buffer index) bits)
-    #+allegro (setf (nibbles:ub32ref/le buffer index) bits)
-    (incf index 4)))
+  (let ((new-index (+ index 4)))
+    (when (> new-index limit) (error 'buffer-overflow))
+    (setf (nibbles:ieee-single-ref/le buffer index) float)
+    new-index))
 
 (declaim (ftype (function (octet-vector
                            vector-index
@@ -285,39 +275,10 @@ signal ENCODE-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit)
            (type double-float float))
-  (when (> (+ index 8) limit) (error 'buffer-overflow))
-  (let ((low 0)
-        (high 0))
-    (declare (type uint32 low)
-             (type #-allegro int32 #+allegro uint32 high))
-    #-(or abcl allegro cmu lispworks sbcl)
-    (let ((bits (portable-float:double-float-bits float)))
-      (setf low (logand #xffffffff bits))
-      (setf high (ash bits -32)))
-    #+abcl
-    (progn (setf low (system:double-float-low-bits float))
-           (setf high (system:double-float-high-bits float)))
-    #+allegro
-    (multiple-value-bind (us3 us2 us1 us0)
-        (excl:double-float-to-shorts float)
-      (declare (type (unsigned-byte 16) us3 us2 us1 us0))
-      (setf low (logior (ash us1 16) us0))
-      (setf high (logior (ash us3 16) us2)))
-    #+cmu
-    (progn (setf low (kernel:double-float-low-bits float))
-           (setf high (kernel:double-float-high-bits float)))
-    #+lispworks
-    (let ((bits (lispworks-float:double-float-bits float)))
-      (setf low (logand #xffffffff bits))
-      (setf high (ash bits -32)))
-    #+sbcl
-    (progn (setf low (sb-kernel:double-float-low-bits float))
-           (setf high (sb-kernel:double-float-high-bits float)))
-    (setf (nibbles:ub32ref/le buffer index) low)
-    (incf index 4)
-    #-allegro (setf (nibbles:sb32ref/le buffer index) high)
-    #+allegro (setf (nibbles:ub32ref/le buffer index) high)
-    (incf index 4)))
+  (let ((new-index (+ index 8)))
+    (when (> new-index limit) (error 'buffer-overflow))
+    (setf (nibbles:ieee-double-ref/le buffer index) float)
+    new-index))
 
 (declaim (ftype (function (octet-vector
                            vector-index
@@ -333,22 +294,9 @@ and the index of the first octet following it are returned.  If reading the
 float would require octets beyond LIMIT, then signal PARSE-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit))
-  (when (> (+ index 4) limit) (error 'data-exhausted))
-  (let ((bits (nibbles:sb32ref/le buffer index)))
-    (incf index 4)
-    #-(or abcl allegro cmu lispworks sbcl)
-    (values (portable-float:make-single-float bits) index)
-    #+abcl
-    (values (system:make-single-float bits) index)
-    #+allegro
-    (values (excl:shorts-to-single-float (ldb (byte 16 16) bits) (ldb (byte 16 0) bits))
-            index)
-    #+cmu
-    (values (kernel:make-single-float bits) index)
-    #+lispworks
-    (values (lispworks-float:make-single-float bits) index)
-    #+sbcl
-    (values (sb-kernel:make-single-float bits) index)))
+  (let ((new-index (+ index 4)))
+    (when (> new-index limit) (error 'data-exhausted))
+    (values (nibbles:ieee-single-ref/le buffer index) new-index)))
 
 (declaim (ftype (function (octet-vector
                            vector-index
@@ -364,27 +312,9 @@ and the index of the first octet following it are returned.  If reading the
 float would require octets beyond LIMIT, then signal PARSE-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index))
-  (when (> (+ index 8) limit) (error 'data-exhausted))
-  (let ((low (nibbles:ub32ref/le buffer index)))
-    (incf index 4)
-    (let ((high (nibbles:sb32ref/le buffer index)))
-      (incf index 4)
-      #-(or abcl allegro cmu lispworks sbcl)
-      (values (portable-float:make-double-float high low) index)
-      #+abcl
-      (values (system:make-double-float (logior (ash high 32) low)) index)
-      #+allegro
-      (values (excl:shorts-to-double-float (ldb (byte 16 16) high)
-                                           (ldb (byte 16 0) high)
-                                           (ldb (byte 16 16) low)
-                                           (ldb (byte 16 0) low))
-              index)
-      #+cmu
-      (values (kernel:make-double-float high low) index)
-      #+lispworks
-      (values (lispworks-float:make-double-float high low) index)
-      #+sbcl
-      (values (sb-kernel:make-double-float high low) index))))
+  (let ((new-index (+ index 8)))
+    (when (> new-index limit) (error 'data-exhausted))
+    (values (nibbles:ieee-double-ref/le buffer index) new-index)))
 
 (declaim (ftype (function (octet-vector vector-index vector-index octet-vector)
                           (values vector-index &optional))
