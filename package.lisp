@@ -54,22 +54,6 @@
            #:string-value
            #:utf8-string-value))
 
-(defpackage #:portable-float
-  (:documentation "Portably access the bits of IEEE floating point numbers.")
-  (:use #:common-lisp #:com.google.base)
-  (:export #:single-float-bits
-           #:double-float-bits
-           #:make-single-float
-           #:make-double-float))
-
-(defpackage #:lispworks-float
-  (:documentation "Lispworks code to access the bits of IEEE floating point numbers.")
-  (:use #:common-lisp #:com.google.base)
-  (:export #:single-float-bits
-           #:double-float-bits
-           #:make-single-float
-           #:make-double-float))
-
 (defpackage #:wire-format
   (:documentation "Wire format for protocol buffers.")
   (:use #:common-lisp #:com.google.base)

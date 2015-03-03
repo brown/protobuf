@@ -1,7 +1,7 @@
 
 INSTALL_ROOT = /local/software/package/protoc-gen-lisp
 
-PROTOC_ROOT = /local/software/package/protoc
+PROTOC_ROOT = /local/software/package/protobuf
 PROTOC_INCLUDE = $(PROTOC_ROOT)/include
 PROTOC_LIB = $(PROTOC_ROOT)/lib
 
