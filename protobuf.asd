@@ -35,26 +35,12 @@
 (defpackage #:protobuf-config
   (:documentation "Configuration information for PROTOBUF.")
   (:use #:common-lisp)
-  (:export *protoc*
-           *protoc-gen-lisp*
-           *protoc-relative-path*))
+  (:export *protoc-relative-path*))
 
 (in-package #:protobuf-config)
 
-;; Pathname of Google's protocol buffer compiler.  You must replace this pathname with the
-;; appropriate one for your system or set its value before this file is loaded.
-
-(defvar *protoc* #p"/local/software/package/protoc/bin/protoc"
-  "Pathname of Google's protocol buffer compiler.")
-
-;; Pathname of the Lisp protocol buffer compiler backend.  You must replace this pathname with the
-;; appropriate one for your system or set its value before this file is loaded.
-
-(defvar *protoc-gen-lisp* #p"/local/software/package/protoc-gen-lisp/bin/protoc-gen-lisp"
-  "Pathname of the Lisp protocol buffer compiler backend, protoc-gen-lisp.")
-
 (defvar *protoc-relative-path* nil
-  "Proto file arguments to the protobuf compiler are relative paths?")
+  "Supply relative proto file paths to protoc, the protobuf compiler?")
 
 ;;;; ASDF package changes
 
@@ -124,7 +110,7 @@ translated into Lisp source code for this PROTO-FILE component."
         (merge-pathnames (make-pathname :type "proto") lisp-pathname))))
 
 (defmethod input-files ((operation proto-to-lisp) (component protobuf-source-file))
-  (list *protoc* *protoc-gen-lisp* (proto-input component)))
+  (list (proto-input component)))
 
 (defmethod output-files ((operation proto-to-lisp) (component protobuf-source-file))
   "Arranges for the Lisp output file of PROTO-TO-LISP operations to be stored
@@ -176,16 +162,15 @@ to PARENT-PATH."
          ;; that method instead of executing (component-pathname component).
          (output-file (first (output-files operation component)))
          (search-path (cons (directory-namestring source-file) (resolve-search-path component)))
-         (command (format nil "~A --plugin=~A --proto_path=~{~A~^:~} --lisp_out=~A ~A"
-                          (namestring *protoc*)
-                          (namestring *protoc-gen-lisp*)
+         (command (format nil "protoc --proto_path=~{~A~^:~} --lisp_out=~A ~A"
                           search-path
                           (directory-namestring output-file)
-                          source-file-argument))
-         (status (run-shell-command command)))
-    (unless (zerop status)
-      (error 'protobuf-compile-failed
-             :component component :operation operation :shell-command command))))
+                          source-file-argument)))
+    (multiple-value-bind (output error-output status)
+        (uiop:run-program command :output t :error-output :output :ignore-error-status t)
+      (unless (zerop status)
+        (error 'protobuf-compile-failed
+               :component component :operation operation :shell-command command)))))
 
 (defmethod asdf::component-self-dependencies :around ((op load-op) (c protobuf-source-file))
   "Removes PROTO-TO-LISP operations from self dependencies.  Otherwise, the Lisp
