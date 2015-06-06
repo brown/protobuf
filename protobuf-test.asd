@@ -37,9 +37,9 @@
 (in-package #:protobuf-test-system)
 
 (defsystem protobuf-test
-  :name "Protocol Buffer Test"
-  :description "Protocol buffer test code"
-  :long-description "Code to test the protocol buffer compiler and support libraries."
+  :name "Protocol Buffer test"
+  :description "Protocol buffer test code."
+  :version "0.9.1"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
   :defsystem-depends-on (protobuf)
