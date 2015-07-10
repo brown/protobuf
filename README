@@ -21,14 +21,35 @@ available here:
 
     https://github.com/google/protobuf
 
+The steps should be something like:
 
-2. Clone the protobuf git repository to get a local copy and compile
+    cd /tmp
+    git clone https://github.com/google/protobuf google-protobuf
+    cd google-protobuf
+    ./autogen.sh
+    ./configure --prefix=/local/software/package/protobuf
+    make
+    make check
+    make install
+
+
+2. Clone the Lisp protobuf git repository to get a local copy and compile
 protoc-gen-lisp, the Common Lisp protocol buffer plugin.  The steps required
-for Linux and OS X are:
+for Linux are:
 
+    cd /tmp
     git clone git://github.com/brown/protobuf.git
+
     cd protobuf/protoc/lisp
-    Manually edit INSTALL_ROOT and PROTOC_ROOT in Makefile.
+
+    # Copy the config.h file created when Google's protocol buffer compiler was
+    # built.
+    cp /tmp/google-protobuf/config.h .
+
+    # Change INSTALL_ROOT and PROTOC_ROOT in Makefile.  INSTALL_ROOT indicates
+    # where protoc-gen-lisp should be installed.  PROTOC_ROOT indicates where
+    # you installed Google's protobuf compiler when you compiled it in step 1.
+
     make install
 
 
@@ -95,6 +116,5 @@ buffer definition files into your own projects:
 BUGS
 ====
 
-Please report bugs and send suggestions to protobuf-devel@common-lisp.net or
-contact me directly.  My email is robert.brown at the mail hosting site
-gmail.com.
+Please report bugs and send suggestions on GitHub or contact me directly.  My
+email is robert.brown at the mail hosting site gmail.com.
