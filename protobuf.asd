@@ -70,7 +70,7 @@ the directory containing the DEFSYSTEM form in which they appear."))
 (defpackage #:protobuf-system
   (:documentation "System definitions for protocol buffer code.")
   (:use #:common-lisp
-        #:asdf
+        #:asdf #:uiop
         #:protobuf-config))
 
 (in-package #:protobuf-system)
@@ -138,13 +138,8 @@ to PARENT-PATH."
                 (resolve-relative-pathname path parent-path))
               search-path))))
 
-(define-condition protobuf-compile-failed (compile-failed)
-  ((shell-command :reader shell-command
-                  :initarg :shell-command))
-  (:report (lambda (condition stream)
-             (format stream "~@<Error while invoking ~A on ~A.  Failed shell command: ~S~@:>"
-                     (error-operation condition) (error-component condition)
-                     (shell-command condition))))
+(define-condition protobuf-compile-failed (compile-failed-error)
+  ()
   (:documentation "Condition signalled when translating a .proto file into Lisp code fails."))
 
 ;; TODO(brown): This before method would not be needed if PROTO-TO-LISP were a subclass of
@@ -154,7 +149,7 @@ to PARENT-PATH."
   (map nil #'ensure-directories-exist (output-files operation component)))
 
 (defmethod perform ((operation proto-to-lisp) (component protobuf-source-file))
-  (let* ((source-file (proto-input component))
+  (let* ((source-file (first (input-files operation component)))
          (source-file-argument (if *protoc-relative-path*
                                    (file-namestring source-file)
                                    (namestring source-file)))
@@ -167,10 +162,12 @@ to PARENT-PATH."
                           (directory-namestring output-file)
                           source-file-argument)))
     (multiple-value-bind (output error-output status)
-        (uiop:run-program command :output t :error-output :output :ignore-error-status t)
+        (run-program command :output t :error-output :output :ignore-error-status t)
       (unless (zerop status)
         (error 'protobuf-compile-failed
-               :component component :operation operation :shell-command command)))))
+               :description (format nil "Failed to compile the proto file with ~S" command)
+               :context-format "~/asdf-action::format-action/"
+               :context-arguments `((,operation . ,component)))))))
 
 (defmethod asdf::component-self-dependencies :around ((op load-op) (c protobuf-source-file))
   "Removes PROTO-TO-LISP operations from self dependencies.  Otherwise, the Lisp
