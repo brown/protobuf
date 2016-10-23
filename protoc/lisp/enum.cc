@@ -62,7 +62,7 @@ void EnumGenerator::GenerateConstants(io::Printer* printer) {
     printer->Print(
         vars,
         "(cl:defconstant +$classname$-$name$+ $number$)\n"
-        "(cl:export '+$classname$-$name$+)\n");
+        "(cl:eval-when (:load-toplevel :compile-toplevel :execute) (cl:export '+$classname$-$name$+))\n");
 
     if (descriptor_->value(i)->number() < min_value->number()) {
       min_value = descriptor_->value(i);
@@ -78,9 +78,9 @@ void EnumGenerator::GenerateConstants(io::Printer* printer) {
   printer->Print(
       vars,
       "(cl:defconstant +minimum-$classname$+ +$classname$-$min_name$+)\n"
-      "(cl:export '+minimum-$classname$+)\n"
+      "(cl:eval-when (:load-toplevel :compile-toplevel :execute) (cl:export '+minimum-$classname$+))\n"
       "(cl:defconstant +maximum-$classname$+ +$classname$-$max_name$+)\n"
-      "(cl:export '+maximum-$classname$+)\n"
+      "(cl:eval-when (:load-toplevel :compile-toplevel :execute) (cl:export '+maximum-$classname$+))\n"
       "\n");
 }
 
@@ -104,7 +104,7 @@ void EnumGenerator::GenerateDefType(io::Printer* printer) {
     printer->Print("$number$", "number", SimpleItoa(*iter));
   }
   printer->Print("))\n");
-  printer->Print("(cl:export '$classname$)\n\n", "classname", classname_);
+  printer->Print("(cl:eval-when (:load-toplevel :compile-toplevel :execute) (cl:export '$classname$))\n\n", "classname", classname_);
 }
 
 // void EnumGenerator::GeneratePackageExports(io::Printer* printer) {
