@@ -81,7 +81,8 @@
         (,@slot-definitions
          (%has-bits% :accessor %has-bits% :initform 0 :type (unsigned-byte ,field-count))
          (pb::%cached-size% :initform 0 :type vector-index)))
-      (export ',class-symbol))))
+      (eval-when (:compile-toplevel :load-toplevel :execute)
+        (export ',class-symbol)))))
 
 (defun main ()
   (values))
