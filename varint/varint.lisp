@@ -400,7 +400,9 @@ encode V, then raise BUFFER-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit))
   (multiple-value-bind (result new-index)
-      ;; XXXX: Call parse-uint32-carefully instead?
+      ;; The wire format for 32-bit varints is identical to that for 64-bit varints, so that int32
+      ;; protocol buffer fields can be safely upgraded to int64.
+      ;; XXXX: Verify that writing a small negative 32-bit varint results in 10 octets on the wire.
       (parse-int64-carefully buffer index limit)
     (when (or (>= result (ash 1 31)) (< result (- (ash 1 31))))
       (error 'value-out-of-range))
