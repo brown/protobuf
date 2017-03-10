@@ -138,6 +138,7 @@ to PARENT-PATH."
                 (resolve-relative-pathname path parent-path))
               search-path))))
 
+;; TODO(brown): compile-failed is deprecated.
 (define-condition protobuf-compile-failed (compile-failed)
   ((shell-command :reader shell-command
                   :initarg :shell-command))
@@ -168,6 +169,7 @@ to PARENT-PATH."
                           source-file-argument)))
     (multiple-value-bind (output error-output status)
         (uiop:run-program command :output t :error-output :output :ignore-error-status t)
+      (declare (ignore output error-output))
       (unless (zerop status)
         (error 'protobuf-compile-failed
                :component component :operation operation :shell-command command)))))
