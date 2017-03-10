@@ -1,3 +1,4 @@
+config.h
 enum.o
 enum_field.o
 field.o
