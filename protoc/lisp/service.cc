@@ -138,7 +138,7 @@ void ServiceGenerator::GenerateMethodSignatures(
     VirtualOrNon virtual_or_non, io::Printer* printer) {
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> sub_vars;
+    std::map<string, string> sub_vars;
     sub_vars["name"] = method->name();
     sub_vars["input_type"] = ClassName(method->input_type());
     sub_vars["output_type"] = ClassName(method->output_type());
@@ -191,7 +191,7 @@ void ServiceGenerator::GenerateImplementation(io::Printer* printer) {
 void ServiceGenerator::GenerateNotImplementedMethods(io::Printer* printer) {
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> sub_vars;
+    std::map<string, string> sub_vars;
     sub_vars["classname"] = descriptor_->name();
     sub_vars["name"] = method->name();
     sub_vars["index"] = SimpleItoa(i);
@@ -222,7 +222,7 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> sub_vars;
+    std::map<string, string> sub_vars;
     sub_vars["name"] = method->name();
     sub_vars["index"] = SimpleItoa(i);
     sub_vars["input_type"] = ClassName(method->input_type());
@@ -268,7 +268,7 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
     const Descriptor* type =
       (which == REQUEST) ? method->input_type() : method->output_type();
 
-    map<string, string> sub_vars;
+    std::map<string, string> sub_vars;
     sub_vars["index"] = SimpleItoa(i);
     sub_vars["type"] = ClassName(type);
 
@@ -289,7 +289,7 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 void ServiceGenerator::GenerateStubMethods(io::Printer* printer) {
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> sub_vars;
+    std::map<string, string> sub_vars;
     sub_vars["classname"] = descriptor_->name();
     sub_vars["name"] = method->name();
     sub_vars["index"] = SimpleItoa(i);

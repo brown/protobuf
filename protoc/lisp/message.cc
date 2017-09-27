@@ -74,7 +74,7 @@ const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); i++) {
     fields[i] = descriptor->field(i);
   }
-  sort(fields, fields + descriptor->field_count(),
+  std::sort(fields, fields + descriptor->field_count(),
        FieldOrderingByNumber());
   return fields;
 }
@@ -214,7 +214,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     printer->Print("\n");
   }
 
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["classname"] = classname_;
   vars["field_count"] = SimpleItoa(descriptor_->field_count());
 
@@ -398,7 +398,7 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
     const FieldDescriptor* field = descriptor_->field(i);
 
     if (!field->is_repeated()) {
-      map<string, string> vars;
+        std::map<string, string> vars;
       vars["index"] = SimpleItoa(field->index());
 
       // XXXXXXXXXXXXXXXXXXXX: This logic may be wrong for embedded Lisp
@@ -588,7 +588,7 @@ void MessageGenerator::GenerateSerializeOneField(
 
 void MessageGenerator::GenerateSerializeOneExtensionRange(
     io::Printer* printer, const Descriptor::ExtensionRange* range) {
-  map<string, string> vars;
+    std::map<string, string> vars;
   vars["start"] = SimpleItoa(range->start);
   vars["end"] = SimpleItoa(range->end);
   // XXXXXXXXXX
@@ -740,7 +740,7 @@ void MessageGenerator::GenerateMergeFromMessage(io::Printer* printer) {
     const FieldDescriptor* field = descriptor_->field(i);
 
     if (!field->is_repeated()) {
-      map<string, string> vars;
+        std::map<string, string> vars;
       vars["index"] = SimpleItoa(field->index());
 
       // XXXXXXXXXXXXXXXXXXXX: This logic may be wrong for embedded Lisp

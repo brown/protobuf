@@ -185,7 +185,7 @@ string Deserialize(const FieldDescriptor* field) {
 // TODO(kenton):  Factor out a "SetCommonFieldVariables()" to get rid of
 //   repeat code between this and the other field types.
 void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           map<string, string>* variables,
+                           std::map<string, string>* variables,
                            bool repeated) {
   (*variables)["name"] = FieldName(descriptor);
   (*variables)["type"] = PrimitiveTypeName(descriptor);

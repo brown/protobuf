@@ -49,7 +49,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
 EnumGenerator::~EnumGenerator() {}
 
 void EnumGenerator::GenerateConstants(io::Printer* printer) {
-  map<string, string> vars;
+    std::map<string, string> vars;
   vars["classname"] = classname_;
 
   const EnumValueDescriptor* min_value = descriptor_->value(0);
@@ -87,7 +87,7 @@ void EnumGenerator::GenerateConstants(io::Printer* printer) {
 void EnumGenerator::GenerateDefType(io::Printer* printer) {
   // Multiple enums may have the same numeric value.  Use a set to ensure we
   // do not output the same number more than once.
-  set<int> numbers;
+    std::set<int> numbers;
   for (int j = 0; j < descriptor_->value_count(); j++) {
     const EnumValueDescriptor* value = descriptor_->value(j);
     numbers.insert(value->number());
@@ -95,7 +95,7 @@ void EnumGenerator::GenerateDefType(io::Printer* printer) {
 
   printer->Print("(cl:deftype $classname$ () '(cl:member ",
                  "classname", classname_);
-  for (set<int>::iterator iter = numbers.begin();
+  for (std::set<int>::iterator iter = numbers.begin();
        iter != numbers.end();
        ++iter) {
     if (iter != numbers.begin()) {

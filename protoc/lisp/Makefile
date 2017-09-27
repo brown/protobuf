@@ -8,7 +8,7 @@ PROTOC_LIB = $(PROTOC_ROOT)/lib
 HFILES = enum.h enum_field.h field.h file.h generator.h helpers.h message.h message_field.h primitive_field.h service.h string_field.h
 OFILES = enum.o enum_field.o field.o file.o generator.o helpers.o message.o message_field.o primitive_field.o service.o string_field.o protoc_gen_lisp.o
 
-CXXFLAGS = -std=c++0x -I$(PROTOC_INCLUDE) -I.
+CXXFLAGS = -std=c++11 -I$(PROTOC_INCLUDE) -I.
 LIBS = -Wl,-L$(PROTOC_LIB) -Wl,-rpath -Wl,$(PROTOC_LIB) -lprotoc -lprotobuf -lpthread
 
 protoc-gen-lisp: $(OFILES) Makefile
