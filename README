@@ -10,6 +10,9 @@ The protobuf code has been tested with ABCL, CCL, CLISP, Lispworks, and SBCL.
 In the past it has also worked with Allegro Common Lisp, but I have not tested
 it recently.
 
+The installation instructions below work with release 3.6.1 of Google's
+protocol buffer compiler.
+
 
 INSTALLATION
 ============
@@ -27,13 +30,13 @@ The steps should be something like:
     git clone https://github.com/google/protobuf google-protobuf
     cd google-protobuf
     ./autogen.sh
-    ./configure --prefix=/local/software/package/protobuf
+    ./configure --prefix=~/local/software/package/google-protobuf
     make
     make check
     make install
 
 
-2. Clone the Lisp protobuf git repository to get a local copy and compile
+2. Clone the Lisp protobuf Git repository to get a local copy and compile
 protoc-gen-lisp, the Common Lisp protocol buffer plugin.  The steps required
 for Linux are:
 
@@ -42,14 +45,15 @@ for Linux are:
 
     cd protobuf/protoc/lisp
 
-    # Copy the config.h file created when Google's protocol buffer compiler was
-    # built.
-    cp /tmp/google-protobuf/config.h .
+    # Copy strutil.h from the Google's protocol buffer compiler source
+    # directory:
+    cp /tmp/google-protobuf/src/google/protobuf/stubs/strutil.h .
 
     # Change INSTALL_ROOT and PROTOC_ROOT in Makefile.  INSTALL_ROOT indicates
     # where protoc-gen-lisp should be installed.  PROTOC_ROOT indicates where
     # you installed Google's protobuf compiler when you compiled it in step 1.
 
+    # Compile and install the Lisp protoc plugin.
     make install
 
 

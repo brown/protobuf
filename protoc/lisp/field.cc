@@ -29,13 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "field.h"
+
 #include <memory>
-#include "primitive_field.h"
-#include "string_field.h"
-#include "enum_field.h"
-#include "message_field.h"
+
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/stubs/common.h>
+#include "enum_field.h"
+#include "message_field.h"
+#include "primitive_field.h"
+#include "string_field.h"
 
 namespace google {
 namespace protobuf {

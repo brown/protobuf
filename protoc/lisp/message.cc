@@ -28,18 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <algorithm>
-#include "hash.h"
-#include <memory>
 #include "message.h"
-#include "enum.h"
-//#include <google/protobuf/compiler/lisp/lisp_extension.h>
-#include "helpers.h"
-#include "strutil.h"
+
+#include <algorithm>
+#include <memory>
+
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/descriptor.pb.h>
+#include "enum.h"
+#include "helpers.h"
+#include "strutil.h"
 
 namespace google {
 namespace protobuf {
@@ -74,8 +74,8 @@ const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); i++) {
     fields[i] = descriptor->field(i);
   }
-  sort(fields, fields + descriptor->field_count(),
-       FieldOrderingByNumber());
+  std::sort(fields, fields + descriptor->field_count(),
+            FieldOrderingByNumber());
   return fields;
 }
 
@@ -188,7 +188,7 @@ void MessageGenerator::GenerateEnumDefinitions(io::Printer* printer) {
 //     printer->Print("\n");
 //   }
 
-//   map<string, string> vars;
+//   std::map<string, string> vars;
 //   vars["classname"] = classname_;
 
 //   printer->Print(vars, "(:export #:$classname$\n");
@@ -214,7 +214,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     printer->Print("\n");
   }
 
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["classname"] = classname_;
   vars["field_count"] = SimpleItoa(descriptor_->field_count());
 
@@ -398,7 +398,7 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
     const FieldDescriptor* field = descriptor_->field(i);
 
     if (!field->is_repeated()) {
-      map<string, string> vars;
+      std::map<string, string> vars;
       vars["index"] = SimpleItoa(field->index());
 
       // XXXXXXXXXXXXXXXXXXXX: This logic may be wrong for embedded Lisp
@@ -588,7 +588,7 @@ void MessageGenerator::GenerateSerializeOneField(
 
 void MessageGenerator::GenerateSerializeOneExtensionRange(
     io::Printer* printer, const Descriptor::ExtensionRange* range) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["start"] = SimpleItoa(range->start);
   vars["end"] = SimpleItoa(range->end);
   // XXXXXXXXXX
@@ -610,13 +610,13 @@ void MessageGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer) {
   std::unique_ptr<const FieldDescriptor * []> ordered_fields(
       SortFieldsByNumber(descriptor_));
 
-  vector<const Descriptor::ExtensionRange*> sorted_extensions;
+  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
     sorted_extensions.push_back(descriptor_->extension_range(i));
   }
-  sort(sorted_extensions.begin(),
-       sorted_extensions.end(),
-       ExtensionRangeSorter());
+  std::sort(sorted_extensions.begin(),
+            sorted_extensions.end(),
+            ExtensionRangeSorter());
 
   // Merge the fields and the extension ranges, both sorted by field number.
   int i, j;
@@ -740,7 +740,7 @@ void MessageGenerator::GenerateMergeFromMessage(io::Printer* printer) {
     const FieldDescriptor* field = descriptor_->field(i);
 
     if (!field->is_repeated()) {
-      map<string, string> vars;
+      std::map<string, string> vars;
       vars["index"] = SimpleItoa(field->index());
 
       // XXXXXXXXXXXXXXXXXXXX: This logic may be wrong for embedded Lisp

@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <vector>
-#include "hash.h"
-
 #include "helpers.h"
+
+#include <vector>
+
 #include <google/protobuf/stubs/common.h>
-#include "strutil.h"
 #include <google/protobuf/descriptor.pb.h>
+#include "strutil.h"
 
 namespace google {
 namespace protobuf {

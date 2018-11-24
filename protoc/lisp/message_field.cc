@@ -29,9 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "message_field.h"
-#include "helpers.h"
+
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
+#include "helpers.h"
 #include "strutil.h"
 
 namespace google {
@@ -47,7 +48,7 @@ namespace {
 // TODO(kenton):  Factor out a "SetCommonFieldVariables()" to get rid of
 //   repeat code between this and the other field types.
 void SetMessageVariables(const FieldDescriptor* descriptor,
-                         map<string, string>* variables) {
+                         std::map<string, string>* variables) {
   (*variables)["name"] = FieldName(descriptor);
   (*variables)["type"] = ClassName(descriptor->message_type());
   (*variables)["index"] = SimpleItoa(descriptor->index());

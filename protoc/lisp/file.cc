@@ -29,14 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "file.h"
+
 #include <memory>
-#include "enum.h"
-#include "service.h"
-//#include <google/protobuf/compiler/lisp/lisp_extension.h>
-#include "helpers.h"
-#include "message.h"
+
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
+#include "enum.h"
+#include "helpers.h"
+#include "message.h"
+#include "service.h"
 #include "strutil.h"
 
 namespace google {
