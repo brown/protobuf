@@ -75,8 +75,8 @@ the directory containing the DEFSYSTEM form in which they appear."))
 
 (in-package #:protobuf-system)
 
-(defclass proto-to-lisp (operation)
-  ()
+(defclass proto-to-lisp (downward-operation selfward-operation)
+  ((selfward-operation :initform 'prepare-op :allocation :class))
   (:documentation
 "An ASDF operation that compiles a .proto file containing protocol buffer
 definitions into a Lisp source file."))
