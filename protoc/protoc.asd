@@ -26,12 +26,12 @@
 ;;;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ;;;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-;;;; Author: brown@google.com (Robert Brown)
+;;;; Author: Robert Brown <robert.brown@gmail.com>
 
 (defsystem protoc
   :name "Lisp Protoc"
   :description "Protocol buffer compiler Common Lisp plugin"
-  :version "0.3"
+  :version "0.4"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
   :defsystem-depends-on (protobuf)

@@ -26,7 +26,7 @@
 ;;;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ;;;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-;;;; Author: brown@google.com (Robert Brown)
+;;;; Author: Robert Brown <robert.brown@gmail.com>
 
 ;;;; Protobuf configuration
 
@@ -192,7 +192,7 @@ which means ASDF loads both the .lisp file and the .fasl file."
   :description "Protocol buffer code"
   :long-description
   "A Common Lisp implementation of Google's protocol buffer serialization libraries."
-  :version "0.9.1"
+  :version "0.9.2"
   :author "Robert Brown"
   :license "See file COPYING and the copyright messages in individual files."
   :defsystem-depends-on (com.google.base)
