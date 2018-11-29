@@ -29,7 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <algorithm>
-#include "hash.h"
 #include <memory>
 #include "message.h"
 #include "enum.h"
@@ -38,6 +37,7 @@
 #include "strutil.h"
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/descriptor.pb.h>
 
@@ -610,7 +610,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer) {
   std::unique_ptr<const FieldDescriptor * []> ordered_fields(
       SortFieldsByNumber(descriptor_));
 
-  vector<const Descriptor::ExtensionRange*> sorted_extensions;
+  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
     sorted_extensions.push_back(descriptor_->extension_range(i));
   }

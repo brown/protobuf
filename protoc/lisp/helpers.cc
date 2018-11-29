@@ -29,10 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
-#include "hash.h"
 
 #include "helpers.h"
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/hash.h>
 #include "strutil.h"
 #include <google/protobuf/descriptor.pb.h>
 
