@@ -1,9 +1,9 @@
 
 # Directory into which the Lisp protocol buffer plugin will be installed.
-INSTALL_ROOT = $(HOME)/local/software/package/protoc-gen-lisp
+INSTALL_ROOT ?= $(HOME)/local/software/package/protoc-gen-lisp
 
 # Directory where Google's protocol buffer compiler is installed.
-PROTOC_ROOT = $(HOME)/local/software/package/google-protobuf
+PROTOC_ROOT ?= $(HOME)/local/software/package/google-protobuf
 
 PROTOC_INCLUDE = $(PROTOC_ROOT)/include
 PROTOC_LIB = $(PROTOC_ROOT)/lib
