@@ -34,7 +34,7 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/descriptor.pb.h>
 #include "helpers.h"
-#include "strutil.h"
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
