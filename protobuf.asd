@@ -70,7 +70,7 @@ the directory containing the DEFSYSTEM form in which they appear."))
 (defpackage #:protobuf-system
   (:documentation "System definitions for protocol buffer code.")
   (:use #:common-lisp
-        #:asdf #:uiop
+        #:asdf
         #:protobuf-config))
 
 (in-package #:protobuf-system)
@@ -162,11 +162,11 @@ to PARENT-PATH."
                           (directory-namestring output-file)
                           source-file-argument)))
     (multiple-value-bind (output error-output status)
-        (run-program command :output t :error-output :output :ignore-error-status t)
+        (uiop:run-program command :output t :error-output :output :ignore-error-status t)
       (declare (ignore output error-output))
       (unless (zerop status)
         (error 'protobuf-compile-failed
-               :description (format nil "Failed to compile the proto file with ~S" command)
+               :description (format nil "Failed to compile proto file.  Command: ~S" command)
                :context-format "~/asdf-action::format-action/"
                :context-arguments `((,operation . ,component)))))))
 
