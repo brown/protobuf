@@ -247,7 +247,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   // Export the class.
   printer->Print(
       vars,
-      "(cl:eval-when (:load-toplevel :compile-toplevel :execute) (cl:export '$classname$))\n"
+      "(cl:eval-when (:load-toplevel :compile-toplevel :execute)\n"
+      "  (cl:export '$classname$))\n"
       "\n");
 
   // Generate additional field methods.
@@ -260,7 +261,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     // Export the field accessor symbol.
     printer->Print(
         vars,
-        "(cl:eval-when (:load-toplevel :compile-toplevel :execute) (cl:export '$name$))\n"
+        "(cl:eval-when (:load-toplevel :compile-toplevel :execute)\n"
+        "  (cl:export '$name$))\n"
         "\n");
 
     if (!field->is_repeated()) {
@@ -290,7 +292,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "  (cl:defgeneric has-$name$ (proto)))\n"
           "(cl:defmethod has-$name$ ((self $classname$))\n"
           "  (cl:logbitp $index$ (cl:slot-value self '%has-bits%)))\n"
-          "(cl:eval-when (:load-toplevel :compile-toplevel :execute) (cl:export 'has-$name$))\n"
+          "(cl:eval-when (:load-toplevel :compile-toplevel :execute)\n"
+          "  (cl:export 'has-$name$))\n"
           "\n");
     }
 
@@ -316,7 +319,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
 
     printer->Print(
         vars,
-        "(cl:eval-when (:load-toplevel :compile-toplevel :execute) (cl:export 'clear-$name$))\n"
+        "(cl:eval-when (:load-toplevel :compile-toplevel :execute)\n"
+        "  (cl:export 'clear-$name$))\n"
         "\n");
   }
   printer->Print("\n");
