@@ -25,15 +25,15 @@ clean:
 	rm -f $(OFILES) protoc-gen-lisp
 
 
-enum.o: enum.h helpers.h strutil.h
-enum_field.o: enum_field.h field.h helpers.h strutil.h
+enum.o: enum.h helpers.h
+enum_field.o: enum_field.h field.h helpers.h
 field.o: enum_field.h field.h message_field.h primitive_field.h string_field.h
-file.o: file.h enum.h helpers.h message.h field.h service.h strutil.h
-generator.o: file.h generator.h helpers.h strutil.h
-helpers.o: helpers.h strutil.h
-message.o: enum.h field.h helpers.h message.h strutil.h
-message_field.o: field.h helpers.h strutil.h
-primitive_field.o: field.h primitive_field.h helpers.h strutil.h
+file.o: file.h enum.h helpers.h message.h field.h service.h
+generator.o: file.h generator.h helpers.h
+helpers.o: helpers.h
+message.o: enum.h field.h helpers.h message.h
+message_field.o: field.h helpers.h
+primitive_field.o: field.h primitive_field.h helpers.h
 protoc_gen_lisp.o: generator.h
-service.o: helpers.h service.h strutil.h
-string_field.o: field.h helpers.h string_field.h strutil.h
+service.o: helpers.h service.h
+string_field.o: field.h helpers.h string_field.h
