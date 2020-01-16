@@ -76,6 +76,7 @@ void MessageFieldGenerator::GenerateSlot(io::Printer* printer) const {
       variables_,
       "($name$\n"
       " :writer (cl:setf $name$)\n"
+      " :initarg :$name$\n"
       " :initform cl:nil\n"
       " :type (cl:or cl:null $package$::$type$))\n");
 }
@@ -234,6 +235,7 @@ void RepeatedMessageFieldGenerator::GenerateSlot(io::Printer* printer) const {
       variables_,
       "($name$\n"
       " :accessor $name$\n"
+      " :initarg :$name$\n"
       " :initform (cl:make-array\n"
       "            0\n"
       "            :element-type '$package$::$type$\n"
