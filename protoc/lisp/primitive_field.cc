@@ -232,6 +232,7 @@ void PrimitiveFieldGenerator::GenerateSlot(io::Printer* printer) const {
       variables_,
       "($name$\n"
       " :accessor $name$\n"
+      " :initarg :$name$\n"
       " :initform $default$\n"
       " :type $type$)\n");
 }
@@ -302,6 +303,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSlot(io::Printer* printer)
       variables_,
       "($name$\n"
       " :accessor $name$\n"
+      " :initarg :$name$\n"
       " :initform (cl:make-array\n"
       "            0\n"
       "            :element-type '$type$\n"

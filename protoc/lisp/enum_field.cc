@@ -77,6 +77,7 @@ void EnumFieldGenerator::GenerateSlot(io::Printer* printer) const {
       variables_,
       "($name$\n"
       " :accessor $name$\n"
+      " :initarg :$name$\n"
       " :initform $package$::$default$\n"
       " :type $package$::$type$)\n");
 }
@@ -144,6 +145,7 @@ void RepeatedEnumFieldGenerator::GenerateSlot(io::Printer* printer) const {
       variables_,
       "($name$\n"
       " :accessor $name$\n"
+      " :initarg :$name$\n"
       " :initform (cl:make-array\n"
       "            0\n"
       "            :element-type '$package$::$type$\n"
