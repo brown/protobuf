@@ -168,7 +168,7 @@ void RepeatedEnumFieldGenerator::GenerateOctetSize(io::Printer* printer)
       variables_,
       "(cl:let* ((x (cl:slot-value self '$name$))\n"
       "          (length (cl:length x)))\n"
-      "  (cl:incf size (cl:* $tag_size$ length))\n"
+      "  (cl:incf size (cl:* $tag_size$ 2))\n"
       "  (cl:dotimes (i length)\n"
       "    (cl:incf size"
       " (varint:length32 (cl:ldb (cl:byte 32 0) (cl:aref x i))))))");
@@ -184,9 +184,10 @@ void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizes(
       variables_,
       "(cl:let* ((v (cl:slot-value self '$name$))\n"
       "          (length (cl:length v)))\n"
-      "  (cl:loop for i from 0 below length do\n"
-      "    (cl:setf index"
+      " (cl:setf index"
       " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
+      "  (cl:setf index (varint:encode-uint32-carefully buffer index limit length))\n"
+      "  (cl:loop for i from 0 below length do\n"
       "    (cl:setf index (varint:encode-uint64-carefully buffer index limit\n"
       "                    (cl:ldb (cl:byte 64 0) (cl:aref v i))))))");
 }
