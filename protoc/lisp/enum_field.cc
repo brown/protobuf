@@ -198,28 +198,18 @@ void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizes(
 
 void RepeatedEnumFieldGenerator::GenerateMergeFromArray(
     io::Printer* printer) const {
-  if (!descriptor_->options().packed()) {
-    printer->Print(
-        variables_,
-        "(cl:multiple-value-bind (value new-index)\n"
-        "    (varint:parse-int32-carefully buffer index limit)\n"
-        "  ;; XXXXX: when valid, set field, else add to unknown fields\n"
-        "  (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
-        "  (cl:setf index new-index))");
-  } else {
-    printer->Print(
-        variables_,
-        "(cl:multiple-value-bind (length new-index)\n"
-        "    (varint:parse-uint32-carefully buffer index limit)\n"
-        "  (cl:setf index new-index)\n"
-        "  (cl:let ((end (cl:+ index length)))\n"
-        "    (cl:loop while (cl:< index end) do\n"
-        "      (cl:multiple-value-bind (value new-index)\n"
-        "          (varint:parse-int32-carefully buffer index limit)\n"
-        "        ;; XXXXX: when valid, set field, else add to unknown fields\n"
-        "        (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
-        "        (cl:setf index new-index)))))");
-  }
+  printer->Print(
+    variables_,
+    "(cl:multiple-value-bind (length new-index)\n"
+    "    (varint:parse-uint32-carefully buffer index limit)\n"
+    "  (cl:setf index new-index)\n"
+    "  (cl:let ((end (cl:+ index length)))\n"
+    "    (cl:loop while (cl:< index end) do\n"
+    "      (cl:multiple-value-bind (value new-index)\n"
+    "          (varint:parse-int32-carefully buffer index limit)\n"
+    "        ;; XXXXX: when valid, set field, else add to unknown fields\n"
+    "        (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
+    "        (cl:setf index new-index)))))");
 }
 
 void RepeatedEnumFieldGenerator::GenerateMergingCode(
