@@ -141,6 +141,23 @@
   (let ((package (find-package 'protobuf-unittest)))
     (fdefinition `(setf ,(find-symbol (symbol-name field) package)))))
 
+(defun set-repeated-fields (m field-info)
+  (loop for (field . values) in field-info do
+    (let ((accessor (field-function "" field))
+          (v0 (first values))
+          (v1 (second values)))
+      (vector-push-extend v0 (funcall accessor m))
+      (vector-push-extend v1 (funcall accessor m)))))
+
+(defun expect-repeated-fields-set (m field-info)
+  (loop for (field . values) in field-info do
+    (let ((accessor (field-function "" field))
+          (v0 (first values))
+          (v1 (second values)))
+      (is (= (length (funcall accessor m)) 2))
+      (field-equal (aref (funcall accessor m) 0) v0)
+      (field-equal (aref (funcall accessor m) 1) v1))))
+
 (defun expect-all-fields-set (m)
   ;; optional and default fields
   (let ((field-info (append *optional-field-info* *default-field-info*)))
@@ -167,15 +184,7 @@
   (is (has-d (optional-import-message m)))
   (is (= (d (optional-import-message m)) 120))
 
-  ;; repeated fields
-  (let ((field-info *repeated-field-info*))
-    (loop for (field . values) in field-info do
-      (let ((accessor (field-function "" field))
-            (v0 (first values))
-            (v1 (second values)))
-        (is (= (length (funcall accessor m)) 2))
-        (field-equal (aref (funcall accessor m) 0) v0)
-        (field-equal (aref (funcall accessor m) 1) v1))))
+  (expect-repeated-fields-set m *repeated-field-info*)
   (let ((v (repeated-group m)))
     (is (= (length v) 2))
     (is (= (a (aref v 0)) 217))
@@ -193,25 +202,6 @@
     (is (= (d (aref v 0)) 220))
     (is (= (d (aref v 1)) 320))))
 
-(defvar *packed-field-info*
-  `((packed-int32 601 701) (packed-int64 602 702)
-    (packed-uint32 603 703) (packed-uint64 604 704)
-    (packed-sint32 605 705) (packed-sint64 606 706)
-    (packed-fixed32 607 707) (packed-fixed64 608 708)
-    (packed-sfixed32 609 709) (packed-sfixed64 610 710)
-    (packed-float 611f0 711f0) (packed-double 612d0 712d0)
-    (packed-bool t nil)
-    (packed-enum ,+foreign-enum-foreign-bar+ ,+foreign-enum-foreign-baz+)))
-
-(defun expect-packed-fields-set (m)
-  (loop for (field . values) in *packed-field-info* do
-    (let ((accessor (field-function "" field))
-          (v0 (first values))
-          (v1 (second values)))
-      (is (= (length (funcall accessor m)) 2))
-      (field-equal (aref (funcall accessor m) 0) v0)
-      (field-equal (aref (funcall accessor m) 1) v1))))
-
 (defun read-message (class-name file-name)
   (let ((message (make-instance class-name)))
     (with-open-file (input file-name :direction :input :element-type 'unsigned-byte)
@@ -225,9 +215,49 @@
   (let ((message (read-message 'test-all-types +golden-file-name+)))
     (expect-all-fields-set message)))
 
+(defvar *packed-field-info*
+  ;; The values here must match those in *unpacked-field-info*.
+  `((packed-int32 601 701) (packed-int64 602 702)
+    (packed-uint32 603 703) (packed-uint64 604 704)
+    (packed-sint32 605 705) (packed-sint64 606 706)
+    (packed-fixed32 607 707) (packed-fixed64 608 708)
+    (packed-sfixed32 609 709) (packed-sfixed64 610 710)
+    (packed-float 611f0 711f0) (packed-double 612d0 712d0)
+    (packed-bool t nil)
+    (packed-enum ,+foreign-enum-foreign-bar+ ,+foreign-enum-foreign-baz+)))
+
+(defvar *unpacked-field-info*
+  ;; The values here must match those in *packed-field-info*.
+  `((unpacked-int32 601 701) (unpacked-int64 602 702)
+    (unpacked-uint32 603 703) (unpacked-uint64 604 704)
+    (unpacked-sint32 605 705) (unpacked-sint64 606 706)
+    (unpacked-fixed32 607 707) (unpacked-fixed64 608 708)
+    (unpacked-sfixed32 609 709) (unpacked-sfixed64 610 710)
+    (unpacked-float 611f0 711f0) (unpacked-double 612d0 712d0)
+    (unpacked-bool t nil)
+    (unpacked-enum ,+foreign-enum-foreign-bar+ ,+foreign-enum-foreign-baz+)))
+
 (deftest test-parse-packed-from-file ()
   (let ((message (read-message 'test-packed-types +golden-packed-file-name+)))
-    (expect-packed-fields-set message)))
+    (expect-repeated-fields-set message *packed-field-info*)))
+
+;; XXXXXXXXXX ucomment when packed field bugs are fixed
+;; (deftest test-parse-unpacked-from-file ()
+;;   (let ((message (read-message 'test-unpacked-types +golden-packed-file-name+)))
+;;     (expect-repeated-fields-set message *unpacked-field-info*)))
+
+;; XXXXXXXXXX test packed from unpacked and unpacked from packed when packed
+;; field bugs are fixed
+(deftest parse-unpacked-from-unpacked ()
+  (let ((m1 (make-instance 'test-unpacked-types)))
+    (set-repeated-fields m1 *unpacked-field-info*)
+    (expect-repeated-fields-set m1 *unpacked-field-info*)
+    (let* ((size (pb:octet-size m1))
+           (buffer (make-array size :element-type '(unsigned-byte 8))))
+      (pb:serialize m1 buffer 0 size)
+      (let ((m2 (make-instance 'test-unpacked-types)))
+        (pb:merge-from-array m2 buffer 0 size)
+        (expect-repeated-fields-set m2 *unpacked-field-info*)))))
 
 (defun set-all-fields (m)
   ;; optional and default fields
@@ -242,13 +272,7 @@
   (setf (d (optional-import-message m)) 120)
 
   ;; repeated fields
-  (let ((field-info *repeated-field-info*))
-    (loop for (field . values) in field-info do
-      (let ((accessor (field-function "" field))
-            (v0 (first values))
-            (v1 (second values)))
-        (vector-push-extend v0 (funcall accessor m))
-        (vector-push-extend v1 (funcall accessor m)))))
+  (set-repeated-fields m *repeated-field-info*)
   (let ((v0 (make-instance 'test-all-types-repeated-group))
         (v1 (make-instance 'test-all-types-repeated-group)))
     (setf (a v0) 217)
