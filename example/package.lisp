@@ -6,6 +6,7 @@
 
 (defpackage #:address-book
   (:use #:common-lisp)
+  ;; Import symbols from the package defined by addressbook.proto.
   (:import-from #:tutorial
                 #:+person-phone-type-home+
                 #:+person-phone-type-mobile+
@@ -18,7 +19,7 @@
                 #:person
                 #:person-phone-number
                 #:phone)
-  ;; The "number" and "type" field names conflict with Common Lisp symbols.
+  ;; The "number" and "type" protocol buffer field names conflict with Common Lisp symbols.
   (:shadowing-import-from #:tutorial
                           #:number
                           #:type)
