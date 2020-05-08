@@ -3,7 +3,7 @@
 INSTALL_ROOT ?= $(HOME)/local/software/package/protoc-gen-lisp
 
 # Directory where Google's protocol buffer compiler is installed.
-PROTOC_ROOT ?= $(HOME)/local/software/package/google-protobuf
+PROTOC_ROOT ?= $(HOME)/local/software/package/google-protobuf-3.6.1
 
 PROTOC_INCLUDE = $(PROTOC_ROOT)/include
 PROTOC_LIB = $(PROTOC_ROOT)/lib
