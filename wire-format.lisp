@@ -33,16 +33,23 @@
 (in-package #:wire-format)
 
 (deftype wire-type ()
-  "Integer determining how a value is serialized."
+  "Integer representing how a protobuf field value is serialized."
   '(integer 0 5))
 
-(defconst +varint+ 0 "Wire type used for variable length integers.")
+(defconst +varint+ 0 "Wire type used for variable length integers, booleans, and enums.")
 (defconst +fixed64+ 1 "Wire type used for 8-byte integers or double precision floats.")
 (defconst +length-delimited+ 2
-  "Wire type used for length delimited values, such as character strings.")
-(defconst +start-group+ 3 "Wire type marking the start of a group.")
-(defconst +end-group+ 4 "Wire type marking the end of a group.")
+  "Wire type used for length-delimited values, such as strings, bytes, embedded
+messages, and packed repeated fields.")
+(defconst +start-group+ 3 "Wire type marking the start of a group.  Deprecated.")
+(defconst +end-group+ 4 "Wire type marking the end of a group.  Deprecated.")
 (defconst +fixed32+ 5 "Wire type used for 4-byte integers or single precision floats.")
+
+(deftype field-number ()
+  "Protocol buffer field number."
+  ;; A field number is a 29-bit positive integer, but zero is illegal and field numbers from 19000
+  ;; through 19999 are reserved for internal use by protocol buffer implementations.
+  `(integer 1 ,(ldb (byte 29 0) -1)))
 
 (define-condition protocol-error (error)
   ()
@@ -72,39 +79,67 @@
   ()
   (:documentation "Bad data encountered while skipping a field."))
 
-(declaim (ftype (function (octet-vector vector-index vector-index fixnum)
+(declaim (ftype (function (octet-vector vector-index vector-index)
+                          (values field-number wire-type vector-index &optional))
+                parse-tag)
+         #+opt (inline parse-tag))
+
+(defun parse-tag (buffer index limit)
+  "Parses the varint protobuf tag at position INDEX of BUFFER, being careful to
+only read positions below LIMIT.  When successful, returns three integers: the
+field number, the encoding wire type, and the position in BUFFER where the
+field value is stored.
+
+PARSE-TAG signals DATA-EXHAUSTED, when parsing the tag requires reading beyond
+LIMIT, and signals VALUE-OUT-OF-RANGE, when the field number is zero or the
+encoded tag is too large."
+  (multiple-value-bind (tag new-index)
+      (varint:parse-uint32-carefully buffer index limit)
+    (let ((field-number (ldb (byte 29 3) tag))
+          (wire-type (ldb (byte 3 0) tag)))
+      (when (zerop field-number) (error 'value-out-of-range))
+      (values field-number wire-type new-index))))
+
+(declaim (ftype (function (field-number wire-type octet-vector vector-index vector-index)
                           (values vector-index &optional))
                 skip-field))
 
-(defun skip-field (buffer index limit start-tag)
-  (declare (type octet-vector buffer)
-           (type vector-index index limit)
-           (type fixnum start-tag))     ; TODO(brown): Use better type here and above.
-  (case (ldb (byte 3 0) start-tag)
-    (#.+varint+ (varint:skip64-carefully buffer index limit))
+(defun skip-field (field-number wire-type buffer index limit)
+  (declare (type field-number field-number)
+           (type wire-type wire-type)
+           (type octet-vector buffer)
+           (type vector-index index limit))
+  (case wire-type
+    (#.+varint+
+     (varint:skip64-carefully buffer index limit))
     (#.+fixed64+
      (let ((new-index (+ index 8)))
        (declare (type vector-index new-index))
-       (when (> new-index index) (error 'data-exhausted))
+       (when (> new-index limit) (error 'data-exhausted))
        new-index))
     (#.+length-delimited+
      (multiple-value-bind (size new-index)
          (varint:parse-uint32-carefully buffer index limit)
+       (declare (type uint32 size)
+                (type vector-index new-index))
+       (when (> (+ new-index size) limit) (error 'data-exhausted))
        (the vector-index (+ new-index size))))
     (#.+start-group+
-     (loop (multiple-value-bind (tag new-index)
-               (varint:parse-uint32-carefully buffer index limit)
-             (cond ((/= (ldb (byte 3 0) tag) +end-group+)
-                    (setf index (skip-field buffer new-index limit tag)))
-                   ((= (- start-tag +start-group+) (- tag +end-group+))
-                    (return new-index))
-                   (t (error 'alignment))))))
+     (loop
+       (multiple-value-bind (element-field-number element-wire-type new-index)
+           (parse-tag buffer index limit)
+         (cond ((/= element-wire-type +end-group+)
+                (setf index
+                      (skip-field element-field-number element-wire-type buffer new-index limit)))
+               ((= element-field-number field-number) (return new-index))
+               (t (error 'alignment))))))
     (#.+fixed32+
      (let ((new-index (+ index 4)))
        (declare (type vector-index new-index))
        (when (> new-index index) (error 'data-exhausted))
        new-index))
-    (t (error 'alignment))))
+    (t
+     (error 'alignment))))
 
 (declaim (ftype (function (octet-vector vector-index vector-index boolean)
                           (values vector-index &optional))
@@ -250,7 +285,7 @@
   "Write the little-endian IEEE binary representation of double precision FLOAT
 to BUFFER starting at INDEX.  Return the index value of the first octet
 following FLOAT.  If encoding FLOAT requires space in BUFFER past LIMIT, then
-signal ENCODE-OVERFLOW."
+signal BUFFER-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit)
            (type single-float float))
@@ -271,7 +306,7 @@ signal ENCODE-OVERFLOW."
   "Write the little-endian IEEE binary representation of single precision FLOAT
 to BUFFER starting at INDEX.  Return the index value of the first octet
 following FLOAT.  If encoding FLOAT requires space in BUFFER past LIMIT, then
-signal ENCODE-OVERFLOW."
+signal BUFFER-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit)
            (type double-float float))
@@ -291,7 +326,7 @@ signal ENCODE-OVERFLOW."
   "Read a SINGLE-FLOAT from BUFFER starting at INDEX.  The float is stored in
 BUFFER as a 4-octet little-endian IEEE single precision value.  Both the float
 and the index of the first octet following it are returned.  If reading the
-float would require octets beyond LIMIT, then signal PARSE-OVERFLOW."
+float would require octets beyond LIMIT, then signal DATA-EXHAUSTED."
   (declare (type octet-vector buffer)
            (type vector-index index limit))
   (let ((new-index (+ index 4)))
@@ -309,7 +344,7 @@ float would require octets beyond LIMIT, then signal PARSE-OVERFLOW."
   "Read a DOUBLE-FLOAT from BUFFER starting at INDEX.  The float is stored in
 BUFFER as an 8-octet little-endian IEEE double precision value.  Both the float
 and the index of the first octet following it are returned.  If reading the
-float would require octets beyond LIMIT, then signal PARSE-OVERFLOW."
+float would require octets beyond LIMIT, then signal DATA-EXHAUSTED."
   (declare (type octet-vector buffer)
            (type vector-index index))
   (let ((new-index (+ index 8)))

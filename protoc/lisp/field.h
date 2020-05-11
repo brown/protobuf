@@ -74,6 +74,9 @@ class FieldGenerator {
   // Generate code to de-serialized this field.
   virtual void GenerateMergeFromArray(io::Printer* printer) const = 0;
 
+  // Generate code to de-serialized this field from a packed value..
+  virtual void GenerateMergeFromArrayWithPacking(io::Printer* printer) const;
+
   // Generate code that merges the contents of another field for the same
   // type contained in a message called "from" into this field.
   virtual void GenerateMergingCode(io::Printer* printer) const = 0;

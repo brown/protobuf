@@ -57,7 +57,17 @@
 (defpackage #:wire-format
   (:documentation "Wire format for protocol buffers.")
   (:use #:common-lisp #:com.google.base)
-  (:export ;; Conditions
+  (:export ;; Types
+           #:field-number
+           #:wire-type
+           ;; Constants
+           #:+end-group+
+           #:+fixed32+
+           #:+fixed64+
+           #:+length-delimited+
+           #:+start-group+
+           #:+varint+
+           ;; Conditions
            #:protocol-error
            #:encoding-error
            #:buffer-overflow
@@ -66,6 +76,7 @@
            #:value-out-of-range
            #:alignment
            ;; Functions
+           #:parse-tag
            #:skip-field
            #:write-boolean-carefully
            #:read-boolean-carefully

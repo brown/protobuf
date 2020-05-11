@@ -71,6 +71,7 @@ class RepeatedEnumFieldGenerator : public FieldGenerator {
   void GenerateAccessor(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizes(io::Printer* printer) const;
   void GenerateMergeFromArray(io::Printer* printer) const;
+  void GenerateMergeFromArrayWithPacking(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
 
  private:

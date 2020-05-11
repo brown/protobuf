@@ -46,6 +46,17 @@ namespace lisp {
 
 FieldGenerator::~FieldGenerator() {}
 
+void FieldGenerator::GenerateMergeFromArrayWithPacking(io::Printer* printer) const {
+  // Reaching here indicates a bug. Cases are:
+  //   - This FieldGenerator should support packing, but this method should be
+  //     overridden.
+  //   - This FieldGenerator doesn't support packing, and this method should
+  //     never have been called.
+  GOOGLE_LOG(FATAL) << "GenerateMergeFromCodedStreamWithPacking() "
+             << "called on field generator that does not support packing.";
+
+}
+
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor)
     : descriptor_(descriptor),
       field_generators_(

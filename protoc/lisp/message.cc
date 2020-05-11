@@ -51,6 +51,15 @@ using internal::WireFormatLite;
 
 namespace {
 
+const char* kWireTypeNames[] = {
+  "wire-format:+varint+",
+  "wire-format:+fixed64+",
+  "wire-format:+length-delimited+",
+  "wire-format:+start-group+",
+  "wire-format:+end-group+",
+  "wire-format:+fixed32+",
+};
+
 void PrintFieldComment(io::Printer* printer, const FieldDescriptor* field) {
   // Print the field's proto-syntax definition as a comment.  We don't want to
   // print group bodies so we cut off after the first line.
@@ -672,10 +681,10 @@ void MessageGenerator::GenerateMergeFromArray(io::Printer* printer) {
       "  (cl:do ((index start index))\n"
       "      ((cl:>= index limit) index)\n"
       "    (cl:declare (cl:type com.google.base:vector-index index))\n"
-      "    (cl:multiple-value-bind (tag new-index)\n"
-      "        (varint:parse-uint32-carefully buffer index limit)\n"
+      "    (cl:multiple-value-bind (field-number wire-type new-index)\n"
+      "        (wire-format:parse-tag buffer index limit)\n"
       "      (cl:setf index new-index)\n"
-      "      (cl:case tag\n",
+      "      (cl:case field-number\n",
       "classname", classname_);
   printer->Indent();
   printer->Indent();
@@ -690,13 +699,48 @@ void MessageGenerator::GenerateMergeFromArray(io::Printer* printer) {
 
     PrintFieldComment(printer, field);
     printer->Print(
-        "(($tag$)\n",
-        "tag", SimpleItoa(WireFormat::MakeTag(field)));
+        "(($field_number$)\n",
+        "field_number", SimpleItoa(field->number()));
     printer->Indent();
-    field_generators_.get(field).GenerateMergeFromArray(printer);
-    printer->Print(")");
+
+    printer->Print("(cl:cond\n");
+    printer->Indent();
+
+    // Emit code to parse the common, expected case.
+    printer->Print(
+        "((cl:= wire-type $wire_type$)\n",
+        "wire_type", kWireTypeNames[WireFormat::WireTypeForField(field)]);
+    printer->Indent();
+    if (field->is_packed()) {
+        field_generators_.get(field).GenerateMergeFromArrayWithPacking(printer);
+    } else {
+        field_generators_.get(field).GenerateMergeFromArray(printer);
+    }
+    printer->Print(")\n");
     printer->Outdent();
-    printer->Print("\n");
+
+    // Emit code to parse unexpectedly packed or unpacked values.
+    if (field->is_packable() && field->options().packed()) {
+        printer->Print(
+            "((cl:= wire-type $wire_type$)\n",
+            "wire_type", kWireTypeNames[WireFormat::WireTypeForFieldType(field->type())]);
+        printer->Indent();
+        field_generators_.get(field).GenerateMergeFromArray(printer);
+        printer->Print(")\n");
+        printer->Outdent();
+    } else if (field->is_packable() && !field->options().packed()) {
+        printer->Print(
+            "((cl:= wire-type wire-format:+length-delimited+)\n");
+        printer->Indent();
+        field_generators_.get(field).GenerateMergeFromArrayWithPacking(printer);
+        printer->Print(")\n");
+        printer->Outdent();
+    }
+
+    // XXXXXXXXXX: Unexpected tag.  Needs to be handled.
+    printer->Print("(cl:t (cl:error 'wire-format:alignment))))\n");
+    printer->Outdent();
+    printer->Outdent();
   }
 
   printer->Print(
@@ -706,14 +750,14 @@ void MessageGenerator::GenerateMergeFromArray(io::Printer* printer) {
   // tags and we should too.
   printer->Indent();
   printer->Print(
-      "(cl:when (cl:= (cl:logand tag 7) $end_group$)\n"
-      "  (cl:return-from pb:merge-from-array index))\n",
-      "end_group", SimpleItoa(WireFormatLite::WIRETYPE_END_GROUP));
+      "(cl:when (cl:= wire-type wire-format:+end-group+)\n"
+      "  (cl:return-from pb:merge-from-array index))\n");
 
   // Skip over unknown fields.  XXXXXXXXXXXXXXXXXXXX: They should be collected
   // into a set of unknown fields.
   printer->Print(
-      "(cl:setf index (wire-format:skip-field buffer index limit tag))");
+      "(cl:setf index\n"
+      "  (wire-format:skip-field field-number wire-type buffer index limit))\n");
   printer->Print(")))))\n");
   printer->Outdent();
   printer->Outdent();

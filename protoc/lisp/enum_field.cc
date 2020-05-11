@@ -149,6 +149,14 @@ void RepeatedEnumFieldGenerator::GenerateSlot(io::Printer* printer) const {
       "            :element-type '$package$::$type$\n"
       "            :fill-pointer 0 :adjustable cl:t)\n"
       " :type (cl:vector $package$::$type$))\n");
+  if (descriptor_->is_packed()) {
+    printer->Print(
+        variables_,
+        "(&$name$-cached-size\n"
+        " :accessor &$name$-cached-size\n"
+        " :initform 0\n"
+        " :type com.google.base:vector-index)\n");
+  }
 }
 
 void RepeatedEnumFieldGenerator::GenerateClearingCode(io::Printer* printer)
@@ -164,14 +172,27 @@ void RepeatedEnumFieldGenerator::GenerateClearingCode(io::Printer* printer)
 
 void RepeatedEnumFieldGenerator::GenerateOctetSize(io::Printer* printer)
     const {
-  printer->Print(
-      variables_,
-      "(cl:let* ((x (cl:slot-value self '$name$))\n"
-      "          (length (cl:length x)))\n"
-      "  (cl:incf size (cl:* $tag_size$ length))\n"
-      "  (cl:dotimes (i length)\n"
-      "    (cl:incf size"
-      " (varint:length32 (cl:ldb (cl:byte 32 0) (cl:aref x i))))))");
+  if (!descriptor_->is_packed()) {
+    printer->Print(
+        variables_,
+        "(cl:let* ((x (cl:slot-value self '$name$))\n"
+        "          (length (cl:length x)))\n"
+        "  (cl:incf size (cl:* $tag_size$ length))\n"
+        "  (cl:dotimes (i length)\n"
+        "    (cl:incf size (varint:length32 (cl:ldb (cl:byte 32 0) (cl:aref x i))))))");
+  } else {
+    printer->Print(
+        variables_,
+        "(cl:let* ((x (cl:slot-value self '$name$))\n"
+        "          (length (cl:length x))\n"
+        "          (data-size 0))\n"
+        "  (cl:when (cl:plusp length)\n"
+        "    (cl:dotimes (i length)\n"
+        "      (cl:incf data-size (varint:length32 (cl:ldb (cl:byte 32 0) (cl:aref x i)))))\n"
+        "    (cl:incf size (cl:+ $tag_size$ (varint:length32 data-size) data-size)))\n"
+        "  (cl:setf (cl:slot-value self '&$name$-cached-size) data-size))");
+  }
+  printer->Print(variables_, "\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateAccessor(io::Printer* printer) const {
@@ -180,15 +201,31 @@ void RepeatedEnumFieldGenerator::GenerateAccessor(io::Printer* printer) const {
 
 void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizes(
     io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "(cl:let* ((v (cl:slot-value self '$name$))\n"
-      "          (length (cl:length v)))\n"
-      "  (cl:loop for i from 0 below length do\n"
-      "    (cl:setf index"
-      " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
-      "    (cl:setf index (varint:encode-uint64-carefully buffer index limit\n"
-      "                    (cl:ldb (cl:byte 64 0) (cl:aref v i))))))");
+  if (!descriptor_->is_packed()) {
+    printer->Print(
+        variables_,
+        "(cl:let* ((v (cl:slot-value self '$name$))\n"
+        "          (length (cl:length v)))\n"
+        "  (cl:loop for i from 0 below length do\n"
+        "    (cl:setf index (varint:encode-uint32-carefully buffer index limit $tag$))\n"
+        "    (cl:setf index (varint:encode-uint64-carefully buffer index limit\n"
+        "                    (cl:ldb (cl:byte 64 0) (cl:aref v i))))))");
+  } else {
+    printer->Print(
+        variables_,
+        "(cl:let* ((v (cl:slot-value self '$name$))\n"
+        "          (length (cl:length v)))\n"
+        "  (cl:when (cl:plusp length)\n"
+        "    (cl:setf index (varint:encode-uint32-carefully buffer index limit $tag$))\n"
+        "    (cl:setf index\n"
+        "             (varint:encode-uint32-carefully buffer index limit\n"
+        "                                             (cl:slot-value self '&$name$-cached-size)))\n"
+        "    (cl:loop for i from 0 below length do\n"
+        "      (cl:setf index\n"
+        "               (varint:encode-uint64-carefully\n"
+        "                buffer index limit\n"
+        "                (cl:ldb (cl:byte 64 0) (cl:aref v i)))))))");
+  }
 }
 
 // XXXXXXXXXXXXXXXXXXXX C++ code for packed repeated enums adds the enum if
@@ -197,7 +234,6 @@ void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizes(
 
 void RepeatedEnumFieldGenerator::GenerateMergeFromArray(
     io::Printer* printer) const {
-  if (!descriptor_->options().packed()) {
     printer->Print(
         variables_,
         "(cl:multiple-value-bind (value new-index)\n"
@@ -205,7 +241,10 @@ void RepeatedEnumFieldGenerator::GenerateMergeFromArray(
         "  ;; XXXXX: when valid, set field, else add to unknown fields\n"
         "  (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
         "  (cl:setf index new-index))");
-  } else {
+}
+
+void RepeatedEnumFieldGenerator::GenerateMergeFromArrayWithPacking(
+    io::Printer* printer) const {
     printer->Print(
         variables_,
         "(cl:multiple-value-bind (length new-index)\n"
@@ -218,7 +257,6 @@ void RepeatedEnumFieldGenerator::GenerateMergeFromArray(
         "        ;; XXXXX: when valid, set field, else add to unknown fields\n"
         "        (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
         "        (cl:setf index new-index)))))");
-  }
 }
 
 void RepeatedEnumFieldGenerator::GenerateMergingCode(

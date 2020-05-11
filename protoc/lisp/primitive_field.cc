@@ -307,6 +307,14 @@ void RepeatedPrimitiveFieldGenerator::GenerateSlot(io::Printer* printer)
       "            :element-type '$type$\n"
       "            :fill-pointer 0 :adjustable cl:t)\n"
       " :type (cl:vector $type$))\n");
+  if (descriptor_->is_packed()) {
+    printer->Print(
+        variables_,
+        "(&$name$-cached-size\n"
+        " :accessor &$name$-cached-size\n"
+        " :initform 0\n"
+        " :type com.google.base:vector-index)\n");
+  }
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateClearingCode(
@@ -323,25 +331,50 @@ void RepeatedPrimitiveFieldGenerator::GenerateOctetSize(io::Printer* printer)
     const {
   int fixed_size = FixedSize(descriptor_->type());
   if (fixed_size == -1) {
-    printer->Print(
-        variables_,
-        "(cl:let* ((x (cl:slot-value self '$name$))\n"
-        "          (length (cl:length x)))\n"
-        "  (cl:incf size (cl:* $tag_size$ length))\n"
-        "  (cl:dotimes (i length)\n"
-        "    (cl:incf size\n"
-        "     ");
-    string size =
-        OctetSize(descriptor_->type(),
-                  "(cl:aref (cl:slot-value self '$name$) i)");
-    printer->Print(variables_, size.c_str());
-    printer->Print(variables_, ")))");
+    if (!descriptor_->is_packed()) {
+      printer->Print(
+          variables_,
+          "(cl:let* ((x (cl:slot-value self '$name$))\n"
+          "          (length (cl:length x)))\n"
+          "  (cl:incf size (cl:* $tag_size$ length))\n"
+          "  (cl:dotimes (i length)\n"
+          "    (cl:incf size ");
+      string size = OctetSize(descriptor_->type(), "(cl:aref x i)");
+      printer->Print(variables_, size.c_str());
+      printer->Print(variables_, ")))");
+    } else {
+      printer->Print(
+          variables_,
+          "(cl:let* ((x (cl:slot-value self '$name$))\n"
+          "          (length (cl:length x))\n"
+          "          (data-size 0))\n"
+          "  (cl:when (cl:plusp length)\n"
+          "    (cl:dotimes (i length)\n"
+          "      (cl:incf data-size ");
+      string size = OctetSize(descriptor_->type(), "(cl:aref x i)");
+      printer->Print(variables_, size.c_str());
+      printer->Print(variables_, "))\n");
+      printer->Print(
+          variables_,
+          "    (cl:incf size (cl:+ $tag_size$ (varint:length32 data-size) data-size)))\n"
+          "  (cl:setf (cl:slot-value self '&$name$-cached-size) data-size))");
+    }
   } else {
-    printer->Print(
-        variables_,
-        "(cl:incf size (cl:* (cl:+ $tag_size$ $fixed_size$)\n"
-        "                 (cl:length (cl:slot-value self '$name$))))");
+    if (!descriptor_->is_packed()) {
+      printer->Print(
+          variables_,
+          "(cl:incf size (cl:* (cl:+ $tag_size$ $fixed_size$)\n"
+          "                 (cl:length (cl:slot-value self '$name$))))");
+    } else {
+      printer->Print(
+          variables_,
+          "(cl:let ((data-size (cl:* $fixed_size$ (cl:length (cl:slot-value self '$name$)))))\n"
+          "  (cl:when (cl:plusp data-size)\n"
+          "    (cl:incf size (cl:+ $tag_size$ (varint:length32 data-size) data-size)))\n"
+          "  (cl:setf (cl:slot-value self '&$name$-cached-size) data-size))");
+    }
   }
+  printer->Print(variables_, "\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateAccessor(io::Printer* printer)
@@ -352,53 +385,68 @@ void RepeatedPrimitiveFieldGenerator::GenerateAccessor(io::Printer* printer)
 void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizes(
     io::Printer* printer)
     const {
-  printer->Print(
-      variables_,
-      "(cl:let* ((v (cl:slot-value self '$name$))\n"
-      "          (length (cl:length v)))\n"
-      "  (cl:loop for i from 0 below length do\n"
-      "    (cl:setf index"
-      " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
-      "    (cl:setf index $serialize$)))");
+  if (!descriptor_->is_packed()) {
+    printer->Print(
+        variables_,
+        "(cl:let* ((v (cl:slot-value self '$name$))\n"
+        "          (length (cl:length v)))\n"
+        "  (cl:loop for i from 0 below length do\n"
+        "    (cl:setf index (varint:encode-uint32-carefully buffer index limit $tag$))\n"
+        "    (cl:setf index $serialize$)))");
+  } else {
+    printer->Print(
+        variables_,
+        "(cl:let* ((v (cl:slot-value self '$name$))\n"
+        "          (length (cl:length v)))\n"
+        "  (cl:when (cl:plusp length)\n"
+        "    (cl:setf index (varint:encode-uint32-carefully buffer index limit $tag$))\n"
+        "    (cl:setf index\n"
+        "             (varint:encode-uint32-carefully\n"
+        "              buffer index limit\n"
+        "              (cl:slot-value self '&$name$-cached-size)))\n"
+        "    (cl:loop for i from 0 below length do\n"
+        "      (cl:setf index $serialize$))))");
+  }
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateMergeFromArray(
     io::Printer* printer) const {
-  if (!descriptor_->options().packed()) {
-    printer->Print("(cl:multiple-value-bind (value new-index)\n");
-    printer->Indent();
-    printer->Indent();
-    printer->Print(variables_, "$deserialize$\n");
-    printer->Outdent();
-    printer->Print(
-        variables_,
-        "  (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
-        "  (cl:setf index new-index))");
-    printer->Outdent();
-  } else {
-    printer->Print(
-        "(cl:multiple-value-bind (length new-index)\n"
-        "    (varint:parse-uint32-carefully buffer index limit)\n"
-        "  (cl:setf index new-index)\n"
-        "  (cl:let ((end (cl:+ index length)))\n"
-        "    (cl:loop while (cl:< index end) do\n");
-    printer->Indent();
-    printer->Indent();
-    printer->Indent();
-    printer->Print("(cl:multiple-value-bind (value new-index)\n");
-    printer->Indent();
-    printer->Indent();
-    printer->Print(variables_, "$deserialize$\n");
-    printer->Outdent();
-    printer->Print(
-        variables_,
-        "  (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
-        "  (cl:setf index new-index)))))");
-    printer->Outdent();
-    printer->Outdent();
-    printer->Outdent();
-    printer->Outdent();
-  }
+  printer->Print("(cl:multiple-value-bind (value new-index)\n");
+  printer->Indent();
+  printer->Indent();
+  printer->Print(variables_, "$deserialize$\n");
+  printer->Outdent();
+  printer->Print(
+      variables_,
+      "  (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
+      "  (cl:setf index new-index))");
+  printer->Outdent();
+}
+
+void RepeatedPrimitiveFieldGenerator::GenerateMergeFromArrayWithPacking(
+    io::Printer* printer) const {
+  printer->Print(
+      "(cl:multiple-value-bind (length new-index)\n"
+      "    (varint:parse-uint32-carefully buffer index limit)\n"
+      "  (cl:setf index new-index)\n"
+      "  (cl:let ((end (cl:+ index length)))\n"
+      "    (cl:loop while (cl:< index end) do\n");
+  printer->Indent();
+  printer->Indent();
+  printer->Indent();
+  printer->Print("(cl:multiple-value-bind (value new-index)\n");
+  printer->Indent();
+  printer->Indent();
+  printer->Print(variables_, "$deserialize$\n");
+  printer->Outdent();
+  printer->Print(
+      variables_,
+      "  (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
+      "  (cl:setf index new-index)))))");
+  printer->Outdent();
+  printer->Outdent();
+  printer->Outdent();
+  printer->Outdent();
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateMergingCode(

@@ -171,7 +171,7 @@ void MessageFieldGenerator::GenerateMergeFromArray(
         "(cl:multiple-value-bind (length new-index)\n"
         "    (varint:parse-uint31-carefully buffer index limit)\n"
         "  (cl:when (cl:> (cl:+ new-index length) limit)\n"
-        "    (cl:error \"buffer overflow\"))\n"
+        "    (cl:error 'wire-format:data-exhausted))\n"
         "  (cl:let ((message (cl:slot-value self '$name$)))\n"
         "    (cl:when (cl:null message)\n"
         "      (cl:setf message (cl:make-instance '$package$::$type$))\n"
@@ -181,8 +181,8 @@ void MessageFieldGenerator::GenerateMergeFromArray(
         "    (cl:setf index"
         " (pb:merge-from-array message buffer new-index"
         " (cl:+ new-index length)))\n"
-        "    (cl:when (cl:not (cl:= index (cl:+ new-index length)))\n"
-        "      (cl:error \"buffer overflow\"))))");
+        "    (cl:when (cl:/= index (cl:+ new-index length))\n"
+        "      (cl:error 'wire-format:alignment))))");
   } else {
     printer->Print(
         variables_,
@@ -203,7 +203,7 @@ void MessageFieldGenerator::GenerateMergeFromArray(
     printer->Print(
         "  ;; XXXX: wrong: tag size could be more than one byte\n"
         "  ;(cl:unless (cl:= (cl:aref buffer (cl:1- index)) $end_tag$)\n"
-        "  ;  (cl:error \"bad group merge\"))\n"
+        "  ;  (cl:error 'wire-format:alignment))\n"
         "  )",
         "end_tag", SimpleItoa(end_tag));
   }
@@ -319,13 +319,13 @@ void RepeatedMessageFieldGenerator::GenerateMergeFromArray(
         "(cl:multiple-value-bind (length new-index)\n"
         "    (varint:parse-uint31-carefully buffer index limit)\n"
         "  (cl:when (cl:> (cl:+ new-index length) limit)\n"
-        "    (cl:error \"buffer overflow\"))\n"
+        "    (cl:error 'wire-format:data-exhausted))\n"
         "  (cl:let ((message (cl:make-instance '$package$::$type$)))\n"
         "    (cl:setf index"
         " (pb:merge-from-array message buffer new-index"
         " (cl:+ new-index length)))\n"
-        "    (cl:when (cl:not (cl:= index (cl:+ new-index length)))\n"
-        "      (cl:error \"buffer overflow\"))\n"
+        "    (cl:when (cl:/= index (cl:+ new-index length))\n"
+        "      (cl:error 'wire-format:alignment))\n"
         "    (cl:vector-push-extend message (cl:slot-value self '$name$))))");
   } else {
     // XXXXXXXXXXXXXXXXXXXX this is probably wrong, but allows old test to pass
@@ -343,7 +343,7 @@ void RepeatedMessageFieldGenerator::GenerateMergeFromArray(
     printer->Print(
         ";; XXXX: wrong: tag size could be more than one byte\n"
         ";(cl:unless (cl:= (cl:aref buffer (cl:1- index)) $end_tag$)\n"
-        ";  (cl:error \"bad group merge\"))\n",
+        ";  (cl:error 'wire-format:alignment))\n",
         "end_tag", SimpleItoa(end_tag));
   }
 }

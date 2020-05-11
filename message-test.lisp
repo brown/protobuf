@@ -241,17 +241,25 @@
   (let ((message (read-message 'test-packed-types +golden-packed-file-name+)))
     (expect-repeated-fields-set message *packed-field-info*)))
 
-;; XXXXXXXXXX ucomment when packed field bugs are fixed
-;; (deftest test-parse-unpacked-from-file ()
-;;   (let ((message (read-message 'test-unpacked-types +golden-packed-file-name+)))
-;;     (expect-repeated-fields-set message *unpacked-field-info*)))
+(deftest test-parse-unpacked-from-file ()
+  (let ((message (read-message 'test-unpacked-types +golden-packed-file-name+)))
+    (expect-repeated-fields-set message *unpacked-field-info*)))
 
-;; XXXXXXXXXX test packed from unpacked and unpacked from packed when packed
-;; field bugs are fixed
-(deftest parse-unpacked-from-unpacked ()
+(deftest parse-packed-from-unpacked ()
   (let ((m1 (make-instance 'test-unpacked-types)))
     (set-repeated-fields m1 *unpacked-field-info*)
     (expect-repeated-fields-set m1 *unpacked-field-info*)
+    (let* ((size (pb:octet-size m1))
+           (buffer (make-array size :element-type '(unsigned-byte 8))))
+      (pb:serialize m1 buffer 0 size)
+      (let ((m2 (make-instance 'test-packed-types)))
+        (pb:merge-from-array m2 buffer 0 size)
+        (expect-repeated-fields-set m2 *packed-field-info*)))))
+
+(deftest parse-unpacked-from-packed ()
+  (let ((m1 (make-instance 'test-packed-types)))
+    (set-repeated-fields m1 *packed-field-info*)
+    (expect-repeated-fields-set m1 *packed-field-info*)
     (let* ((size (pb:octet-size m1))
            (buffer (make-array size :element-type '(unsigned-byte 8))))
       (pb:serialize m1 buffer 0 size)
