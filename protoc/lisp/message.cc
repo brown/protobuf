@@ -756,8 +756,7 @@ void MessageGenerator::GenerateMergeFromArray(io::Printer* printer) {
   // Skip over unknown fields.  XXXXXXXXXXXXXXXXXXXX: They should be collected
   // into a set of unknown fields.
   printer->Print(
-      "(cl:setf index\n"
-      "  (wire-format:skip-field field-number wire-type buffer index limit))\n");
+      "(cl:setf index (wire-format:skip-field field-number wire-type buffer index limit))");
   printer->Print(")))))\n");
   printer->Outdent();
   printer->Outdent();
@@ -806,8 +805,8 @@ void MessageGenerator::GenerateMergeFromMessage(io::Printer* printer) {
       printer->Print(")\n");
     }
   }
-  printer->Outdent();
   printer->Print(")\n");
+  printer->Outdent();
 
   // XXXXXXXXXXXXXXX extensions
 //  if (descriptor_->extension_range_count() > 0) {

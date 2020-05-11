@@ -152,10 +152,10 @@ void RepeatedEnumFieldGenerator::GenerateSlot(io::Printer* printer) const {
   if (descriptor_->is_packed()) {
     printer->Print(
         variables_,
-        "(&$name$-cached-size\n"
-        " :accessor &$name$-cached-size\n"
+        "(pb::%$name$-cached-size%\n"
+        " :accessor pb::%$name$-cached-size%\n"
         " :initform 0\n"
-        " :type com.google.base:vector-index)\n");
+        " :type (cl:integer 0 #.(cl:1- cl:array-dimension-limit)))\n");
   }
 }
 
@@ -190,9 +190,8 @@ void RepeatedEnumFieldGenerator::GenerateOctetSize(io::Printer* printer)
         "    (cl:dotimes (i length)\n"
         "      (cl:incf data-size (varint:length32 (cl:ldb (cl:byte 32 0) (cl:aref x i)))))\n"
         "    (cl:incf size (cl:+ $tag_size$ (varint:length32 data-size) data-size)))\n"
-        "  (cl:setf (cl:slot-value self '&$name$-cached-size) data-size))");
+        "  (cl:setf (cl:slot-value self 'pb::%$name$-cached-size%) data-size))");
   }
-  printer->Print(variables_, "\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateAccessor(io::Printer* printer) const {
@@ -218,8 +217,8 @@ void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizes(
         "  (cl:when (cl:plusp length)\n"
         "    (cl:setf index (varint:encode-uint32-carefully buffer index limit $tag$))\n"
         "    (cl:setf index\n"
-        "             (varint:encode-uint32-carefully buffer index limit\n"
-        "                                             (cl:slot-value self '&$name$-cached-size)))\n"
+        "             (varint:encode-uint32-carefully\n"
+        "              buffer index limit (cl:slot-value self 'pb::%$name$-cached-size%)))\n"
         "    (cl:loop for i from 0 below length do\n"
         "      (cl:setf index\n"
         "               (varint:encode-uint64-carefully\n"

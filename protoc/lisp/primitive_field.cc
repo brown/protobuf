@@ -259,9 +259,9 @@ void PrimitiveFieldGenerator::GenerateSerializeWithCachedSizes(
     io::Printer* printer) const {
   printer->Print(
       variables_,
-      "(cl:setf index"
-      " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
-      "(cl:setf index $serialize$)");
+      "(cl:setf index (varint:encode-uint32-carefully buffer index limit $tag$))\n"
+      "(cl:setf index\n"
+      "         $serialize$)");
 }
 
 void PrimitiveFieldGenerator::GenerateMergeFromArray(
@@ -310,10 +310,10 @@ void RepeatedPrimitiveFieldGenerator::GenerateSlot(io::Printer* printer)
   if (descriptor_->is_packed()) {
     printer->Print(
         variables_,
-        "(&$name$-cached-size\n"
-        " :accessor &$name$-cached-size\n"
+        "(pb::%$name$-cached-size%\n"
+        " :accessor pb::%$name$-cached-size%\n"
         " :initform 0\n"
-        " :type com.google.base:vector-index)\n");
+        " :type (cl:integer 0 #.(cl:1- cl:array-dimension-limit)))\n");
   }
 }
 
@@ -357,24 +357,23 @@ void RepeatedPrimitiveFieldGenerator::GenerateOctetSize(io::Printer* printer)
       printer->Print(
           variables_,
           "    (cl:incf size (cl:+ $tag_size$ (varint:length32 data-size) data-size)))\n"
-          "  (cl:setf (cl:slot-value self '&$name$-cached-size) data-size))");
+          "  (cl:setf (cl:slot-value self 'pb::%$name$-cached-size%) data-size))");
     }
   } else {
     if (!descriptor_->is_packed()) {
       printer->Print(
           variables_,
-          "(cl:incf size (cl:* (cl:+ $tag_size$ $fixed_size$)\n"
-          "                 (cl:length (cl:slot-value self '$name$))))");
+          "(cl:incf size (cl:* (cl:+ $tag_size$ $fixed_size$)"
+          " (cl:length (cl:slot-value self '$name$))))");
     } else {
       printer->Print(
           variables_,
           "(cl:let ((data-size (cl:* $fixed_size$ (cl:length (cl:slot-value self '$name$)))))\n"
           "  (cl:when (cl:plusp data-size)\n"
           "    (cl:incf size (cl:+ $tag_size$ (varint:length32 data-size) data-size)))\n"
-          "  (cl:setf (cl:slot-value self '&$name$-cached-size) data-size))");
+          "  (cl:setf (cl:slot-value self 'pb::%$name$-cached-size%) data-size))");
     }
   }
-  printer->Print(variables_, "\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateAccessor(io::Printer* printer)
@@ -403,7 +402,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizes(
         "    (cl:setf index\n"
         "             (varint:encode-uint32-carefully\n"
         "              buffer index limit\n"
-        "              (cl:slot-value self '&$name$-cached-size)))\n"
+        "              (cl:slot-value self 'pb::%$name$-cached-size%)))\n"
         "    (cl:loop for i from 0 below length do\n"
         "      (cl:setf index $serialize$))))");
   }
