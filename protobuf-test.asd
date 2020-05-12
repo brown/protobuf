@@ -32,15 +32,15 @@
 
 (defpackage #:protobuf-test-system
   (:documentation "System definitions for protocol buffer test code.")
-  (:use #:common-lisp #:asdf))
+  (:use #:common-lisp #:asdf #:uiop/package))
 
 (in-package #:protobuf-test-system)
 
 (defsystem protobuf-test
   :name "Protocol Buffer test"
   :description "Protocol buffer test code."
-  :version "0.9.1"
-  :author "Robert Brown"
+  :version "0.9.3"
+  :author "Robert Brown <robert.brown@gmail.com>"
   :license "See file COPYING and the copyright messages in individual files."
   :defsystem-depends-on (protobuf)
   :depends-on (hu.dwim.stefil)
@@ -64,9 +64,9 @@
     :proto-search-path ("./"))))
 
 (defmethod perform ((operation test-op) (component (eql (find-system 'protobuf-test))))
-  (funcall (read-from-string "message-test:test-message"))
-  (funcall (read-from-string "proto-lisp-test:test-proto-lisp"))
-  (funcall (read-from-string "wire-format-test:test-wire-format")))
+  (symbol-call 'message-test 'test-message)
+  (symbol-call 'proto-lisp-test 'test-proto-lisp)
+  (symbol-call 'wire-format-test 'test-wire-format))
 
 (defpackage #:protobuf-test-config
   (:documentation "Configuration information for PROTOBUF-TEST.")

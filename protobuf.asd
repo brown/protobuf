@@ -188,8 +188,8 @@ which means ASDF loads both the .lisp file and the .fasl file."
   :description "Protocol buffer code"
   :long-description
   "A Common Lisp implementation of Google's protocol buffer serialization libraries."
-  :version "0.9.2"
-  :author "Robert Brown"
+  :version "0.9.3"
+  :author "Robert Brown <robert.brown@gmail.com>"
   :license "See file COPYING and the copyright messages in individual files."
   :defsystem-depends-on (com.google.base)
   :depends-on (com.google.base
