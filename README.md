@@ -1,32 +1,32 @@
 # Protobuf
 
-Protobuf is a Common Lisp implementation of Google's protocol buffers.
+Protobuf is a Common Lisp implementation of [Google's protocol
+buffers](https://developers.google.com/protocol-buffers).
 
-The protobuf repository contains a compiler from .proto files to Lisp and the
-run time support needed by the generated Lisp code.  Not all protocol buffer
-features are implemented, but the code works well enough that serialization
-tests pass.
+This repository contains a compiler from protocol buffer source code (.proto
+files) to Lisp and also the run time support needed by the generated Lisp code.
+Not all protocol buffer features are implemented.
 
-The protobuf code has been tested with ABCL, CCL, CLISP, Lispworks, and SBCL.
-In the past it has also worked with Allegro Common Lisp, but I have not tested
-it recently.
-
-The installation instructions below work with release 3.6.1 of Google's
-protocol buffer compiler.
+Protobuf has been tested with ABCL, CCL, CLISP, Lispworks, and SBCL.  In the
+past it has also worked with Allegro Common Lisp, but I have not tested it
+recently.
 
 ## Installation
 
-1. The Common Lisp protocol buffer compiler is implemented as a plugin to
-Google's protocol buffer compiler, so you must first build and install Google's
-compiler, which is called protoc.  The required code and documentation are
-available [here](https://github.com/google/protobuf).
+The Common Lisp protocol buffer compiler is implemented as a plugin to
+[Google's protocol buffer
+compiler](https://github.com/protocolbuffers/protobuf), so you must first build
+and install Google's compiler, which is called `protoc`.  The code and
+instructions here assume you are using [release
+3.6.1](https://github.com/protocolbuffers/protobuf/releases/tag/v3.6.1).
 
-The steps should be something like:
+The steps for installing `protoc` from source are approximately:
 
 ```
 cd /tmp
-git clone https://github.com/google/protobuf google-protobuf
+git clone https://github.com/protocolbuffers/protobuf.git google-protobuf
 cd google-protobuf
+git checkout v3.6.1
 ./autogen.sh
 ./configure --prefix=~/local/software/package/google-protobuf-3.6.1
 make
@@ -34,9 +34,13 @@ make check
 make install
 ```
 
-2. Clone the Lisp protobuf Git repository to get a local copy and compile
-`protoc-gen-lisp`, the Common Lisp protocol buffer plugin.  The steps required
-for Linux are:
+You can also install `protoc` by downloading a tar or zip archive for a
+specific release from
+[here](https://github.com/protocolbuffers/protobuf/releases).
+
+After you have installed `protoc`, clone this Git repository to create a local
+copy and compile `protoc-gen-lisp`, the Common Lisp protocol buffer plugin.
+The required steps for Linux are approximately:
 
 ```
 cd /tmp
@@ -45,37 +49,38 @@ git clone git://github.com/brown/protobuf.git
 cd protobuf/protoc/lisp
 
 # Copy strutil.h from the Google's protocol buffer compiler source
-# directory:
+# directory that you downloaded earlier:
 cp /tmp/google-protobuf/src/google/protobuf/stubs/strutil.h .
 
 # Change INSTALL_ROOT and PROTOC_ROOT in Makefile.  INSTALL_ROOT indicates
 # where protoc-gen-lisp should be installed.  PROTOC_ROOT indicates where
-# you installed Google's protobuf compiler when you compiled it in step 1.
+# you installed Google's protobuf compiler, when you compiled it in step 1.
 
 # Compile and install the Lisp protoc plugin.
 make install
 ```
 
-3. Download and install the Common Lisp packages that protobuf depends on.
-First, you'll need ASDF, but it comes pre-installed in most Common Lisp
-distributions.  You'll also need com.google.base, which is available via
-Quicklisp.  To run all the tests, you'll need the Stefil testing package and
-its dependencies: hu.dwim.stefil, hu.dwim.asdf, alexandria.  All of these can
-easily be downloaded using Quicklisp.
+Once both `protoc` and `protoc-gen-lisp` are installed, download and install
+the Common Lisp packages that Protobuf depends on.  First, you'll need ASDF,
+but it comes pre-installed in most Common Lisp distributions.  You'll also need
+the com.google.base package, which is available via Quicklisp.  To run all the
+tests, you'll need the Stefil testing package and its dependencies:
+hu.dwim.stefil, hu.dwim.asdf, alexandria.  All of these can easily be
+downloaded using Quicklisp.
 
-If you're not using Allegro, CLisp, or SBCL, you may need trivial-utf8, again
+If you're not using Allegro, CLISP, or SBCL, you may need trivial-utf8, again
 available via Quicklisp.
 
-4. Make protobuf and its dependencies available to ASDF.  There are several
-ways to do this and you should consult the ASDF documentation to determine what
-will work best for you.  If you've downloaded dependencies using Quicklisp,
-then ASDF will automatically know about them.
+Once you have acquired all Protobuf's dependencies, make them available to
+ASDF.  There are several ways to do this and you should consult the ASDF
+documentation to determine what will work best for you.  If you've downloaded
+dependencies using Quicklisp, then ASDF automatically knows about them.
 
 ASDF and its manual are available [here](http://common-lisp.net/project/asdf).
 
-On my system, I tell ASDF where to find the protobuf system files by creating a
-file called `source-registry.conf` in directory `/home/brown/.config/common-lisp`
-with the following contents:
+On my system, I tell ASDF where to find Protobuf's system files by creating a
+file called `source-registry.conf` in directory
+`/home/brown/.config/common-lisp` with the following contents:
 
 ```
 (:source-registry
@@ -83,24 +88,24 @@ with the following contents:
  :inherit-configuration)
 ```
 
-5. Make sure ASDF can execute Google's protocol buffer compiler and the Common
+Make sure ASDF can execute Google's protocol buffer compiler and the Common
 Lisp plugin.  Both `protoc` and `protoc-gen-lisp` must be installed in
 directories that appear in your shell's `PATH` environment variable.
 
-6. Compile and load all the protobuf code:
+Compile and load all the protobuf code:
 
 ```
 (asdf:load-system 'protobuf)
 ```
 
-7. Optionally, load and run all the tests:
+Optionally, load and run all the tests:
 
 ```
 (asdf:test-system 'varint)
 (asdf:test-system 'protobuf)
 ```
 
-8. Compile and run the example code, which shows how to incorporate protocol
+Compile and run the example code, which shows how to incorporate protocol
 buffer definition files into your own projects:
 
 ```
