@@ -1,11 +1,13 @@
 # Protobuf
 
 Protobuf is a Common Lisp implementation of [Google's protocol
-buffers](https://developers.google.com/protocol-buffers).
+buffers](https://developers.google.com/protocol-buffers), version 2.  The
+repository contains a compiler from protocol buffer source code (.proto files)
+to Lisp and also run-time support needed by the generated Lisp code.
 
-This repository contains a compiler from protocol buffer source code (.proto
-files) to Lisp and also the run time support needed by the generated Lisp code.
-Not all protocol buffer features are implemented.
+Protobuf passes all but a couple of the required proto2 tests in Google's
+conformance test suite.  It implements neither the JSON nor text encoding
+formats.
 
 Protobuf has been tested with ABCL, CCL, CLISP, Lispworks, and SBCL.  In the
 past it has also worked with Allegro Common Lisp, but I have not tested it
