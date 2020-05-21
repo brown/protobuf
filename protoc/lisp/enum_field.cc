@@ -90,6 +90,7 @@ void EnumFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
 void EnumFieldGenerator::GenerateOctetSize(io::Printer* printer) const {
   printer->Print(variables_, "(cl:incf size $tag_size$)\n");
   printer->Print(variables_, "(cl:incf size ");
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX set a print variable and reuse below
   string size = OctetSize(descriptor_->type(), "(cl:slot-value self '$name$)");
   printer->Print(variables_, size.c_str());
   printer->Print(variables_, ")");
@@ -103,11 +104,12 @@ void EnumFieldGenerator::GenerateSerializeWithCachedSizes(
     io::Printer* printer) const {
   printer->Print(
       variables_,
-      "(cl:setf index"
-      " (varint:encode-uint32-carefully buffer index limit $tag$))\n"
+      "(cl:setf index (varint:encode-uint32-carefully buffer index limit $tag$))\n"
+      // XXXX: Optimize this by passing a signed 32-bit integer to a function
+      // that handles writing out 10 octets for negative values.
       "(cl:setf index\n"
-      " (varint:encode-uint64-carefully buffer index limit\n"
-      "  (cl:ldb (cl:byte 64 0) (cl:slot-value self '$name$))))");
+      "         (varint:encode-uint64-carefully buffer index limit\n"
+      "           (cl:ldb (cl:byte 64 0) (cl:slot-value self '$name$))))");
 }
 
 void EnumFieldGenerator::GenerateMergeFromArray(
@@ -116,10 +118,10 @@ void EnumFieldGenerator::GenerateMergeFromArray(
       variables_,
       "(cl:multiple-value-bind (value new-index)\n"
       "    (varint:parse-int32-carefully buffer index limit)\n"
-      "  ;; XXXXX: when valid, set field, else add to unknown fields\n"
-      "  (cl:setf (cl:slot-value self '$name$) value)\n"
-      "  (cl:setf (cl:ldb (cl:byte 1 $index$)"
-      " (cl:slot-value self '%has-bits%)) 1)\n"
+      "  ;; XXXX: When invalid, add to unknown fields.\n"
+      "  (cl:when (cl:typep value '$package$::$type$)\n"
+      "    (cl:setf (cl:slot-value self '$name$) value)\n"
+      "    (cl:setf (cl:ldb (cl:byte 1 $index$) (cl:slot-value self '%has-bits%)) 1))\n"
       "  (cl:setf index new-index))");
 }
 
@@ -127,8 +129,7 @@ void EnumFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   printer->Print(
       variables_,
       "(cl:setf (cl:slot-value self '$name$) (cl:slot-value from '$name$))\n"
-      "(cl:setf (cl:ldb (cl:byte 1 $index$)"
-      " (cl:slot-value self '%has-bits%)) 1)");
+      "(cl:setf (cl:ldb (cl:byte 1 $index$) (cl:slot-value self '%has-bits%)) 1)");
 }
 
 RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
@@ -179,7 +180,10 @@ void RepeatedEnumFieldGenerator::GenerateOctetSize(io::Printer* printer)
         "          (length (cl:length x)))\n"
         "  (cl:incf size (cl:* $tag_size$ length))\n"
         "  (cl:dotimes (i length)\n"
-        "    (cl:incf size (varint:length32 (cl:ldb (cl:byte 32 0) (cl:aref x i))))))");
+        // XXXX: see coded_stream.h for how this can be coded more efficiently:
+        // VarintSize32SignExtended().  The result is 10 if value is negative,
+        // else it's length32(value).
+        "    (cl:incf size (varint:length64 (cl:ldb (cl:byte 64 0) (cl:aref x i))))))");
   } else {
     printer->Print(
         variables_,
@@ -188,7 +192,10 @@ void RepeatedEnumFieldGenerator::GenerateOctetSize(io::Printer* printer)
         "          (data-size 0))\n"
         "  (cl:when (cl:plusp length)\n"
         "    (cl:dotimes (i length)\n"
-        "      (cl:incf data-size (varint:length32 (cl:ldb (cl:byte 32 0) (cl:aref x i)))))\n"
+        // XXXX: see coded_stream.h for how this can be coded more efficiently:
+        // VarintSize32SignExtended().  The result is 10 if value is negative,
+        // else it's length32(value).
+        "      (cl:incf data-size (varint:length64 (cl:ldb (cl:byte 64 0) (cl:aref x i)))))\n"
         "    (cl:incf size (cl:+ $tag_size$ (varint:length32 data-size) data-size)))\n"
         "  (cl:setf (cl:slot-value self 'pb::%$name$-cached-size%) data-size))");
   }
@@ -207,6 +214,8 @@ void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizes(
         "          (length (cl:length v)))\n"
         "  (cl:loop for i from 0 below length do\n"
         "    (cl:setf index (varint:encode-uint32-carefully buffer index limit $tag$))\n"
+        // XXXX: Optimize this by passing a signed 32-bit integer to a function
+        // that handles writing out 10 octets for negative values.
         "    (cl:setf index (varint:encode-uint64-carefully buffer index limit\n"
         "                    (cl:ldb (cl:byte 64 0) (cl:aref v i))))))");
   } else {
@@ -220,6 +229,8 @@ void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizes(
         "             (varint:encode-uint32-carefully\n"
         "              buffer index limit (cl:slot-value self 'pb::%$name$-cached-size%)))\n"
         "    (cl:loop for i from 0 below length do\n"
+        // XXXX: Optimize this by passing a signed 32-bit integer to a function
+        // that handles writing out 10 octets for negative values.
         "      (cl:setf index\n"
         "               (varint:encode-uint64-carefully\n"
         "                buffer index limit\n"
@@ -237,8 +248,9 @@ void RepeatedEnumFieldGenerator::GenerateMergeFromArray(
         variables_,
         "(cl:multiple-value-bind (value new-index)\n"
         "    (varint:parse-int32-carefully buffer index limit)\n"
-        "  ;; XXXXX: when valid, set field, else add to unknown fields\n"
-        "  (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
+        "  ;; XXXX: When invalid, add to unknown fields.\n"
+        "  (cl:when (cl:typep value '$package$::$type$)\n"
+        "    (cl:vector-push-extend value (cl:slot-value self '$name$)))\n"
         "  (cl:setf index new-index))");
 }
 
@@ -253,8 +265,9 @@ void RepeatedEnumFieldGenerator::GenerateMergeFromArrayWithPacking(
         "    (cl:loop while (cl:< index end) do\n"
         "      (cl:multiple-value-bind (value new-index)\n"
         "          (varint:parse-int32-carefully buffer index limit)\n"
-        "        ;; XXXXX: when valid, set field, else add to unknown fields\n"
-        "        (cl:vector-push-extend value (cl:slot-value self '$name$))\n"
+        "        ;; XXXX: When invalid, add to unknown fields.\n"
+        "        (cl:when (cl:typep value '$package$::$type$)\n"
+        "          (cl:vector-push-extend value (cl:slot-value self '$name$)))\n"
         "        (cl:setf index new-index)))))");
 }
 

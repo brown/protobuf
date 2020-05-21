@@ -326,8 +326,7 @@ encode V, then raise BUFFER-OVERFLOW."
 (defun parse-uint64-carefully (buffer index limit)
   (declare (type octet-vector buffer)
            (type vector-index index limit))
-  (when (>= index limit)
-    (error 'data-exhausted))
+  (when (>= index limit) (error 'data-exhausted))
   (prog* ((byte (prog1 (aref buffer index) (incf index)))
           (result1 (ldb (byte 7 0) byte))
           (result2 0)
@@ -400,12 +399,11 @@ encode V, then raise BUFFER-OVERFLOW."
   (declare (type octet-vector buffer)
            (type vector-index index limit))
   (multiple-value-bind (result new-index)
-      ;; The wire format for 32-bit varints is identical to that for 64-bit varints, so that int32
-      ;; protocol buffer fields can be safely upgraded to int64.
-      ;; XXXX: Verify that writing a small negative 32-bit varint results in 10 octets on the wire.
-      (parse-int64-carefully buffer index limit)
-    (when (or (>= result (ash 1 31)) (< result (- (ash 1 31))))
-      (error 'value-out-of-range))
+      ;; XXXX Optimize this, since we are only interested in the low 32 bits.
+      (parse-uint64-carefully buffer index limit)
+    (setf result (ldb (byte 32 0) result))
+    (when (logbitp 31 result)           ; sign bit set, so value is negative
+      (decf result (ash 1 32)))
     (values result new-index)))
 
 (declaim (ftype (function (octet-vector vector-index vector-index) (values vector-index &optional))

@@ -332,9 +332,9 @@ string OctetSize(FieldDescriptor::Type type, string reference) {
   switch (type) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_ENUM:
-      // XXXXXXXXXXXXXXXXXXXX: see coded_stream.h for how this can be coded
-      // more efficiently: VarintSize32SignExtended().  The result is 10 if
-      // value is negative, else it's length32(value).
+      // XXXX: see coded_stream.h for how this can be coded more efficiently:
+      // VarintSize32SignExtended().  The result is 10 if value is negative,
+      // else it's length32(value).
       return "(varint:length64 (cl:ldb (cl:byte 64 0) " + reference + "))";
     case FieldDescriptor::TYPE_INT64:
       return "(varint:length64 (cl:ldb (cl:byte 64 0) " + reference + "))";

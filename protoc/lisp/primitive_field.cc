@@ -90,6 +90,8 @@ int FixedSize(FieldDescriptor::Type type) {
 string Serialize(const FieldDescriptor* field) {
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32:
+      // XXXX: Optimize this by passing a signed 32-bit integer to a function
+      // that handles writing out 10 octets for negative values.
       return ("(varint:encode-uint64-carefully"
               " buffer index limit (cl:ldb (cl:byte 64 0) $fetch$))");
     case FieldDescriptor::TYPE_INT64:
@@ -144,7 +146,10 @@ string Deserialize(const FieldDescriptor* field) {
     case FieldDescriptor::TYPE_INT64:
       return "(varint:parse-int64-carefully buffer index limit)";
     case FieldDescriptor::TYPE_UINT32:
-      return "(varint:parse-uint32-carefully buffer index limit)";
+      // XXXX: Optimize this.  See VarintParseSlow32 in parse_context.cc.
+      return ("(cl:multiple-value-bind (x new-index)\n"
+              "    (varint:parse-uint64-carefully buffer index limit)\n"
+              "  (cl:values (cl:ldb (cl:byte 32 0) x) new-index))");
     case FieldDescriptor::TYPE_UINT64:
       return "(varint:parse-uint64-carefully buffer index limit)";
     case FieldDescriptor::TYPE_SINT32:
