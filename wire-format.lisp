@@ -161,11 +161,13 @@ encoded tag is too large."
          #+opt (inline read-boolean-carefully))
 
 (defun read-boolean-carefully (buffer index limit)
-  (let ((new-index (1+ index)))
-    (when (> new-index limit) (error 'data-exhausted))
-    (let ((bool (aref buffer index)))
-      (unless (or (= bool 0) (= bool 1)) (error 'value-out-of-range))
-      (values (if (zerop bool) nil t) new-index))))
+  (unless (< index limit) (error 'data-exhausted))
+  (let ((bool (aref buffer index)))
+    (if (or (= bool 0) (= bool 1))
+        (values (if (zerop bool) nil t) (1+ index))
+        (multiple-value-bind (bool new-index)
+            (varint:parse-uint64-carefully buffer index limit)
+          (values (if (zerop bool) nil t) new-index)))))
 
 (declaim (ftype (function (octet-vector vector-index vector-index int32)
                           (values vector-index &optional))
