@@ -32,10 +32,6 @@
 
 (in-package #:wire-format)
 
-(deftype wire-type ()
-  "Integer representing how a protobuf field value is serialized."
-  '(integer 0 5))
-
 (defconst +varint+ 0 "Wire type used for variable length integers, booleans, and enums.")
 (defconst +fixed64+ 1 "Wire type used for 8-byte integers or double precision floats.")
 (defconst +length-delimited+ 2
@@ -45,9 +41,13 @@ messages, and packed repeated fields.")
 (defconst +end-group+ 4 "Wire type marking the end of a group.  Deprecated.")
 (defconst +fixed32+ 5 "Wire type used for 4-byte integers or single precision floats.")
 
+(deftype wire-type ()
+  "Integer representing how a protobuf field value is serialized."
+  `(member ,+varint+ ,+fixed32+ ,+length-delimited+ ,+start-group+ ,+end-group+ ,+fixed64+))
+
 (deftype field-number ()
   "Protocol buffer field number."
-  ;; A field number is a 29-bit positive integer, but zero is illegal and field numbers from 19000
+  ;; A field number is a 29-bit positive integer, but zero is illegal.  Field numbers from 19000
   ;; through 19999 are reserved for internal use by protocol buffer implementations.
   `(integer 1 ,(ldb (byte 29 0) -1)))
 

@@ -57,16 +57,16 @@
 (defpackage #:wire-format
   (:documentation "Wire format for protocol buffers.")
   (:use #:common-lisp #:com.google.base)
-  (:export ;; Types
-           #:field-number
-           #:wire-type
-           ;; Constants
+  (:export ;; Constants
            #:+end-group+
            #:+fixed32+
            #:+fixed64+
            #:+length-delimited+
            #:+start-group+
            #:+varint+
+           ;; Types
+           #:field-number
+           #:wire-type
            ;; Conditions
            #:protocol-error
            #:encoding-error
