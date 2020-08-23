@@ -29,10 +29,28 @@
 ;;;; Author: Robert Brown <robert.brown@gmail.com>
 
 (defsystem varint
+  :name "Varint"
+  :description "Variable-size encoding and decoding of integers."
+  :version "0.1"
+  :author "Robert Brown <robert.brown@gmail.com>"
+  :license "New BSD license.  See the copyright messages in individual files."
   :defsystem-depends-on (com.google.base)
   :depends-on (com.google.base
                nibbles)
-  :in-order-to ((test-op (test-op varint-test)))
+  :in-order-to ((test-op (test-op varint/test)))
   :components
   ((:file "package")
    (:fast-unsafe-source-file "varint" :depends-on ("package"))))
+
+(defsystem varint/test
+  :name "Varint test"
+  :description "Test code for package VARINT."
+  :version "0.1"
+  :author "Robert Brown <robert.brown@gmail.com>"
+  :license "New BSD license.  See the copyright messages in individual files."
+  :depends-on (varint hu.dwim.stefil)
+  :components
+  ((:file "varint-test")))
+
+(defmethod perform ((operation test-op) (component (eql (find-system 'varint/test))))
+  (symbol-call 'varint-test 'test-varint))
