@@ -88,23 +88,28 @@ beyond LIMIT, then signals PROTOCOL-BUFFER-READ-ERROR."))
 
 (cl:define-symbol-macro +double-float-positive-infinity+
   #+abcl extensions:double-float-positive-infinity
+  #+ccl ccl::double-float-positive-infinity
   #+sbcl sb-ext:double-float-positive-infinity
-  #-(or abcl sbcl) (cl:error "unimplemented"))
+  #-(or abcl ccl sbcl) (cl:error "unimplemented"))
 
 (cl:define-symbol-macro +double-float-negative-infinity+
   #+abcl extensions:double-float-negative-infinity
+  #+ccl ccl::double-float-negative-infinity
   #+sbcl sb-ext:double-float-negative-infinity
-  #-(or abcl sbcl) (cl:error "unimplemented"))
+  #-(or abcl ccl sbcl) (cl:error "unimplemented"))
 
 ;;; NaNs
 
 (cl:define-symbol-macro +single-float-nan+
+  #+abcl #.(system:make-single-float -1)
   #+sbcl #.(sb-kernel:make-single-float -1)
-  #-sbcl (cl:error "unimplemented"))
+  #-(or abcl sbcl) (cl:error "unimplemented"))
 
 (cl:define-symbol-macro +double-float-nan+
+  #+abcl #.(system:make-double-float (ash -1 32))
+  #+ccl ccl::double-float-nan
   #+sbcl #.(sb-kernel:make-double-float -1 0)
-  #-sbcl (cl:error "unimplemented"))
+  #-(or abcl ccl sbcl) (cl:error "unimplemented"))
 
 ;;;; Protocol buffer string fields
 
