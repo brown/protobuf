@@ -133,7 +133,7 @@
                 #:clear-double-value
                 #:clear-end
                 #:clear-enum-type
-                #:clear-experimental-map-key
+                ;; #:clear-experimental-map-key
                 #:clear-extendee
                 #:clear-extension
                 #:clear-extension-range
@@ -182,7 +182,7 @@
                 #:double-value
                 #:end
                 #:enum-type
-                #:experimental-map-key
+                ;; #:experimental-map-key
                 #:extendee
                 #:extension
                 #:extension-range
@@ -195,7 +195,7 @@
                 #:has-deprecated
                 #:has-double-value
                 #:has-end
-                #:has-experimental-map-key
+                ;; #:has-experimental-map-key
                 #:has-extendee
                 #:has-identifier-value
                 #:has-input-type
