@@ -361,7 +361,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateOctetSize(io::Printer* printer)
       printer->Print(variables_, "))\n");
       printer->Print(
           variables_,
-          "    (cl:incf size (cl:+ $tag_size$ (varint:length32 data-size) data-size)))\n"
+          "    (cl:incf size (cl:+ $tag_size$ (varint:length-uint32 data-size) data-size)))\n"
           "  (cl:setf (cl:slot-value self 'pb::%$name$-cached-size%) data-size))");
     }
   } else {
@@ -375,7 +375,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateOctetSize(io::Printer* printer)
           variables_,
           "(cl:let ((data-size (cl:* $fixed_size$ (cl:length (cl:slot-value self '$name$)))))\n"
           "  (cl:when (cl:plusp data-size)\n"
-          "    (cl:incf size (cl:+ $tag_size$ (varint:length32 data-size) data-size)))\n"
+          "    (cl:incf size (cl:+ $tag_size$ (varint:length-uint32 data-size) data-size)))\n"
           "  (cl:setf (cl:slot-value self 'pb::%$name$-cached-size%) data-size))");
     }
   }

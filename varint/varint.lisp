@@ -28,7 +28,7 @@
 
 ;;;; Author: Robert Brown <robert.brown@gmail.com>
 
-;;;; Variable length encoding for integers and floating point numbers.
+;;;; Variable length encoding for integers.
 
 (in-package #:varint)
 
@@ -697,64 +697,48 @@ encode V, then raise BUFFER-OVERFLOW."
          DONE
            (return (values result (1+ index)))))))
 
-(declaim (ftype (function (uint32) (values (integer 1 5) &optional)) length32))
+(declaim (ftype (function (uint32) (values (integer 1 #.+max-octets-32+) &optional)) length-uint32))
 
-(defun length32 (v)
+(defun length-uint32 (v)
   (declare (type uint32 v))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length32 1))
+  (when (zerop v) (return-from length-uint32 1))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length32 2))
+  (when (zerop v) (return-from length-uint32 2))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length32 3))
+  (when (zerop v) (return-from length-uint32 3))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length32 4))
+  (when (zerop v) (return-from length-uint32 4))
   5)
 
-;; This version is more compact.  Seems slower for small numbers, same
-;; or faster for big numbers.
+(declaim (ftype (function (int32) (values (integer 1 #.+max-octets-64+) &optional)) length-int32))
 
-;; (declaim (ftype (function (uint32) (integer 1 5)) length32-x)
-;;          #+opt (inline length32-x))
+(defun length-int32 (v)
+  (declare (type int32 v))
+  (if (minusp v)
+      +max-octets-64+
+      (length-uint32 (ldb (byte 32 0) v))))
 
-;; (defun length32-x (v)
-;;   (declare (type uint32 v))
-;;   (prog ((result 1))
-;;      (setf v (ash v -7))
-;;      (when (zerop v) (go done))
-;;      (incf result)
-;;      (setf v (ash v -7))
-;;      (when (zerop v) (go done))
-;;      (incf result)
-;;      (setf v (ash v -7))
-;;      (when (zerop v) (go done))
-;;      (incf result)
-;;      (setf v (ash v -7))
-;;      (when (zerop v) (go done))
-;;      (incf result)
-;;      done
-;;      (return result)))
+(declaim (ftype (function (uint64) (values (integer 1 #.+max-octets-64+) &optional)) length-uint64))
 
-(declaim (ftype (function (uint64) (values (integer 1 10) &optional)) length64))
-
-(defun length64 (v)
+(defun length-uint64 (v)
   (declare (type uint64 v))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length64 1))
+  (when (zerop v) (return-from length-uint64 1))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length64 2))
+  (when (zerop v) (return-from length-uint64 2))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length64 3))
+  (when (zerop v) (return-from length-uint64 3))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length64 4))
+  (when (zerop v) (return-from length-uint64 4))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length64 5))
+  (when (zerop v) (return-from length-uint64 5))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length64 6))
+  (when (zerop v) (return-from length-uint64 6))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length64 7))
+  (when (zerop v) (return-from length-uint64 7))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length64 8))
+  (when (zerop v) (return-from length-uint64 8))
   (setf v (ash v -7))
-  (when (zerop v) (return-from length64 9))
+  (when (zerop v) (return-from length-uint64 9))
   10)

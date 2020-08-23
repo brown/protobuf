@@ -47,25 +47,25 @@
 
 (in-suite test-varint)
 
-(deftest varint-length32 ()
-  (is (= (length32 0) 1))
-  (is (= (length32 1) 1))
-  (is (= (length32 127) 1))
-  (is (= (length32 128) 2))
-  (is (= (length32 16383) 2))
-  (is (= (length32 16384) 3))
-  (is (= (length32 (ash 1 31)) 5)))
+(deftest varint-length-uint32 ()
+  (is (= (length-uint32 0) 1))
+  (is (= (length-uint32 1) 1))
+  (is (= (length-uint32 127) 1))
+  (is (= (length-uint32 128) 2))
+  (is (= (length-uint32 16383) 2))
+  (is (= (length-uint32 16384) 3))
+  (is (= (length-uint32 (ash 1 31)) 5)))
 
-(deftest varint-length64 ()
-  (is (= (length64 0) 1))
-  (is (= (length64 1) 1))
-  (is (= (length64 127) 1))
-  (is (= (length64 128) 2))
-  (is (= (length64 16383) 2))
-  (is (= (length64 16384) 3))
-  (is (= (length64 (- (ash 1 21) 1)) 3))
-  (is (= (length64 (ash 1 21)) 4))
-  (is (= (length64 (ash 1 63)) 10)))
+(deftest varint-length-uint64 ()
+  (is (= (length-uint64 0) 1))
+  (is (= (length-uint64 1) 1))
+  (is (= (length-uint64 127) 1))
+  (is (= (length-uint64 128) 2))
+  (is (= (length-uint64 16383) 2))
+  (is (= (length-uint64 16384) 3))
+  (is (= (length-uint64 (- (ash 1 21) 1)) 3))
+  (is (= (length-uint64 (ash 1 21)) 4))
+  (is (= (length-uint64 (ash 1 63)) 10)))
 
 (deftest varint-encode-parse (n buffer golden encoder parser length)
   (declare (type octet-vector buffer golden)
@@ -87,7 +87,7 @@
                          (make-octet-vector (length golden) :initial-contents golden)
                          #'encode-uint32
                          #'parse-uint32
-                         (length32 n))))
+                         (length-uint32 n))))
 
 (deftest varint-encode-parse-64 ()
   (let ((n #xe4998679470d98d)
@@ -97,7 +97,7 @@
                          (make-octet-vector (length golden) :initial-contents golden)
                          #'encode-uint64
                          #'parse-uint64
-                         (length64 n))))
+                         (length-uint64 n))))
 
 (deftest varint-encode-parse-skip-extensive ()
   (let* ((limit (* 128 +max-octets-64+))

@@ -31,7 +31,7 @@
 (in-package #:common-lisp-user)
 
 (defpackage #:varint
-  (:documentation "Variable-size encoding and decoding of integers and floats")
+  (:documentation "Variable-size encoding and decoding of integers")
   (:use #:common-lisp #:com.google.base)
   (:export ;; Constants
            #:+max-octets-32+
@@ -66,5 +66,6 @@
            #:parse64-backward-slow
            #:parse32-backward
            #:parse64-backward
-           #:length32
-           #:length64))
+           #:length-uint32
+           #:length-int32
+           #:length-uint64))

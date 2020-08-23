@@ -91,7 +91,7 @@ void MessageFieldGenerator::GenerateOctetSize(io::Printer* printer) const {
     printer->Print(
         variables_,
         "(cl:let ((s (pb:octet-size (cl:slot-value self '$name$))))\n"
-        "  (cl:incf size (cl:+ $tag_size$ s (varint:length32 s))))");
+        "  (cl:incf size (cl:+ $tag_size$ s (varint:length-uint32 s))))");
   } else if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(
         variables_,
@@ -261,7 +261,7 @@ void RepeatedMessageFieldGenerator::GenerateOctetSize(io::Printer* printer)
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     printer->Print(
         "    (cl:let ((s (pb:octet-size (cl:aref v i))))\n"
-        "      (cl:incf size (cl:+ s (varint:length32 s))))))");
+        "      (cl:incf size (cl:+ s (varint:length-uint32 s))))))");
   } else if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(
         "    (cl:incf size (pb:octet-size (cl:aref v i)))))");

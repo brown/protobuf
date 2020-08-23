@@ -180,10 +180,7 @@ void RepeatedEnumFieldGenerator::GenerateOctetSize(io::Printer* printer)
         "          (length (cl:length x)))\n"
         "  (cl:incf size (cl:* $tag_size$ length))\n"
         "  (cl:dotimes (i length)\n"
-        // XXXX: see coded_stream.h for how this can be coded more efficiently:
-        // VarintSize32SignExtended().  The result is 10 if value is negative,
-        // else it's length32(value).
-        "    (cl:incf size (varint:length64 (cl:ldb (cl:byte 64 0) (cl:aref x i))))))");
+        "    (cl:incf size (varint:length-int32 (cl:aref x i)))))");
   } else {
     printer->Print(
         variables_,
@@ -192,11 +189,8 @@ void RepeatedEnumFieldGenerator::GenerateOctetSize(io::Printer* printer)
         "          (data-size 0))\n"
         "  (cl:when (cl:plusp length)\n"
         "    (cl:dotimes (i length)\n"
-        // XXXX: see coded_stream.h for how this can be coded more efficiently:
-        // VarintSize32SignExtended().  The result is 10 if value is negative,
-        // else it's length32(value).
-        "      (cl:incf data-size (varint:length64 (cl:ldb (cl:byte 64 0) (cl:aref x i)))))\n"
-        "    (cl:incf size (cl:+ $tag_size$ (varint:length32 data-size) data-size)))\n"
+        "      (cl:incf data-size (varint:length-int32 (cl:aref x i))))\n"
+        "    (cl:incf size (cl:+ $tag_size$ (varint:length-uint32 data-size) data-size)))\n"
         "  (cl:setf (cl:slot-value self 'pb::%$name$-cached-size%) data-size))");
   }
 }

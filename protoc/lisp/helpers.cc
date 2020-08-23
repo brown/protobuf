@@ -332,21 +332,20 @@ string OctetSize(FieldDescriptor::Type type, string reference) {
   switch (type) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_ENUM:
-      // XXXX: see coded_stream.h for how this can be coded more efficiently:
-      // VarintSize32SignExtended().  The result is 10 if value is negative,
-      // else it's length32(value).
-      return "(varint:length64 (cl:ldb (cl:byte 64 0) " + reference + "))";
+      // XXXX: The C++ function VarintSize32SignExtended() in coded_stream.h
+      // does the legnth calculation using bit manipulation.
+      return "(varint:length-int32 " + reference + ")";
     case FieldDescriptor::TYPE_INT64:
-      return "(varint:length64 (cl:ldb (cl:byte 64 0) " + reference + "))";
+      return "(varint:length-uint64 (cl:ldb (cl:byte 64 0) " + reference + "))";
     case FieldDescriptor::TYPE_UINT32:
-      return "(varint:length32 " + reference + ")";
+      return "(varint:length-uint32 " + reference + ")";
     case FieldDescriptor::TYPE_UINT64:
-      return "(varint:length64 " + reference + ")";
+      return "(varint:length-uint64 " + reference + ")";
     case FieldDescriptor::TYPE_SINT32:
-      return ("(varint:length32 (wire-format:zig-zag-encode32 "
+      return ("(varint:length-uint32 (wire-format:zig-zag-encode32 "
               + reference + "))");
     case FieldDescriptor::TYPE_SINT64:
-      return ("(varint:length64 (wire-format:zig-zag-encode64 "
+      return ("(varint:length-uint64 (wire-format:zig-zag-encode64 "
               + reference + "))");
 
     case FieldDescriptor::TYPE_FIXED32:
@@ -364,16 +363,16 @@ string OctetSize(FieldDescriptor::Type type, string reference) {
 
     case FieldDescriptor::TYPE_STRING:
       return ("(cl:let ((s (pb::%utf8-string-length% " + reference + ")))\n"
-              "  (cl:+ s (varint:length32 s)))");
+              "  (cl:+ s (varint:length-uint32 s)))");
     case FieldDescriptor::TYPE_BYTES:
       return ("(cl:let ((s (cl:length " + reference + ")))\n"
-              "  (cl:+ s (varint:length32 s)))");
+              "  (cl:+ s (varint:length-uint32 s)))");
 
     case FieldDescriptor::TYPE_GROUP:
       return "(pb:octet-size " + reference + ")";
     case FieldDescriptor::TYPE_MESSAGE:
       return ("(cl:let ((s (pb:octet-size " + reference + ")))\n"
-              "  (cl:+ s (varint:length32 s)))");
+              "  (cl:+ s (varint:length-uint32 s)))");
 
     // No default because we want the compiler to complain if any new
     // types are added.
