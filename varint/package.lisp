@@ -66,8 +66,6 @@
            #:parse64-backward-slow
            #:parse32-backward
            #:parse64-backward
-           #:length32                   ; XXXXXXXXXX delete soon
-           #:length64                   ; XXXXXXXXXX delete soon
            #:length-uint32
            #:length-int32
            #:length-uint64))
