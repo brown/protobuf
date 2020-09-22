@@ -742,3 +742,13 @@ encode V, then raise BUFFER-OVERFLOW."
   (setf v (ash v -7))
   (when (zerop v) (return-from length-uint64 9))
   10)
+
+;; Temporary compatibility functions to unblock a Quicklisp release.  XXXXXXXXXX Delete soon.
+(declaim (ftype (function (uint32) (values (integer 1 5) &optional)) length32))
+(defun length32 (v)
+  (declare (type uint32 v))
+  (length-uint32 v))
+(declaim (ftype (function (uint64) (values (integer 1 10) &optional)) length64))
+(defun length64 (v)
+  (declare (type uint64 v))
+  (length-uint64 v))
