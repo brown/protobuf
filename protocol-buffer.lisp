@@ -78,38 +78,47 @@ beyond LIMIT, then signals PROTOCOL-BUFFER-READ-ERROR."))
 
 (cl:define-symbol-macro +single-float-positive-infinity+
   #+abcl extensions:single-float-positive-infinity
+  #+ccl 1f++0
+  #+lispworks 1f++0
   #+sbcl sb-ext:single-float-positive-infinity
-  #-(or abcl sbcl) (cl:error "unimplemented"))
+  #-(or abcl ccl lispworks sbcl) (cl:error "+single-float-positive-infinity+ unimplemented"))
 
 (cl:define-symbol-macro +single-float-negative-infinity+
   #+abcl extensions:single-float-negative-infinity
+  #+ccl -1f++0
+  #+lispworks -1f++0
   #+sbcl sb-ext:single-float-negative-infinity
-  #-(or abcl sbcl) (cl:error "unimplemented"))
+  #-(or abcl ccl lispworks sbcl) (cl:error "+single-float-negative-infinity+ unimplemented"))
 
 (cl:define-symbol-macro +double-float-positive-infinity+
   #+abcl extensions:double-float-positive-infinity
   #+ccl ccl::double-float-positive-infinity
+  #+lispworks 1d++0
   #+sbcl sb-ext:double-float-positive-infinity
-  #-(or abcl ccl sbcl) (cl:error "unimplemented"))
+  #-(or abcl ccl lispworks sbcl) (cl:error +double-float-positive-infinity+ "unimplemented"))
 
 (cl:define-symbol-macro +double-float-negative-infinity+
   #+abcl extensions:double-float-negative-infinity
   #+ccl ccl::double-float-negative-infinity
+  #+lispworks -1d++0
   #+sbcl sb-ext:double-float-negative-infinity
-  #-(or abcl ccl sbcl) (cl:error "unimplemented"))
+  #-(or abcl ccl lispworks sbcl) (cl:error "+double-float-negative-infinity+ unimplemented"))
 
 ;;; NaNs
 
 (cl:define-symbol-macro +single-float-nan+
-  #+abcl #.(system:make-single-float -1)
+  #+abcl (system:make-single-float -1)
+  #+ccl 1f+-0
+  #+lispworks system::*single-float-nan*
   #+sbcl #.(sb-kernel:make-single-float -1)
-  #-(or abcl sbcl) (cl:error "unimplemented"))
+  #-(or abcl ccl lispworks sbcl) (cl:error "+single-float-nan+ unimplemented"))
 
 (cl:define-symbol-macro +double-float-nan+
-  #+abcl #.(system:make-double-float (ash -1 32))
+  #+abcl (system:make-double-float (cl:ash -1 32))
   #+ccl ccl::double-float-nan
+  #+lispworks system::*double-float-nan*
   #+sbcl #.(sb-kernel:make-double-float -1 0)
-  #-(or abcl ccl sbcl) (cl:error "unimplemented"))
+  #-(or abcl ccl lispworks sbcl) (cl:error "+double-float-nan+ unimplemented"))
 
 ;;;; Protocol buffer string fields
 

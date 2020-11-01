@@ -198,7 +198,7 @@ which means ASDF loads both the .lisp file and the .fasl file."
   :in-order-to ((test-op (test-op protobuf-test)))
   :components
   ((:static-file "COPYING")
-   (:static-file "README")
+   (:static-file "README.md")
    (:static-file "TODO")
    (:file "package")
    (:file "protocol-buffer" :depends-on ("package"))
