@@ -34,7 +34,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.pb.h>
-#include "strutil.h"
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {

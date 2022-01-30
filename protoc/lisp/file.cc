@@ -38,7 +38,7 @@
 #include "helpers.h"
 #include "message.h"
 #include "service.h"
-#include "strutil.h"
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {

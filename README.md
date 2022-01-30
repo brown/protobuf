@@ -20,7 +20,7 @@ The Common Lisp protocol buffer compiler is implemented as a plugin to
 compiler](https://github.com/protocolbuffers/protobuf), so you must first build
 and install Google's compiler, which is called `protoc`.  The code and
 instructions here assume you are using [release
-3.6.1](https://github.com/protocolbuffers/protobuf/releases/tag/v3.6.1).
+3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4).
 
 The steps for installing `protoc` from source are approximately:
 
@@ -28,9 +28,9 @@ The steps for installing `protoc` from source are approximately:
 cd /tmp
 git clone https://github.com/protocolbuffers/protobuf.git google-protobuf
 cd google-protobuf
-git checkout v3.6.1
+git checkout v3.19.4
 ./autogen.sh
-./configure --prefix=~/local/software/package/google-protobuf-3.6.1
+./configure --prefix=~/local/software/package/google-protobuf-3.19.4
 make
 make check
 make install
@@ -49,10 +49,6 @@ cd /tmp
 git clone git://github.com/brown/protobuf.git
 
 cd protobuf/protoc/lisp
-
-# Copy strutil.h from the Google's protocol buffer compiler source
-# directory that you downloaded earlier:
-cp /tmp/google-protobuf/src/google/protobuf/stubs/strutil.h .
 
 # Change INSTALL_ROOT and PROTOC_ROOT in Makefile.  INSTALL_ROOT indicates
 # where protoc-gen-lisp should be installed.  PROTOC_ROOT indicates where

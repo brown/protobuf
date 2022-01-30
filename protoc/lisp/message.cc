@@ -39,7 +39,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include "enum.h"
 #include "helpers.h"
-#include "strutil.h"
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {

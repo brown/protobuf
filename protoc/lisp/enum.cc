@@ -34,7 +34,7 @@
 #include <set>
 #include <google/protobuf/io/printer.h>
 #include "helpers.h"
-#include "strutil.h"
+#include <google/protobuf/stubs/strutil.h>
 
 
 namespace google {
