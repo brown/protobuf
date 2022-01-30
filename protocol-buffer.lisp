@@ -78,31 +78,35 @@ beyond LIMIT, then signals PROTOCOL-BUFFER-READ-ERROR."))
 
 (cl:define-symbol-macro +single-float-positive-infinity+
   #+abcl extensions:single-float-positive-infinity
+  #+ecl ext:single-float-positive-infinity
   #+ccl 1f++0
   #+lispworks 1f++0
   #+sbcl sb-ext:single-float-positive-infinity
-  #-(or abcl ccl lispworks sbcl) (cl:error "+single-float-positive-infinity+ unimplemented"))
+  #-(or abcl ccl ecl lispworks sbcl) (cl:error "+single-float-positive-infinity+ unimplemented"))
 
 (cl:define-symbol-macro +single-float-negative-infinity+
   #+abcl extensions:single-float-negative-infinity
+  #+ecl ext:single-float-negative-infinity
   #+ccl -1f++0
   #+lispworks -1f++0
   #+sbcl sb-ext:single-float-negative-infinity
-  #-(or abcl ccl lispworks sbcl) (cl:error "+single-float-negative-infinity+ unimplemented"))
+  #-(or abcl ccl ecl lispworks sbcl) (cl:error "+single-float-negative-infinity+ unimplemented"))
 
 (cl:define-symbol-macro +double-float-positive-infinity+
   #+abcl extensions:double-float-positive-infinity
+  #+ecl ext:double-float-positive-infinity
   #+ccl ccl::double-float-positive-infinity
   #+lispworks 1d++0
   #+sbcl sb-ext:double-float-positive-infinity
-  #-(or abcl ccl lispworks sbcl) (cl:error +double-float-positive-infinity+ "unimplemented"))
+  #-(or abcl ccl ecl lispworks sbcl) (cl:error +double-float-positive-infinity+ "unimplemented"))
 
 (cl:define-symbol-macro +double-float-negative-infinity+
   #+abcl extensions:double-float-negative-infinity
+  #+ecl ext:double-float-negative-infinity
   #+ccl ccl::double-float-negative-infinity
   #+lispworks -1d++0
   #+sbcl sb-ext:double-float-negative-infinity
-  #-(or abcl ccl lispworks sbcl) (cl:error "+double-float-negative-infinity+ unimplemented"))
+  #-(or abcl ccl ecl lispworks sbcl) (cl:error "+double-float-negative-infinity+ unimplemented"))
 
 ;;; NaNs
 
