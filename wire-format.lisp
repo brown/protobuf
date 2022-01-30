@@ -47,8 +47,8 @@ messages, and packed repeated fields.")
 
 (deftype field-number ()
   "Protocol buffer field number."
-  ;; A field number is a 29-bit positive integer, but zero is illegal.  Field numbers from 19000
-  ;; through 19999 are reserved for internal use by protocol buffer implementations.
+  ;; A field number is a 29-bit positive integer.  Field numbers from 19000 through 19999 are
+  ;; reserved for internal use by protocol buffer implementations.
   `(integer 1 ,(ldb (byte 29 0) -1)))
 
 (define-condition protocol-error (error)
@@ -85,13 +85,13 @@ messages, and packed repeated fields.")
          #+opt (inline parse-tag))
 
 (defun parse-tag (buffer index limit)
-  "Parses the varint protobuf tag at position INDEX of BUFFER, being careful to
-only read positions below LIMIT.  When successful, returns three integers: the
+  "Parse the varint protobuf tag at position INDEX of BUFFER, being careful to
+only read positions below LIMIT.  When successful, return three integers: the
 field number, the encoding wire type, and the position in BUFFER where the
 field value is stored.
 
-PARSE-TAG signals DATA-EXHAUSTED, when parsing the tag requires reading beyond
-LIMIT, and signals VALUE-OUT-OF-RANGE, when the field number is zero or the
+PARSE-TAG signals DATA-EXHAUSTED when parsing the tag requires reading beyond
+LIMIT and signals VALUE-OUT-OF-RANGE when the field number is zero or the
 encoded tag is too large."
   (multiple-value-bind (tag new-index)
       (varint:parse-uint32-carefully buffer index limit)
