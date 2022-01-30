@@ -2,10 +2,6 @@
 high priority
 =============
 
-Update the web site to reflect the new installation instructions.
-
-Use autoconf/automake to configure protoc/lisp and protoc/sexp.
-
 Fix generated code so that unknown proto fields are collected into a data
 structure.
 
@@ -71,11 +67,6 @@ there are some #+opt conditionalizations sprinkled around the code.
 
 google-protobuf
 ===============
-
-primitive field octet size and serialize do not work with packed
-repeated data ... 
-    search for "packed" in at lease cpp_primitive_field.cc and
-    cpp_enum_field.cc
 
 add extensions and other features needed to load protobuf files
 
